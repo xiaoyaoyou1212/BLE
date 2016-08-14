@@ -24,7 +24,7 @@ public abstract class PeriodMacScanCallback extends PeriodScanCallback {
     @Override
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
         if (!hasFound.get()) {
-            if (mac.equalsIgnoreCase(device.getAddress().trim())) {
+            if (device != null && device.getAddress() != null && mac.equalsIgnoreCase(device.getAddress().trim())) {
                 hasFound.set(true);
                 if (viseBluetooth != null) {
                     viseBluetooth.stopLeScan(PeriodMacScanCallback.this);

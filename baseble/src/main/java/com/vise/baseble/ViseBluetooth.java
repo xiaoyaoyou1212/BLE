@@ -58,7 +58,7 @@ public class ViseBluetooth {
         if (periodScanCallback == null) {
             throw new NullPointerException("this PeriodScanCallback is Null!");
         }
-        periodScanCallback.setViseBluetooth(this).removeHandlerMsg().setScan(false).scan();
+        periodScanCallback.setViseBluetooth(this).setScan(false).removeHandlerMsg().scan();
     }
 
     /*==================get and set========================*/

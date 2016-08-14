@@ -24,7 +24,7 @@ public abstract class PeriodNameScanCallback extends PeriodScanCallback {
     @Override
     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
         if (!hasFound.get()) {
-            if (name.equalsIgnoreCase(device.getName().trim())) {
+            if (device != null && device.getName() != null && name.equalsIgnoreCase(device.getName().trim())) {
                 hasFound.set(true);
                 if (viseBluetooth != null) {
                     viseBluetooth.stopLeScan(PeriodNameScanCallback.this);
