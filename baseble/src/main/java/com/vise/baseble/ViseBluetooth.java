@@ -14,7 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * @Description:
+ * @Description: Bluetooth操作类
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/5 20:42.
  */

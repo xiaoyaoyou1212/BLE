@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 /**
- * @Description:
+ * @Description: 蓝牙基础操作工具类
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/5 20:43.
  */

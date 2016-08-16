@@ -1,7 +1,7 @@
 package com.vise.baseble.utils;
 
 /**
- * @Description:
+ * @Description: 十六进制转换类
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 21:57.
  */
@@ -149,4 +149,5 @@ public class HexUtil {
         }
         return digit;
     }
+
 }
