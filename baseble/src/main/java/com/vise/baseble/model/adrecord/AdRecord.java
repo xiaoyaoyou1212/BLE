@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 /**
  * @Description: 广播包解析model
+ * 参考：https://www.bluetooth.com/zh-cn/specifications/assigned-numbers/generic-access-profile
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 21:53.
  */

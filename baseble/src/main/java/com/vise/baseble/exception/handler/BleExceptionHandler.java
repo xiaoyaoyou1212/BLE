@@ -8,7 +8,7 @@ import com.vise.baseble.exception.OtherException;
 import com.vise.baseble.exception.TimeoutException;
 
 /**
- * @Description:
+ * @Description: 异常处理
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/14 10:35.
  */

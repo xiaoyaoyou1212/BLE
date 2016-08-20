@@ -8,7 +8,7 @@ import com.vise.baseble.exception.TimeoutException;
 import com.vise.baseble.utils.BleLog;
 
 /**
- * @Description:
+ * @Description: 异常默认处理
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/14 10:35.
  */

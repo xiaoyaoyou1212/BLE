@@ -3,7 +3,7 @@ package com.vise.baseble.common;
 import android.bluetooth.BluetoothClass;
 
 /**
- * @Description:
+ * @Description: BLE服务类型
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 22:07.
  */

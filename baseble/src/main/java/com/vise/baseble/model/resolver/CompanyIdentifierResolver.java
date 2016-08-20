@@ -3,7 +3,8 @@ package com.vise.baseble.model.resolver;
 import android.util.SparseArray;
 
 /**
- * @Description:
+ * @Description: 公司标识符
+ * 参考：https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 21:49.
  */

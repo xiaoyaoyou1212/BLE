@@ -3,7 +3,7 @@ package com.vise.baseble.model.resolver;
 import android.bluetooth.BluetoothClass;
 
 /**
- * @Description:
+ * @Description: 蓝牙设备类别
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 21:48.
  */

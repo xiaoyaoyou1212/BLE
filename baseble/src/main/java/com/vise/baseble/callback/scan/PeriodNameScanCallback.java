@@ -2,10 +2,13 @@ package com.vise.baseble.callback.scan;
 
 import android.bluetooth.BluetoothDevice;
 
+import com.vise.baseble.common.State;
+import com.vise.baseble.model.BluetoothLeDevice;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * @Description:
+ * @Description: 扫描指定名字设备回调
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/10 22:27.
  */
@@ -28,11 +31,10 @@ public abstract class PeriodNameScanCallback extends PeriodScanCallback {
                 hasFound.set(true);
                 if (viseBluetooth != null) {
                     viseBluetooth.stopLeScan(PeriodNameScanCallback.this);
+                    viseBluetooth.setState(State.SCAN_SUCCESS);
                 }
-                onDeviceFound(device, rssi, scanRecord);
+                onDeviceFound(new BluetoothLeDevice(device, rssi, scanRecord, System.currentTimeMillis()));
             }
         }
     }
-
-    public abstract void onDeviceFound(BluetoothDevice device, int rssi, byte[] scanRecord);
 }

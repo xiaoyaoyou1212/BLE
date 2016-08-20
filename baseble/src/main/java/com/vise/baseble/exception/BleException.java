@@ -5,7 +5,7 @@ import com.vise.baseble.common.BleExceptionCode;
 import java.io.Serializable;
 
 /**
- * @Description:
+ * @Description: BLE异常基类
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/14 10:28.
  */

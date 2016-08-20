@@ -1,13 +1,16 @@
 package com.vise.baseble.callback.scan;
 
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
+import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Looper;
 
 import com.vise.baseble.ViseBluetooth;
+import com.vise.baseble.common.State;
+import com.vise.baseble.model.BluetoothLeDevice;
 
 /**
- * @Description:
+ * @Description: 扫描回调
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/8 21:47.
  */
@@ -57,6 +60,7 @@ public abstract class PeriodScanCallback implements LeScanCallback {
                     public void run() {
                         isScanning = false;
                         if (viseBluetooth != null) {
+                            viseBluetooth.setState(State.SCAN_TIMEOUT);
                             viseBluetooth.stopLeScan(PeriodScanCallback.this);
                         }
                         scanTimeout();
@@ -80,5 +84,12 @@ public abstract class PeriodScanCallback implements LeScanCallback {
         return this;
     }
 
+    @Override
+    public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
+        onDeviceFound(new BluetoothLeDevice(bluetoothDevice, rssi, scanRecord, System.currentTimeMillis()));
+    }
+
     public abstract void scanTimeout();
+
+    public abstract void onDeviceFound(BluetoothLeDevice bluetoothLeDevice);
 }

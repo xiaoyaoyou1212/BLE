@@ -5,7 +5,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * @Description:
+ * @Description: Bluetooth服务发现协议(SDP)规格
+ * 参考：https://www.bluetooth.com/zh-cn/specifications/assigned-numbers/service-discovery
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 21:49.
  */
