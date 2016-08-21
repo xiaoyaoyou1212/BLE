@@ -72,7 +72,7 @@ public class ViseBluetooth {
         public void handleMessage(Message msg) {
             if(msg.what == MSG_CONNECT_TIMEOUT){
                 IConnectCallback connectCallback = (IConnectCallback) msg.obj;
-                if(connectCallback != null){
+                if(connectCallback != null && state != State.CONNECT_SUCCESS){
                     connectCallback.onConnectFailure(new TimeoutException());
                 }
             } else{
@@ -109,6 +109,9 @@ public class ViseBluetooth {
             if(status == 0){
                 bluetoothGatt = gatt;
                 state = State.CONNECT_SUCCESS;
+                if (handler != null) {
+                    handler.removeMessages(MSG_CONNECT_TIMEOUT);
+                }
                 if (connectCallback != null) {
                     connectCallback.onConnectSuccess(gatt, status);
                 }
