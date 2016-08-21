@@ -67,6 +67,18 @@ public class ViseBluetooth {
     private int connectTimeout = DEFAULT_CONN_TIME;
     private int operateTimeout = DEFAULT_OPERATE_TIME;
 
+    private static ViseBluetooth viseBluetooth;
+    public static ViseBluetooth getInstance(Context context){
+        if(viseBluetooth == null){
+            synchronized (ViseBluetooth.class){
+                if (viseBluetooth == null) {
+                    viseBluetooth = new ViseBluetooth(context);
+                }
+            }
+        }
+        return viseBluetooth;
+    }
+
     private Handler handler = new Handler(Looper.getMainLooper()){
         @Override
         public void handleMessage(Message msg) {
@@ -204,7 +216,7 @@ public class ViseBluetooth {
         }
     };
 
-    public ViseBluetooth(Context context) {
+    private ViseBluetooth(Context context) {
         this.context = context;
         bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();

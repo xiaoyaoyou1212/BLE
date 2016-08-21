@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="top"
+              android:orientation="vertical"
+              android:paddingBottom="5dp">
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:useDefaultMargins="true">
+
+        <TextView
+            style="@style/GridLayoutTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_first_timestamp"/>
+
+        <TextView
+            android:id="@+id/firstTimestamp"
+            style="@style/GridLayoutDataTextView"/>
+
+        <TextView
+            style="@style/GridLayoutTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_first_rssi"/>
+
+        <TextView
+            android:id="@+id/firstRssi"
+            style="@style/GridLayoutDataTextView"/>
+
+        <TextView
+            style="@style/GridLayoutTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_last_timestamp"/>
+
+        <TextView
+            android:id="@+id/lastTimestamp"
+            style="@style/GridLayoutDataTextView"/>
+
+        <TextView
+            style="@style/GridLayoutTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_last_rssi"/>
+
+        <TextView
+            android:id="@+id/lastRssi"
+            style="@style/GridLayoutDataTextView"/>
+
+        <TextView
+            style="@style/GridLayoutTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_running_average_rssi"/>
+
+        <TextView
+            android:id="@+id/runningAverageRssi"
+            style="@style/GridLayoutDataTextView"/>
+    </GridLayout>
+
+</LinearLayout>

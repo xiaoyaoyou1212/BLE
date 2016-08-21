@@ -1,4 +1,4 @@
-package com.vise.ble;
+package com.vise.ble.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.HexUtil;
+import com.vise.ble.R;
 
 import java.util.List;
 
@@ -62,7 +63,12 @@ public class DeviceAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         if(deviceList != null && deviceList.get(position) != null && deviceList.get(position).getDevice() != null){
-            viewHolder.deviceName.setText(deviceList.get(position).getDevice().getName());
+            String deviceName = deviceList.get(position).getDevice().getName();
+            if(deviceName != null && !deviceName.isEmpty()){
+                viewHolder.deviceName.setText(deviceName);
+            } else{
+                viewHolder.deviceName.setText(context.getString(R.string.unknown_device));
+            }
             viewHolder.deviceMac.setText(deviceList.get(position).getDevice().getAddress());
             viewHolder.deviceRssi.setText("RSSI:"+deviceList.get(position).getRssi()+"dB");
             viewHolder.deviceScanRecord.setText("scanRecord:"+ HexUtil.encodeHexStr(deviceList.get(position).getScanRecord()));

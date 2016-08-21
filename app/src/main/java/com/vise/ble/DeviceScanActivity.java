@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -14,11 +16,12 @@ import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.baseble.utils.BleLog;
 import com.vise.baseble.utils.BleUtil;
+import com.vise.ble.adapter.DeviceAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class DeviceScanActivity extends AppCompatActivity {
 
     private TextView supportTv;
     private TextView statusTv;
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_device_scan);
         init();
     }
 
@@ -67,10 +70,21 @@ public class MainActivity extends AppCompatActivity {
         deviceLv = (ListView) findViewById(android.R.id.list);
         scanCountTv = (TextView) findViewById(R.id.scan_device_count);
 
-        viseBluetooth = new ViseBluetooth(this);
+        viseBluetooth = ViseBluetooth.getInstance(this);
         bluetoothLeDeviceStore = new BluetoothLeDeviceStore();
         adapter = new DeviceAdapter(this);
         deviceLv.setAdapter(adapter);
+
+        deviceLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                BluetoothLeDevice device = (BluetoothLeDevice) adapter.getItem(position);
+                if (device == null) return;
+                Intent intent = new Intent(DeviceScanActivity.this, DeviceDetailActivity.class);
+                intent.putExtra(DeviceDetailActivity.EXTRA_DEVICE, device);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
