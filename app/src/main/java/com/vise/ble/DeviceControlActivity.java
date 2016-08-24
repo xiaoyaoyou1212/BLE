@@ -169,9 +169,6 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        viseBluetooth.disconnect();
-        viseBluetooth.close();
-        viseBluetooth.refreshDeviceCache();
         viseBluetooth.clear();
     }
 

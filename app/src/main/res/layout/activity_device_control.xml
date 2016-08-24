@@ -103,7 +103,7 @@
     <ExpandableListView
         android:id="@+id/gatt_services_list"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:layout_above="@id/lowerSepparator"
         android:layout_below="@id/upperSepparator"/>
 

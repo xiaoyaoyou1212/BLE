@@ -133,12 +133,12 @@ public class ViseBluetooth {
 
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
+            if (handler != null) {
+                handler.removeMessages(MSG_CONNECT_TIMEOUT);
+            }
             if(status == 0){
                 bluetoothGatt = gatt;
                 state = State.CONNECT_SUCCESS;
-                if (handler != null) {
-                    handler.removeMessages(MSG_CONNECT_TIMEOUT);
-                }
                 if (connectCallback != null) {
                     runOnMainThread(new Runnable() {
                         @Override
@@ -149,9 +149,6 @@ public class ViseBluetooth {
                 }
             } else{
                 state = State.CONNECT_FAILURE;
-                if (handler != null) {
-                    handler.removeMessages(MSG_CONNECT_TIMEOUT);
-                }
                 if (connectCallback != null) {
                     close();
                     runOnMainThread(new Runnable() {
@@ -629,10 +626,18 @@ public class ViseBluetooth {
     }
 
     public synchronized void clear(){
+        disconnect();
+        close();
+        refreshDeviceCache();
+        if (bleCallbacks != null) {
+            bleCallbacks.clear();
+            bleCallbacks = null;
+        }
         if(handler != null){
             handler.removeCallbacksAndMessages(null);
             handler = null;
         }
+        coreGattCallback = null;
     }
 
     /*==================get and set========================*/
