@@ -30,7 +30,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private ViseBluetooth viseBluetooth;
     private BluetoothLeDeviceStore bluetoothLeDeviceStore;
-    private List<BluetoothLeDevice> bluetoothLeDeviceList = new ArrayList<>();
+    private volatile List<BluetoothLeDevice> bluetoothLeDeviceList = new ArrayList<>();
     private DeviceAdapter adapter;
 
     private PeriodScanCallback periodScanCallback = new PeriodScanCallback() {
@@ -103,7 +103,11 @@ public class DeviceScanActivity extends AppCompatActivity {
             statusTv.setText(getString(R.string.off));
         }
         invalidateOptionsMenu();
-        startScan();
+        if(BleUtil.isBleEnable(this)){
+            startScan();
+        } else{
+            BleUtil.enableBluetooth(this, 1);
+        }
     }
 
     @Override
@@ -132,7 +136,11 @@ public class DeviceScanActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_scan:
-                startScan();
+                if(BleUtil.isBleEnable(this)){
+                    startScan();
+                } else{
+                    BleUtil.enableBluetooth(this, 1);
+                }
                 break;
             case R.id.menu_stop:
                 stopScan();
@@ -145,10 +153,13 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == 1 && resultCode == RESULT_OK){
-            startScan();
-        } else if(requestCode == 2 && resultCode == RESULT_OK){
-            stopScan();
+        if(resultCode == RESULT_OK){
+            statusTv.setText(getString(R.string.on));
+            if(requestCode == 1){
+                startScan();
+            }
+        } else if(resultCode == RESULT_CANCELED){
+            finish();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -162,25 +173,17 @@ public class DeviceScanActivity extends AppCompatActivity {
             bluetoothLeDeviceList.clear();
             adapter.setDeviceList(bluetoothLeDeviceList);
         }
-        if(BleUtil.isBleEnable(this)){
-            if (viseBluetooth != null) {
-                viseBluetooth.setScanTimeout(-1).startScan(periodScanCallback);
-            }
-            invalidateOptionsMenu();
-        } else{
-            BleUtil.enableBluetooth(this, 1);
+        if (viseBluetooth != null) {
+            viseBluetooth.setScanTimeout(-1).startScan(periodScanCallback);
         }
+        invalidateOptionsMenu();
     }
 
     private void stopScan(){
-        if(BleUtil.isBleEnable(this)){
-            if (viseBluetooth != null) {
-                viseBluetooth.stopScan(periodScanCallback);
-            }
-            invalidateOptionsMenu();
-        } else{
-            BleUtil.enableBluetooth(this, 2);
+        if (viseBluetooth != null) {
+            viseBluetooth.stopScan(periodScanCallback);
         }
+        invalidateOptionsMenu();
     }
 
     private void updateItemCount(final int count) {

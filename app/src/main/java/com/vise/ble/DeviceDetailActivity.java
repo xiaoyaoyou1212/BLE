@@ -1,5 +1,6 @@
 package com.vise.ble;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -30,8 +31,8 @@ import java.util.TimeZone;
 public class DeviceDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_DEVICE = "extra_device";
-    protected ListView mList;
-    protected View mEmpty;
+    private ListView mList;
+    private View mEmpty;
     private BluetoothLeDevice mDevice;
 
     private void appendAdRecordView(final MergeAdapter adapter, final String title, final AdRecord record) {
@@ -176,12 +177,19 @@ public class DeviceDetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
+                if (mDevice == null) return false;
+                Intent intent = new Intent(DeviceDetailActivity.this, DeviceControlActivity.class);
+                intent.putExtra(DeviceDetailActivity.EXTRA_DEVICE, mDevice);
+                startActivity(intent);
                 break;
         }
         return true;
     }
 
     private void pupulateDetails(final BluetoothLeDevice device) {
+        if (device == null) {
+            return;
+        }
         final MergeAdapter adapter = new MergeAdapter();
 
         if (device == null) {

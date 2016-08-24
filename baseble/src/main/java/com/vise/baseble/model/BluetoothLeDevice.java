@@ -410,14 +410,14 @@ public class BluetoothLeDevice implements Parcelable {
      */
     private static String resolveBondingState(final int bondState) {
         switch (bondState) {
-            case BluetoothDevice.BOND_BONDED:
+            case BluetoothDevice.BOND_BONDED://已配对
                 return "Paired";
-            case BluetoothDevice.BOND_BONDING:
+            case BluetoothDevice.BOND_BONDING://配对中
                 return "Pairing";
-            case BluetoothDevice.BOND_NONE:
+            case BluetoothDevice.BOND_NONE://未配对
                 return "UnBonded";
             default:
-                return "Unknown";
+                return "Unknown";//未知状态
         }
     }
 }

@@ -83,9 +83,15 @@ public class ViseBluetooth {
         @Override
         public void handleMessage(Message msg) {
             if(msg.what == MSG_CONNECT_TIMEOUT){
-                IConnectCallback connectCallback = (IConnectCallback) msg.obj;
+                final IConnectCallback connectCallback = (IConnectCallback) msg.obj;
                 if(connectCallback != null && state != State.CONNECT_SUCCESS){
-                    connectCallback.onConnectFailure(new TimeoutException());
+                    close();
+                    runOnMainThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectCallback.onConnectFailure(new TimeoutException());
+                        }
+                    });
                 }
             } else{
                 IBleCallback bleCallback = (IBleCallback) msg.obj;
@@ -101,15 +107,24 @@ public class ViseBluetooth {
     private BluetoothGattCallback coreGattCallback = new BluetoothGattCallback() {
 
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, int newState) {
             BleLog.i("onConnectionStateChange  status: " + status + " ,newState: " + newState +
                     "  ,thread: " + Thread.currentThread().getId());
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 gatt.discoverServices();
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 state = State.DISCONNECT;
+                if (handler != null) {
+                    handler.removeMessages(MSG_CONNECT_TIMEOUT);
+                }
                 if (connectCallback != null) {
-                    connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                    close();
+                    runOnMainThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                        }
+                    });
                 }
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
                 state = State.CONNECT_PROCESS;
@@ -117,7 +132,7 @@ public class ViseBluetooth {
         }
 
         @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+        public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
             if(status == 0){
                 bluetoothGatt = gatt;
                 state = State.CONNECT_SUCCESS;
@@ -125,12 +140,26 @@ public class ViseBluetooth {
                     handler.removeMessages(MSG_CONNECT_TIMEOUT);
                 }
                 if (connectCallback != null) {
-                    connectCallback.onConnectSuccess(gatt, status);
+                    runOnMainThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectCallback.onConnectSuccess(gatt, status);
+                        }
+                    });
                 }
             } else{
                 state = State.CONNECT_FAILURE;
+                if (handler != null) {
+                    handler.removeMessages(MSG_CONNECT_TIMEOUT);
+                }
                 if (connectCallback != null) {
-                    connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                    close();
+                    runOnMainThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                        }
+                    });
                 }
             }
         }
@@ -140,7 +169,11 @@ public class ViseBluetooth {
             if (bleCallbacks == null) {
                 return;
             }
+            if (handler != null) {
+                handler.removeMessages(MSG_READ_CHA);
+            }
             for (IBleCallback<BluetoothGattCharacteristic> bleCallback : bleCallbacks) {
+                removeBleCallback(bleCallback);
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     bleCallback.onSuccess(characteristic, 0);
                 } else {
@@ -154,7 +187,11 @@ public class ViseBluetooth {
             if (bleCallbacks == null) {
                 return;
             }
+            if (handler != null) {
+                handler.removeMessages(MSG_WRITE_CHA);
+            }
             for (IBleCallback<BluetoothGattCharacteristic> bleCallback : bleCallbacks) {
+                removeBleCallback(bleCallback);
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     bleCallback.onSuccess(characteristic, 0);
                 } else {
@@ -178,7 +215,11 @@ public class ViseBluetooth {
             if (bleCallbacks == null) {
                 return;
             }
+            if (handler != null) {
+                handler.removeMessages(MSG_READ_DES);
+            }
             for (IBleCallback<BluetoothGattDescriptor> bleCallback : bleCallbacks) {
+                removeBleCallback(bleCallback);
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     bleCallback.onSuccess(descriptor, 0);
                 } else {
@@ -192,7 +233,11 @@ public class ViseBluetooth {
             if (bleCallbacks == null) {
                 return;
             }
+            if (handler != null) {
+                handler.removeMessages(MSG_WRITE_DES);
+            }
             for (IBleCallback<BluetoothGattDescriptor> bleCallback : bleCallbacks) {
+                removeBleCallback(bleCallback);
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     bleCallback.onSuccess(descriptor, 0);
                 } else {
@@ -206,7 +251,11 @@ public class ViseBluetooth {
             if (bleCallbacks == null) {
                 return;
             }
+            if (handler != null) {
+                handler.removeMessages(MSG_READ_RSSI);
+            }
             for (IBleCallback<Integer> bleCallback : bleCallbacks) {
+                removeBleCallback(bleCallback);
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     bleCallback.onSuccess(rssi, 0);
                 } else {
@@ -359,6 +408,7 @@ public class ViseBluetooth {
                                        final IBleCallback<BluetoothGattCharacteristic> bleCallback) {
         if(characteristic == null){
             if(bleCallback != null){
+                removeBleCallback(bleCallback);
                 bleCallback.onFailure(new OtherException("this characteristic is null!"));
             }
             return false;
@@ -377,6 +427,7 @@ public class ViseBluetooth {
     public boolean writeDescriptor(BluetoothGattDescriptor descriptor, byte[] data, IBleCallback<BluetoothGattDescriptor> bleCallback) {
         if(descriptor == null){
             if(bleCallback != null){
+                removeBleCallback(bleCallback);
                 bleCallback.onFailure(new OtherException("this descriptor is null!"));
             }
             return false;
@@ -399,6 +450,7 @@ public class ViseBluetooth {
             return handleAfterInitialed(getBluetoothGatt().readCharacteristic(characteristic), bleCallback);
         } else {
             if (bleCallback != null) {
+                removeBleCallback(bleCallback);
                 bleCallback.onFailure(new OtherException("Characteristic [is not] readable!"));
             }
             return false;
@@ -433,6 +485,7 @@ public class ViseBluetooth {
             return setCharacteristicNotification(getBluetoothGatt(), characteristic, true, isIndication);
         } else {
             if (bleCallback != null) {
+                removeBleCallback(bleCallback);
                 bleCallback.onFailure(new OtherException("Characteristic [not supports] readable!"));
             }
             return false;
@@ -503,6 +556,10 @@ public class ViseBluetooth {
     private boolean handleAfterInitialed(boolean initiated, IBleCallback bleCallback) {
         if (bleCallback != null) {
             if (!initiated) {
+                if (handler != null) {
+                    handler.removeCallbacksAndMessages(null);
+                }
+                removeBleCallback(bleCallback);
                 bleCallback.onFailure(new InitiatedException());
             }
         }
@@ -528,6 +585,14 @@ public class ViseBluetooth {
             if (handler != null) {
                 handler.post(runnable);
             }
+        }
+    }
+
+    public boolean isConnected(){
+        if(state == State.CONNECT_SUCCESS){
+            return true;
+        } else{
+            return false;
         }
     }
 
