@@ -25,7 +25,7 @@ public class AdRecordUtil {
         if (nameRecord == null) {
             return "";
         }
-        return HexUtil.encodeHexStr(nameRecord.getData());
+        return new String(nameRecord.getData());
     }
 
     public static byte[] getServiceData(final AdRecord serviceData) {

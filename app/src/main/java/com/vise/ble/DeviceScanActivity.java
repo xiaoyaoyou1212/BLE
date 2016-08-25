@@ -41,7 +41,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         @Override
         public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
-            BleLog.i("device found:"+bluetoothLeDevice.toString());
             if (bluetoothLeDeviceStore != null) {
                 bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
                 bluetoothLeDeviceList = bluetoothLeDeviceStore.getDeviceList();
@@ -114,6 +113,15 @@ public class DeviceScanActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         stopScan();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (viseBluetooth != null) {
+            viseBluetooth.clear();
+            viseBluetooth = null;
+        }
     }
 
     @Override

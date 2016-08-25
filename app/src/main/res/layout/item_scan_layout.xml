@@ -6,7 +6,6 @@
         android:id="@+id/device_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="deviceName"
         android:textColor="@android:color/black"
         android:textSize="30sp"
         />
@@ -19,20 +18,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Mac"/>
+            />
         <TextView
             android:id="@+id/device_rssi"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="right"
-            android:text="RSSI"
             />
     </LinearLayout>
     <TextView
         android:id="@+id/device_scanRecord"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="scanRecord"
         />
 </LinearLayout>

@@ -526,7 +526,7 @@ public class BleLog {
 
     private static String getThrowable(Throwable throwable, String mag) {
         /* 打印异常 */
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (!TextUtils.isEmpty(mag)) {
             sb.append(mag);
         }

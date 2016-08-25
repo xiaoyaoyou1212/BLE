@@ -92,27 +92,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
         adapter.addView(lt);
     }
 
-    /*private void appendIBeaconInfo(final MergeAdapter adapter, final IBeaconManufacturerData iBeaconData) {
-        final LinearLayout lt = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item_view_ibeacon_details, null);
-        final TextView tvCompanyId = (TextView) lt.findViewById(R.id.companyId);
-        final TextView tvAdvert = (TextView) lt.findViewById(R.id.advertisement);
-        final TextView tvUUID = (TextView) lt.findViewById(R.id.uuid);
-        final TextView tvMajor = (TextView) lt.findViewById(R.id.major);
-        final TextView tvMinor = (TextView) lt.findViewById(R.id.minor);
-        final TextView tvTxPower = (TextView) lt.findViewById(R.id.txpower);
-
-        tvCompanyId.setText(
-                CompanyIdentifierResolver.getCompanyName(iBeaconData.getCompanyIdentifier(), getString(R.string.unknown))
-                        + " (" + hexEncode(iBeaconData.getCompanyIdentifier()) + ")");
-        tvAdvert.setText(iBeaconData.getIBeaconAdvertisement() + " (" + hexEncode(iBeaconData.getIBeaconAdvertisement()) + ")");
-        tvUUID.setText(iBeaconData.getUUID());
-        tvMajor.setText(iBeaconData.getMajor() + " (" + hexEncode(iBeaconData.getMajor()) + ")");
-        tvMinor.setText(iBeaconData.getMinor() + " (" + hexEncode(iBeaconData.getMinor()) + ")");
-        tvTxPower.setText(iBeaconData.getCalibratedTxPower() + " (" + hexEncode(iBeaconData.getCalibratedTxPower()) + ")");
-
-        adapter.addView(lt);
-    }*/
-
     private void appendRssiInfo(final MergeAdapter adapter, final BluetoothLeDevice device) {
         final LinearLayout lt = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item_view_rssi_info, null);
         final TextView tvFirstTimestamp = (TextView) lt.findViewById(R.id.firstTimestamp);
@@ -187,11 +166,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
     }
 
     private void pupulateDetails(final BluetoothLeDevice device) {
-        if (device == null) {
-            return;
-        }
         final MergeAdapter adapter = new MergeAdapter();
-
         if (device == null) {
             appendHeader(adapter, getString(R.string.header_device_info));
             appendSimpleText(adapter, getString(R.string.invalid_device_data));
@@ -217,14 +192,6 @@ public class DeviceDetailActivity extends AppCompatActivity {
                             record);
                 }
             }
-
-            /*final boolean isIBeacon = BeaconUtils.getBeaconType(device) == BeaconType.IBEACON;
-            if (isIBeacon) {
-                final IBeaconManufacturerData iBeaconData = new IBeaconManufacturerData(device);
-                appendHeader(adapter, getString(R.string.header_ibeacon_data));
-                appendIBeaconInfo(adapter, iBeaconData);
-            }*/
-
         }
         mList.setAdapter(adapter);
     }
@@ -236,7 +203,4 @@ public class DeviceDetailActivity extends AppCompatActivity {
         return simpleDateFormat.format(new Date(time));
     }
 
-    private static String hexEncode(final int integer) {
-        return "0x" + Integer.toHexString(integer).toUpperCase(Locale.US);
-    }
 }

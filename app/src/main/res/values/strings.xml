@@ -1,10 +1,5 @@
 <resources>
     <string name="app_name">BLE</string>
-    <string name="ble_not_supported">BLE is not supported</string>
-    <string name="title_devices">BLE Device Scan</string>
-    <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
-    <string name="connected">Connected</string>
-    <string name="disconnected">Disconnected</string>
     <string name="invalid_device_data">Invalid Device Data!</string>
     <string name="no_data">No data</string>
     <string name="not_supported">Not supported</string>
@@ -16,9 +11,12 @@
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_service">Unknown service</string>
     <string name="no_known_services">No known services</string>
+    <string name="header_device_info">Device Info</string>
+    <string name="header_raw_ad_records">Raw Ad Records</string>
+    <string name="header_rssi_info">RSSI Info</string>
+    <string name="header_scan_record">Scan Record</string>
 
     <!-- Formatters -->
-    <string name="formatter_meters">%sm</string>
     <string name="formatter_db">%sdb</string>
     <string name="formatter_item_count">Items: %s</string>
 
@@ -30,47 +28,30 @@
     <string name="menu_stop">Stop</string>
     <string name="menu_share">Share</string>
 
-    <!-- Export Email Strings -->
-    <string name="exporter_email_device_list_subject">Bluetooth LE Scan Results (%s)</string>
-    <string name="exporter_email_device_services_subject" formatted="false">Bluetooth LE Device GATT Results (%s, %s)</string>
-    <string name="exporter_email_device_list_body">Please find attached the scan results.</string>
-    <string name="exporter_email_device_list_picker_text">Please select your email client:</string>
-
     <!-- Labels -->
-    <string name="about_dialog_text">This is a sample application using the Bluetooth LE Library.\n\nGithub: https://github.com/alt236/Bluetooth-LE-Library---Android\n\nCopyright: Alexandros Schillings</string>
-    <string name="header_device_info">Device Info</string>
-    <string name="header_ibeacon_data">iBeacon Data</string>
-    <string name="header_raw_ad_records">Raw Ad Records</string>
-    <string name="header_rssi_info">RSSI Info</string>
-    <string name="header_scan_record">Scan Record</string>
-    <string name="label_advertisement">Advertisement:</string>
     <string name="label_as_array">As Array:</string>
     <string name="label_as_string">As String:</string>
     <string name="label_bluetooth_le_status">Bluetooth LE:</string>
     <string name="label_bluetooth_status">Bluetooth:</string>
     <string name="label_bonding_state">Bonding State:</string>
-    <string name="label_company_id">Company ID:</string>
-    <string name="label_data">Data:</string>
     <string name="label_desc">Desc:</string>
     <string name="label_device_address">Device address:</string>
     <string name="label_device_class">Device Class:</string>
     <string name="label_device_major_class">Major Class:</string>
     <string name="label_device_services">Services:</string>
     <string name="label_device_name">Device Name:</string>
-    <string name="label_distance">Distance:</string>
     <string name="label_first_rssi">First RSSI:</string>
     <string name="label_first_timestamp">First Timestamp:</string>
     <string name="label_last_rssi">Last RSSI:</string>
     <string name="label_last_timestamp">Last Timestamp:</string>
-    <string name="label_mac">MAC:</string>
-    <string name="label_major">Major:</string>
-    <string name="label_minor">Minor:</string>
     <string name="label_rssi">RSSI:</string>
     <string name="label_running_average_rssi">Running Average RSSI:</string>
     <string name="label_state">State:</string>
-    <string name="label_tx_power">TX Power:</string>
     <string name="label_uuid">UUID:</string>
-    <string name="label_updated">Updated:</string>
-    <string name="label_decriptor">Descriptor:</string>
+    <string name="label_input">输入:</string>
+    <string name="label_output">输出:</string>
+    <string name="label_select_write_characteristic">选择可写服务</string>
+    <string name="label_select_notify_characteristic">选择可通知服务</string>
+    <string name="label_send">发送</string>
 
 </resources>

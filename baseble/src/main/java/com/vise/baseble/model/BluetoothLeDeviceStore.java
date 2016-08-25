@@ -36,7 +36,7 @@ public class BluetoothLeDeviceStore {
             return;
         }
         if(mDeviceMap.containsKey(device.getAddress())){
-            mDeviceMap.remove(device);
+            mDeviceMap.remove(device.getAddress());
         }
     }
 

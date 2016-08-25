@@ -232,7 +232,7 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         if(sections.size() == 0) {
             return new String[0];
         } else {
-            return sections.toArray(new Object[0]);
+            return sections.toArray(new Object[sections.size()]);
         }
     }
 

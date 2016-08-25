@@ -50,7 +50,7 @@ public class DeviceAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder = null;
+        ViewHolder viewHolder;
         if(convertView == null){
             viewHolder = new ViewHolder();
             convertView = LayoutInflater.from(context).inflate(R.layout.item_scan_layout, null);
@@ -70,8 +70,8 @@ public class DeviceAdapter extends BaseAdapter {
                 viewHolder.deviceName.setText(context.getString(R.string.unknown_device));
             }
             viewHolder.deviceMac.setText(deviceList.get(position).getDevice().getAddress());
-            viewHolder.deviceRssi.setText("RSSI:"+deviceList.get(position).getRssi()+"dB");
-            viewHolder.deviceScanRecord.setText("scanRecord:"+ HexUtil.encodeHexStr(deviceList.get(position).getScanRecord()));
+            viewHolder.deviceRssi.setText(context.getString(R.string.label_rssi)+deviceList.get(position).getRssi()+"dB");
+            viewHolder.deviceScanRecord.setText(context.getString(R.string.header_scan_record)+":"+ HexUtil.encodeHexStr(deviceList.get(position).getScanRecord()));
         }
         return convertView;
     }

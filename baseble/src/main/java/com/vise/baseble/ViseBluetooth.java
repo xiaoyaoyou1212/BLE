@@ -301,6 +301,10 @@ public class ViseBluetooth {
         if (bluetoothDevice == null || connectCallback == null) {
             throw new IllegalArgumentException("this BluetoothDevice or IConnectCallback is Null!");
         }
+        if (handler != null) {
+            Message msg = handler.obtainMessage(MSG_CONNECT_TIMEOUT, connectCallback);
+            handler.sendMessageDelayed(msg, connectTimeout);
+        }
         this.connectCallback = connectCallback;
         state = State.CONNECT_PROCESS;
         return bluetoothDevice.connectGatt(context, autoConnect, coreGattCallback);
@@ -309,10 +313,6 @@ public class ViseBluetooth {
     public void connect(BluetoothLeDevice bluetoothLeDevice, boolean autoConnect, IConnectCallback connectCallback){
         if (bluetoothLeDevice == null) {
             throw new IllegalArgumentException("this BluetoothLeDevice is Null!");
-        }
-        if (handler != null) {
-            Message msg = handler.obtainMessage(MSG_CONNECT_TIMEOUT, connectCallback);
-            handler.sendMessageDelayed(msg, connectTimeout);
         }
         connect(bluetoothLeDevice.getDevice(), autoConnect, connectCallback);
     }
@@ -627,8 +627,8 @@ public class ViseBluetooth {
 
     public synchronized void clear(){
         disconnect();
-        close();
         refreshDeviceCache();
+        close();
         if (bleCallbacks != null) {
             bleCallbacks.clear();
             bleCallbacks = null;
