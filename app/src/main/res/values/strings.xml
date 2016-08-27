@@ -50,6 +50,7 @@
     <string name="label_uuid">UUID:</string>
     <string name="label_input">输入:</string>
     <string name="label_output">输出:</string>
+    <string name="label_select_read_characteristic">选择可读服务</string>
     <string name="label_select_write_characteristic">选择可写服务</string>
     <string name="label_select_notify_characteristic">选择可通知服务</string>
     <string name="label_send">发送</string>
