@@ -55,4 +55,12 @@
     <string name="label_select_notify_characteristic">选择可通知服务</string>
     <string name="label_send">发送</string>
 
+    <string name="about_dialog_text">\n
+        项目简介：Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。\n
+        项目地址：https://github.com/xiaoyaoyou1212/BLE\n
+        作者：胡伟\n
+        网站：http://www.xiaoyaoyou1212.com\n
+        博客：http://blog.csdn.net/xiaoyaoyou1212
+    </string>
+
 </resources>

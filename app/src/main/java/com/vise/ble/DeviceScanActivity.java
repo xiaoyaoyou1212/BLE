@@ -1,8 +1,13 @@
 package com.vise.ble;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -154,6 +159,7 @@ public class DeviceScanActivity extends AppCompatActivity {
                 stopScan();
                 break;
             case R.id.menu_about:
+                displayAboutDialog();
                 break;
         }
         return true;
@@ -196,5 +202,27 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private void updateItemCount(final int count) {
         scanCountTv.setText(getString(R.string.formatter_item_count, String.valueOf(count)));
+    }
+
+    private void displayAboutDialog() {
+        final int paddingSizeDp = 5;
+        final float scale = getResources().getDisplayMetrics().density;
+        final int dpAsPixels = (int) (paddingSizeDp * scale + 0.5f);
+
+        final TextView textView = new TextView(this);
+        final SpannableString text = new SpannableString(getString(R.string.about_dialog_text));
+
+        textView.setText(text);
+        textView.setAutoLinkMask(RESULT_OK);
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
+        textView.setPadding(dpAsPixels, dpAsPixels, dpAsPixels, dpAsPixels);
+
+        Linkify.addLinks(text, Linkify.ALL);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.menu_about)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok, null)
+                .setView(textView)
+                .show();
     }
 }
