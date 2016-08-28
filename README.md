@@ -106,14 +106,17 @@ ViseBluetooth.getInstance(this).connectByName(name, false, new IConnectCallback(
 - 获取主要设备类别(Major Class):`bluetoothLeDevice.getBluetoothDeviceMajorClassName()`；
 - 获取服务类别(Service Class):`bluetoothLeDevice.getBluetoothDeviceKnownSupportedServices()`；
 - 获取配对状态(Bonding State):`bluetoothLeDevice.getBluetoothDeviceBondState()`；
+
 #### RSSI INFO(信号信息)
 - 获取第一次信号时间戳(First Timestamp):`bluetoothLeDevice.getFirstTimestamp()`；
 - 获取第一次信号强度(First RSSI):`bluetoothLeDevice.getFirstRssi()`；
 - 获取最后一次信号时间戳(Last Timestamp):`bluetoothLeDevice.getTimestamp()`；
 - 获取最后一次信号强度(Last RSSI):`bluetoothLeDevice.getRssi()`；
 - 获取平均信号强度(Running Average RSSI):`bluetoothLeDevice.getRunningAverageRssi()`；
+
 #### SCAN RECORD INFO(广播信息)
 根据扫描到的广播包`AdRecordStore`获取某个广播数据单元`AdRecord`的类型编号`record.getType()`，再根据编号获取广播数据单元的类型描述`record.getHumanReadableType()`以及该广播数据单元的长度及数据内容，最后通过`AdRecordUtil.getRecordDataAsString(record)`将数据内容转换成具体字符串。
+
 ### 示例图
 ![设备详情](http://img.blog.csdn.net/20160828100259718) ![设备详情](http://img.blog.csdn.net/20160828100315766)
 
