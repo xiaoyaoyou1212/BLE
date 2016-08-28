@@ -100,18 +100,18 @@ ViseBluetooth.getInstance(this).connectByName(name, false, new IConnectCallback(
 ## 设备详情
 ### 使用简介
 #### DEVICE INFO(设备信息)
-获取设备名称(Device Name):`bluetoothLeDevice.getName()`；
-获取设备地址(Device Address):`bluetoothLeDevice.getAddress()`；
-获取设备类别(Device Class):`bluetoothLeDevice.getBluetoothDeviceClassName()`；
-获取主要设备类别(Major Class):`bluetoothLeDevice.getBluetoothDeviceMajorClassName()`；
-获取服务类别(Service Class):`bluetoothLeDevice.getBluetoothDeviceKnownSupportedServices()`；
-获取配对状态(Bonding State):`bluetoothLeDevice.getBluetoothDeviceBondState()`；
+- 获取设备名称(Device Name):`bluetoothLeDevice.getName()`；
+- 获取设备地址(Device Address):`bluetoothLeDevice.getAddress()`；
+- 获取设备类别(Device Class):`bluetoothLeDevice.getBluetoothDeviceClassName()`；
+- 获取主要设备类别(Major Class):`bluetoothLeDevice.getBluetoothDeviceMajorClassName()`；
+- 获取服务类别(Service Class):`bluetoothLeDevice.getBluetoothDeviceKnownSupportedServices()`；
+- 获取配对状态(Bonding State):`bluetoothLeDevice.getBluetoothDeviceBondState()`；
 #### RSSI INFO(信号信息)
-获取第一次信号时间戳(First Timestamp):`bluetoothLeDevice.getFirstTimestamp()`；
-获取第一次信号强度(First RSSI):`bluetoothLeDevice.getFirstRssi()`；
-获取最后一次信号时间戳(Last Timestamp):`bluetoothLeDevice.getTimestamp()`；
-获取最后一次信号强度(Last RSSI):`bluetoothLeDevice.getRssi()`；
-获取平均信号强度(Running Average RSSI):`bluetoothLeDevice.getRunningAverageRssi()`；
+- 获取第一次信号时间戳(First Timestamp):`bluetoothLeDevice.getFirstTimestamp()`；
+- 获取第一次信号强度(First RSSI):`bluetoothLeDevice.getFirstRssi()`；
+- 获取最后一次信号时间戳(Last Timestamp):`bluetoothLeDevice.getTimestamp()`；
+- 获取最后一次信号强度(Last RSSI):`bluetoothLeDevice.getRssi()`；
+- 获取平均信号强度(Running Average RSSI):`bluetoothLeDevice.getRunningAverageRssi()`；
 #### SCAN RECORD INFO(广播信息)
 根据扫描到的广播包`AdRecordStore`获取某个广播数据单元`AdRecord`的类型编号`record.getType()`，再根据编号获取广播数据单元的类型描述`record.getHumanReadableType()`以及该广播数据单元的长度及数据内容，最后通过`AdRecordUtil.getRecordDataAsString(record)`将数据内容转换成具体字符串。
 ### 示例图
@@ -246,7 +246,7 @@ ViseBluetooth.getInstance(this).writeCharacteristic(new byte[]{0x00,0x01,0x02}, 
 ## 总结
 从以上的描述中可以知道，设备相关的所有操作都统一交给`ViseBluetooth`进行处理，并且该类是单例模式，全局只有一个，管理很方便，连接设备成功时会自动获得一个`BluetoothGatt`，在断开连接时会将该`BluetoothGatt`关闭，上层不用关心连接数最大为6的限制问题，只需要在需要释放资源时调用`ViseBluetooth.getInstance(this).clear();`就行，简单易用，这也正是该项目的宗旨。
 
-###关于作者
+### 关于作者
 #### 作者：胡伟
 #### 网站：[http://www.xiaoyaoyou1212.com](http://www.xiaoyaoyou1212.com)
 #### 博客：[http://blog.csdn.net/xiaoyaoyou1212](http://blog.csdn.net/xiaoyaoyou1212)
