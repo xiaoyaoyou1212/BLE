@@ -249,6 +249,9 @@ ViseBluetooth.getInstance(this).writeCharacteristic(new byte[]{0x00,0x01,0x02}, 
 ## 总结
 从以上的描述中可以知道，设备相关的所有操作都统一交给`ViseBluetooth`进行处理，并且该类是单例模式，全局只有一个，管理很方便，连接设备成功时会自动获得一个`BluetoothGatt`，在断开连接时会将该`BluetoothGatt`关闭，上层不用关心连接数最大为6的限制问题，只需要在需要释放资源时调用`ViseBluetooth.getInstance(this).clear();`就行，简单易用，这也正是该项目的宗旨。
 
+## 感谢
+在此要感谢两位作者提供的开源库[https://github.com/litesuits/android-lite-bluetoothLE](https://github.com/litesuits/android-lite-bluetoothLE)和[https://github.com/alt236/Bluetooth-LE-Library---Android](https://github.com/alt236/Bluetooth-LE-Library---Android)，这两个开源库对于本项目的完成提供了很大的帮助。
+
 ### 关于作者
 #### 作者：胡伟
 #### 网站：[http://www.xiaoyaoyou1212.com](http://www.xiaoyaoyou1212.com)
