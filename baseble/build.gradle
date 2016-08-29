@@ -8,7 +8,7 @@ android {
         minSdkVersion 18
         targetSdkVersion 22
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     buildTypes {
         release {
@@ -16,10 +16,97 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:22.2.1'
 }
+
+/**
+ * 上传代码到jCenter库配置
+ */
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+version = "1.0.0"
+
+def siteUrl = 'https://github.com/xiaoyaoyou1212/BLE' //project homepage
+def gitUrl = 'https://github.com/xiaoyaoyou1212/BLE.git' //project git
+
+group = "com.vise.xiaoyaoyou"
+
+install{
+    repositories.mavenInstaller{
+        pom{
+            project{
+                packaging 'aar'
+                name 'Custom Common BLE Code For Android'
+                url siteUrl
+                licenses{
+                    license{
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers{
+                    developer{
+                        id 'xiaoyaoyou'
+                        name 'dawi'
+                        email '553252628@qq.com'
+                    }
+                }
+                scm{
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar){
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+/*task javadoc(type: Javadoc){
+    options.encoding = "UTF-8"
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc){
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}*/
+
+artifacts{
+//    archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('gradle.properties').newDataInputStream())
+bintray{
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg{
+        repo = "maven"
+        name = "baseble"
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
+//apply from: '../jCenter.gradle'

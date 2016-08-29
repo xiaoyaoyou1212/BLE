@@ -62,6 +62,7 @@ public class ViseBluetooth {
     private BluetoothGattDescriptor descriptor;
     private IConnectCallback connectCallback;
     private IBleCallback tempBleCallback;
+    private IBleCallback receiveBleCallback;
     private volatile Set<IBleCallback> bleCallbacks = new LinkedHashSet<>();
     private State state = State.DISCONNECT;
     private int scanTimeout = DEFAULT_SCAN_TIME;
@@ -221,8 +222,8 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (IBleCallback<BluetoothGattCharacteristic> bleCallback : bleCallbacks) {
-                        bleCallback.onSuccess(characteristic, 0);
+                    if (receiveBleCallback != null) {
+                        receiveBleCallback.onSuccess(characteristic, 0);
                     }
                 }
             });
@@ -527,9 +528,7 @@ public class ViseBluetooth {
                                                     final IBleCallback<BluetoothGattCharacteristic> bleCallback,
                                                     boolean isIndication) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-            if (bleCallbacks != null) {
-                bleCallbacks.add(bleCallback);
-            }
+            receiveBleCallback = bleCallback;
             return setCharacteristicNotification(getBluetoothGatt(), characteristic, true, isIndication);
         } else {
             if (bleCallback != null) {
@@ -550,9 +549,7 @@ public class ViseBluetooth {
     }
 
     public boolean enableDescriptorNotification(BluetoothGattDescriptor descriptor, IBleCallback<BluetoothGattDescriptor> bleCallback) {
-        if (bleCallbacks != null) {
-            bleCallbacks.add(bleCallback);
-        }
+        receiveBleCallback = bleCallback;
         return setDescriptorNotification(getBluetoothGatt(), descriptor, true);
     }
 

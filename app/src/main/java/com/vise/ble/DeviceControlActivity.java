@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.vise.baseble.ViseBluetooth;
 import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.common.State;
 import com.vise.baseble.exception.BleException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.resolver.GattAttributeResolver;
@@ -198,6 +199,11 @@ public class DeviceControlActivity extends AppCompatActivity {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
         }
+        if(viseBluetooth.getState() == State.CONNECT_PROCESS){
+            menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+        } else{
+            menu.findItem(R.id.menu_refresh).setActionView(null);
+        }
         return true;
     }
 
@@ -205,11 +211,13 @@ public class DeviceControlActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
+                invalidateOptionsMenu();
                 if(!viseBluetooth.isConnected()){
                     viseBluetooth.connect(mDevice, false, connectCallback);
                 }
                 break;
             case R.id.menu_disconnect:
+                invalidateOptionsMenu();
                 if(viseBluetooth.isConnected()){
                     viseBluetooth.disconnect();
                 }
