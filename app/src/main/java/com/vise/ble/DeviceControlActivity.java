@@ -74,6 +74,14 @@ public class DeviceControlActivity extends AppCompatActivity {
             invalidateOptionsMenu();
             clearUI();
         }
+
+        @Override
+        public void onDisconnect() {
+            BleLog.i("Disconnect!");
+            mConnectionState.setText("false");
+            invalidateOptionsMenu();
+            clearUI();
+        }
     };
 
     private IBleCallback bleCallback = new IBleCallback() {
@@ -185,6 +193,7 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ViseBluetooth.getInstance().clear();
     }
 
     @Override

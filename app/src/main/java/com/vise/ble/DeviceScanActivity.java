@@ -121,7 +121,6 @@ public class DeviceScanActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ViseBluetooth.getInstance().clear();
     }
 
     @Override

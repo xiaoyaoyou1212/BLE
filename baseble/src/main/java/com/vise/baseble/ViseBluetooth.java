@@ -119,7 +119,7 @@ public class ViseBluetooth {
                     runOnMainThread(new Runnable() {
                         @Override
                         public void run() {
-                            connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                            connectCallback.onDisconnect();
                         }
                     });
                 }
@@ -683,13 +683,10 @@ public class ViseBluetooth {
         close();
         if (bleCallbacks != null) {
             bleCallbacks.clear();
-            bleCallbacks = null;
         }
         if(handler != null){
             handler.removeCallbacksAndMessages(null);
-            handler = null;
         }
-        coreGattCallback = null;
     }
 
     /*==================get and set========================*/

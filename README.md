@@ -63,6 +63,11 @@ ViseBluetooth.getInstance().connect(bluetoothLeDevice, false, new IConnectCallba
     public void onConnectFailure(BleException exception) {
 
     }
+    
+    @Override
+    public void onDisconnect() {
+    
+    }
 });
 ```
 第二种方式是连接指定Mac地址的设备，该方式使用前不需要进行扫描，该方式直接将扫描和连接放到一起，在扫描到指定设备后自动进行连接，使用方式如下：
@@ -77,6 +82,11 @@ ViseBluetooth.getInstance().connectByMac(mac, false, new IConnectCallback() {
     public void onConnectFailure(BleException exception) {
 
     }
+    
+    @Override
+    public void onDisconnect() {
+    
+    }
 });
 ```
 第三种方式是连接指定名称的设备，该方式与第二种方式类似，使用方式如下：
@@ -90,6 +100,11 @@ ViseBluetooth.getInstance().connectByName(name, false, new IConnectCallback() {
     @Override
     public void onConnectFailure(BleException exception) {
 
+    }
+    
+    @Override
+    public void onDisconnect() {
+    
     }
 });
 ```

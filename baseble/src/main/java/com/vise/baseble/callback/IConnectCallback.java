@@ -12,4 +12,5 @@ import com.vise.baseble.exception.BleException;
 public interface IConnectCallback {
     void onConnectSuccess(BluetoothGatt gatt, int status);
     void onConnectFailure(BleException exception);
+    void onDisconnect();
 }
