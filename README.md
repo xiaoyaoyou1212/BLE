@@ -5,7 +5,7 @@ Android BLE基础操作框架，基于回调，操作简单。其中包含扫描
 ### 使用简介
 扫描包含三种方式，第一种方式是直接扫描所有设备，可以设置循环扫描，也可以设置超时时间，扫描到的设备可以添加到`BluetoothLeDeviceStore`中统一进行处理，使用方式如下：
 ```
-ViseBluetooth.getInstance(this).setScanTimeout(-1).startScan(new PeriodScanCallback() {
+ViseBluetooth.getInstance().setScanTimeout(-1).startScan(new PeriodScanCallback() {
     @Override
     public void scanTimeout() {
 
@@ -19,7 +19,7 @@ ViseBluetooth.getInstance(this).setScanTimeout(-1).startScan(new PeriodScanCallb
 ```
 第二种方式是扫描指定Mac地址的设备，一般需设置超时时间，扫描到指定设备后就停止扫描，使用方式如下：
 ```
-ViseBluetooth.getInstance(this).setScanTimeout(5000).startScan(new PeriodMacScanCallback() {
+ViseBluetooth.getInstance().setScanTimeout(5000).startScan(new PeriodMacScanCallback() {
     @Override
     public void scanTimeout() {
 
@@ -33,7 +33,7 @@ ViseBluetooth.getInstance(this).setScanTimeout(5000).startScan(new PeriodMacScan
 ```
 第三种方式是扫描指定广播名的设备，同第二种方式类似，也需设置超时时间，扫描到指定设备后也会停止扫描，使用方式如下：
 ```
-ViseBluetooth.getInstance(this).setScanTimeout(5000).startScan(new PeriodNameScanCallback() {
+ViseBluetooth.getInstance().setScanTimeout(5000).startScan(new PeriodNameScanCallback() {
     @Override
     public void scanTimeout() {
 
@@ -53,7 +53,7 @@ ViseBluetooth.getInstance(this).setScanTimeout(5000).startScan(new PeriodNameSca
 ### 使用简介
 连接与扫描一样也有三种方式，第一种方式是在扫描获取设备信息`BluetoothLeDevice`后才可使用，可设置连接超时时间，默认超时时间为10秒，使用方式如下：
 ```
-ViseBluetooth.getInstance(this).connect(bluetoothLeDevice, false, new IConnectCallback() {
+ViseBluetooth.getInstance().connect(bluetoothLeDevice, false, new IConnectCallback() {
     @Override
     public void onConnectSuccess(BluetoothGatt gatt, int status) {
 
@@ -67,7 +67,7 @@ ViseBluetooth.getInstance(this).connect(bluetoothLeDevice, false, new IConnectCa
 ```
 第二种方式是连接指定Mac地址的设备，该方式使用前不需要进行扫描，该方式直接将扫描和连接放到一起，在扫描到指定设备后自动进行连接，使用方式如下：
 ```
-ViseBluetooth.getInstance(this).connectByMac(mac, false, new IConnectCallback() {
+ViseBluetooth.getInstance().connectByMac(mac, false, new IConnectCallback() {
     @Override
     public void onConnectSuccess(BluetoothGatt gatt, int status) {
 
@@ -81,7 +81,7 @@ ViseBluetooth.getInstance(this).connectByMac(mac, false, new IConnectCallback() 
 ```
 第三种方式是连接指定名称的设备，该方式与第二种方式类似，使用方式如下：
 ```
-ViseBluetooth.getInstance(this).connectByName(name, false, new IConnectCallback() {
+ViseBluetooth.getInstance().connectByName(name, false, new IConnectCallback() {
     @Override
     public void onConnectSuccess(BluetoothGatt gatt, int status) {
 
@@ -93,7 +93,7 @@ ViseBluetooth.getInstance(this).connectByName(name, false, new IConnectCallback(
     }
 });
 ```
-连接成功后就可以进行相关处理，回调已在底层做了线程切换处理，可以直接操作视图。如果知道该设备服务的UUID，可直接调用`ViseBluetooth.getInstance(this).withUUIDString(serviceUUID, characteristicUUID, descriptorUUID);`，那么在下面操作设备时就不需要传特征(`BluetoothGattCharacteristic`)和描述(`BluetoothGattDescriptor`)相关参数，如果在连接成功后一直没设置UUID，那么在操作时则需要传该参数，该内容在下文的设备操作中会详细讲解，此处就不一一讲解了。
+连接成功后就可以进行相关处理，回调已在底层做了线程切换处理，可以直接操作视图。如果知道该设备服务的UUID，可直接调用`ViseBluetooth.getInstance().withUUIDString(serviceUUID, characteristicUUID, descriptorUUID);`，那么在下面操作设备时就不需要传特征(`BluetoothGattCharacteristic`)和描述(`BluetoothGattDescriptor`)相关参数，如果在连接成功后一直没设置UUID，那么在操作时则需要传该参数，该内容在下文的设备操作中会详细讲解，此处就不一一讲解了。
 ### 示例图
 ![设备连接](http://img.blog.csdn.net/20160828100240247)
 
@@ -159,7 +159,7 @@ for (final BluetoothGattService gattService : gattServices) {
 在获取到`BluetoothGattCharacteristic`后可进行如下操作：
 - 设置通知服务
 ```
-ViseBluetooth.getInstance(this).enableCharacteristicNotification(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
     @Override
     public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
 
@@ -173,7 +173,7 @@ ViseBluetooth.getInstance(this).enableCharacteristicNotification(characteristic,
 ```
 其中最后一个参数是设置该通知是否是指示器方式，指示器方式为有应答的通知方式，在传输时更为靠谱。如果在连接成功时已经知道该设备可通知的UUID并且已经设置成功，那么此处还可以如下设置：
 ```
-ViseBluetooth.getInstance(this).enableCharacteristicNotification(new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().enableCharacteristicNotification(new IBleCallback<BluetoothGattCharacteristic>() {
     @Override
     public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
 
@@ -187,7 +187,7 @@ ViseBluetooth.getInstance(this).enableCharacteristicNotification(new IBleCallbac
 ```
 - 读取信息
 ```
-ViseBluetooth.getInstance(this).readCharacteristic(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().readCharacteristic(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
     @Override
     public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
 
@@ -201,7 +201,7 @@ ViseBluetooth.getInstance(this).readCharacteristic(characteristic, new IBleCallb
 ```
 同上，如果已设置过可读的UUID，那么此处也可以通过如下方式读取信息：
 ```
-ViseBluetooth.getInstance(this).readCharacteristic(new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().readCharacteristic(new IBleCallback<BluetoothGattCharacteristic>() {
     @Override
     public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
 
@@ -215,7 +215,7 @@ ViseBluetooth.getInstance(this).readCharacteristic(new IBleCallback<BluetoothGat
 ```
 - 写入数据
 ```
-ViseBluetooth.getInstance(this).writeCharacteristic(characteristic, new byte[]{0x00,0x01,0x02}, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().writeCharacteristic(characteristic, new byte[]{0x00,0x01,0x02}, new IBleCallback<BluetoothGattCharacteristic>() {
     @Override
     public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
 
@@ -229,7 +229,7 @@ ViseBluetooth.getInstance(this).writeCharacteristic(characteristic, new byte[]{0
 ```
 同样，如果在连接成功时设置过可写UUID，那么此处也可以通过如下方式写入数据：
 ```
-ViseBluetooth.getInstance(this).writeCharacteristic(new byte[]{0x00,0x01,0x02}, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().writeCharacteristic(new byte[]{0x00,0x01,0x02}, new IBleCallback<BluetoothGattCharacteristic>() {
     @Override
     public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
 
@@ -247,7 +247,7 @@ ViseBluetooth.getInstance(this).writeCharacteristic(new byte[]{0x00,0x01,0x02}, 
 ![设备服务](http://img.blog.csdn.net/20160828100343826)
 
 ## 总结
-从以上的描述中可以知道，设备相关的所有操作都统一交给`ViseBluetooth`进行处理，并且该类是单例模式，全局只有一个，管理很方便，连接设备成功时会自动获得一个`BluetoothGatt`，在断开连接时会将该`BluetoothGatt`关闭，上层不用关心连接数最大为6的限制问题，只需要在需要释放资源时调用`ViseBluetooth.getInstance(this).clear();`就行，简单易用，这也正是该项目的宗旨。
+从以上的描述中可以知道，设备相关的所有操作都统一交给`ViseBluetooth`进行处理，并且该类是单例模式，全局只有一个，管理很方便。使用前必须要在Application中调用`ViseBluetooth.getInstance().init(this);`进行初始化，在连接设备成功时会自动获得一个`BluetoothGatt`，在断开连接时会将该`BluetoothGatt`关闭，上层不用关心连接数最大为6的限制问题，只需要在需要释放资源时调用`ViseBluetooth.getInstance().clear();`就行，简单易用，这也正是该项目的宗旨。
 
 ## 感谢
 在此要感谢两位作者提供的开源库[https://github.com/litesuits/android-lite-bluetoothLE](https://github.com/litesuits/android-lite-bluetoothLE)和[https://github.com/alt236/Bluetooth-LE-Library---Android](https://github.com/alt236/Bluetooth-LE-Library---Android)，这两个开源库对于本项目的完成提供了很大的帮助。
