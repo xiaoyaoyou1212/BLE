@@ -70,11 +70,11 @@ public class ViseBluetooth {
     private int operateTimeout = DEFAULT_OPERATE_TIME;
 
     private static ViseBluetooth viseBluetooth;
-    public static ViseBluetooth getInstance(Context context){
+    public static ViseBluetooth getInstance(){
         if(viseBluetooth == null){
             synchronized (ViseBluetooth.class){
                 if (viseBluetooth == null) {
-                    viseBluetooth = new ViseBluetooth(context);
+                    viseBluetooth = new ViseBluetooth();
                 }
             }
         }
@@ -85,26 +85,16 @@ public class ViseBluetooth {
         @Override
         public void handleMessage(Message msg) {
             if(msg.what == MSG_CONNECT_TIMEOUT){
-                final IConnectCallback connectCallback = (IConnectCallback) msg.obj;
+                IConnectCallback connectCallback = (IConnectCallback) msg.obj;
                 if(connectCallback != null && state != State.CONNECT_SUCCESS){
                     close();
-                    runOnMainThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            connectCallback.onConnectFailure(new TimeoutException());
-                        }
-                    });
+                    connectCallback.onConnectFailure(new TimeoutException());
                 }
             } else{
-                final IBleCallback bleCallback = (IBleCallback) msg.obj;
+                IBleCallback bleCallback = (IBleCallback) msg.obj;
                 if (bleCallback != null) {
-                    runOnMainThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            bleCallback.onFailure(new TimeoutException());
-                            removeBleCallback(bleCallback);
-                        }
-                    });
+                    bleCallback.onFailure(new TimeoutException());
+                    removeBleCallback(bleCallback);
                 }
             }
             msg.obj = null;
@@ -299,13 +289,16 @@ public class ViseBluetooth {
         }
     };
 
-    private ViseBluetooth(Context context) {
-        this.context = context;
-        bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+    private ViseBluetooth() {
+    }
+
+    public void init(Context context){
+        this.context = context.getApplicationContext();
+        bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
-    /*==================scan========================*/
+   /*==================scan========================*/
     public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback){
         if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(leScanCallback);
@@ -344,7 +337,7 @@ public class ViseBluetooth {
         }
         this.connectCallback = connectCallback;
         state = State.CONNECT_PROCESS;
-        return bluetoothDevice.connectGatt(context, autoConnect, coreGattCallback);
+        return bluetoothDevice.connectGatt(this.context, autoConnect, coreGattCallback);
     }
 
     public void connect(BluetoothLeDevice bluetoothLeDevice, boolean autoConnect, IConnectCallback connectCallback){

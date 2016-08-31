@@ -32,7 +32,6 @@ public class DeviceScanActivity extends AppCompatActivity {
     private ListView deviceLv;
     private TextView scanCountTv;
 
-    private ViseBluetooth viseBluetooth;
     private BluetoothLeDeviceStore bluetoothLeDeviceStore;
     private volatile List<BluetoothLeDevice> bluetoothLeDeviceList = new ArrayList<>();
     private DeviceAdapter adapter;
@@ -64,6 +63,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_scan);
+        ViseBluetooth.getInstance().init(getApplicationContext());
         init();
     }
 
@@ -73,7 +73,6 @@ public class DeviceScanActivity extends AppCompatActivity {
         deviceLv = (ListView) findViewById(android.R.id.list);
         scanCountTv = (TextView) findViewById(R.id.scan_device_count);
 
-        viseBluetooth = ViseBluetooth.getInstance(this);
         bluetoothLeDeviceStore = new BluetoothLeDeviceStore();
         adapter = new DeviceAdapter(this);
         deviceLv.setAdapter(adapter);
@@ -122,10 +121,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (viseBluetooth != null) {
-            viseBluetooth.clear();
-            viseBluetooth = null;
-        }
+        ViseBluetooth.getInstance().clear();
     }
 
     @Override
@@ -186,16 +182,12 @@ public class DeviceScanActivity extends AppCompatActivity {
             bluetoothLeDeviceList.clear();
             adapter.setDeviceList(bluetoothLeDeviceList);
         }
-        if (viseBluetooth != null) {
-            viseBluetooth.setScanTimeout(-1).startScan(periodScanCallback);
-        }
+        ViseBluetooth.getInstance().setScanTimeout(-1).startScan(periodScanCallback);
         invalidateOptionsMenu();
     }
 
     private void stopScan(){
-        if (viseBluetooth != null) {
-            viseBluetooth.stopScan(periodScanCallback);
-        }
+        ViseBluetooth.getInstance().stopScan(periodScanCallback);
         invalidateOptionsMenu();
     }
 
