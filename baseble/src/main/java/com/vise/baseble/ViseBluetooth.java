@@ -130,6 +130,7 @@ public class ViseBluetooth {
 
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
+            BleLog.i("onServicesDiscovered  status: " + status);
             if (handler != null) {
                 handler.removeMessages(MSG_CONNECT_TIMEOUT);
             }
@@ -160,6 +161,7 @@ public class ViseBluetooth {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
+            BleLog.i("onCharacteristicRead  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             if (bleCallbacks == null) {
                 return;
             }
@@ -183,6 +185,7 @@ public class ViseBluetooth {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
+            BleLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             if (bleCallbacks == null) {
                 return;
             }
@@ -206,6 +209,7 @@ public class ViseBluetooth {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
+            BleLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             if (bleCallbacks == null) {
                 return;
             }
@@ -221,6 +225,7 @@ public class ViseBluetooth {
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, final BluetoothGattDescriptor descriptor, final int status) {
+            BleLog.i("onDescriptorRead  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()));
             if (bleCallbacks == null) {
                 return;
             }
@@ -244,6 +249,7 @@ public class ViseBluetooth {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, final BluetoothGattDescriptor descriptor, final int status) {
+            BleLog.i("onDescriptorWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()));
             if (bleCallbacks == null) {
                 return;
             }
@@ -267,6 +273,7 @@ public class ViseBluetooth {
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, final int status) {
+            BleLog.i("onReadRemoteRssi  status: " + status + ", rssi:" + rssi);
             if (bleCallbacks == null) {
                 return;
             }
@@ -293,9 +300,11 @@ public class ViseBluetooth {
     }
 
     public void init(Context context){
-        this.context = context.getApplicationContext();
-        bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
+        if (this.context == null) {
+            this.context = context.getApplicationContext();
+            bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
+            bluetoothAdapter = bluetoothManager.getAdapter();
+        }
     }
 
    /*==================scan========================*/
