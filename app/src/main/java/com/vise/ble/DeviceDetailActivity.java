@@ -23,11 +23,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/**
- * @Description:
- * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
- * @date: 16/8/21 21:07.
- */
 public class DeviceDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_DEVICE = "extra_device";

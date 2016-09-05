@@ -13,11 +13,6 @@ import com.vise.ble.R;
 
 import java.util.List;
 
-/**
- * @Description:
- * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
- * @date: 16/8/21 17:06.
- */
 public class DeviceAdapter extends BaseAdapter {
 
     private Context context;

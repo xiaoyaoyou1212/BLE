@@ -12,11 +12,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * @Description:
- * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
- * @date: 16/8/21 21:55.
- */
 public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
     protected MergeAdapter.PieceStateRoster pieces = new MergeAdapter.PieceStateRoster();
 

@@ -104,7 +104,7 @@ public class ViseBluetooth {
     private BluetoothGattCallback coreGattCallback = new BluetoothGattCallback() {
 
         @Override
-        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, int newState) {
+        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
             BleLog.i("onConnectionStateChange  status: " + status + " ,newState: " + newState +
                     "  ,thread: " + Thread.currentThread().getId());
             if (newState == BluetoothGatt.STATE_CONNECTED) {
@@ -119,7 +119,11 @@ public class ViseBluetooth {
                     runOnMainThread(new Runnable() {
                         @Override
                         public void run() {
-                            connectCallback.onDisconnect();
+                            if(status == 0){
+                                connectCallback.onDisconnect();
+                            } else{
+                                connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                            }
                         }
                     });
                 }
@@ -210,9 +214,6 @@ public class ViseBluetooth {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             BleLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
-            if (bleCallbacks == null) {
-                return;
-            }
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {

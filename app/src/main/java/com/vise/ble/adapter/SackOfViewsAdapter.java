@@ -7,11 +7,6 @@ import android.widget.BaseAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @Description:
- * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
- * @date: 16/8/21 21:57.
- */
 public class SackOfViewsAdapter extends BaseAdapter {
     private List<View> views = null;
 

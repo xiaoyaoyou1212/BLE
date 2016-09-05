@@ -32,11 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @Description:
- * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
- * @date: 16/8/21 21:28.
- */
 public class DeviceControlActivity extends AppCompatActivity {
 
     private static final String LIST_NAME = "NAME";
@@ -60,6 +55,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         @Override
         public void onConnectSuccess(BluetoothGatt gatt, int status) {
             BleLog.i("Connect Success!");
+            Toast.makeText(DeviceControlActivity.this, "Connect Success!", Toast.LENGTH_SHORT).show();
             mConnectionState.setText("true");
             invalidateOptionsMenu();
             if(gatt != null){
@@ -70,6 +66,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         @Override
         public void onConnectFailure(BleException exception) {
             BleLog.i("Connect Failure!");
+            Toast.makeText(DeviceControlActivity.this, "Connect Failure!", Toast.LENGTH_SHORT).show();
             mConnectionState.setText("false");
             invalidateOptionsMenu();
             clearUI();
@@ -78,6 +75,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         @Override
         public void onDisconnect() {
             BleLog.i("Disconnect!");
+            Toast.makeText(DeviceControlActivity.this, "Disconnect!", Toast.LENGTH_SHORT).show();
             mConnectionState.setText("false");
             invalidateOptionsMenu();
             clearUI();
