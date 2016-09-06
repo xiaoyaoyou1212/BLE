@@ -361,7 +361,7 @@ public class ViseBluetooth {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Illegal Name!");
         }
-        startLeScan(new PeriodNameScanCallback(name) {
+        startScan(new PeriodNameScanCallback(name) {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
                 runOnMainThread(new Runnable() {
@@ -390,7 +390,7 @@ public class ViseBluetooth {
         if (mac == null || mac.split(":").length != 6) {
             throw new IllegalArgumentException("Illegal MAC!");
         }
-        startLeScan(new PeriodMacScanCallback(mac) {
+        startScan(new PeriodMacScanCallback(mac) {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
                 runOnMainThread(new Runnable() {
