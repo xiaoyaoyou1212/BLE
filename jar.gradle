@@ -1,0 +1,52 @@
+//import com.android.build.gradle.AppPlugin;
+//import proguard.gradle.ProGuardTask;
+
+task buildJar(dependsOn: ['compileReleaseJavaWithJavac'], type: Jar) {
+
+    appendix = "BLE"
+    baseName = "baseble"
+    version = "1.0.0"
+    classifier = "release"
+
+    extension = "jar"
+    archiveName = "baseble.jar"
+
+    def srcClassDir = [project.buildDir.absolutePath + "/intermediates/classes/release"];
+    from srcClassDir
+
+    exclude "com/vise/baseble/BuildConfig.class"
+    exclude "com/vise/baseble/BuildConfig\$*.class"
+    exclude "**/R.class"
+    exclude "**/R\$*.class"
+
+    include "com/vise/baseble/**/*.class"
+
+}
+
+/*task proguardJar(dependsOn: ['buildJar'], type: ProGuardTask) {
+
+    configuration android.getDefaultProguardFile('proguard-android.txt')
+    configuration 'proguard-rules.pro'
+
+    String inJar = buildJar.archivePath.getAbsolutePath()
+    injars inJar
+    outjars inJar.substring(0, inJar.lastIndexOf('/')) + "/proguard-${buildJar.archiveName}"
+
+    dontshrink
+
+    AppPlugin appPlugin = getPlugins().findPlugin(AppPlugin)
+    if (appPlugin != null) {
+        List<String> runtimeJarList
+        if (appPlugin.getMetaClass().getMetaMethod("getRuntimeJarList")) {
+            runtimeJarList = appPlugin.getRuntimeJarList()
+        } else if (android.getMetaClass().getMetaMethod("getBootClasspath")) {
+            runtimeJarList = android.getBootClasspath()
+        } else {
+            runtimeJarList = appPlugin.getBootClasspath()
+        }
+
+        for (String runtimeJar : runtimeJarList) {
+            libraryjars(runtimeJar)
+        }
+    }
+}*/
