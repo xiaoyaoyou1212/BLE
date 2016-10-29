@@ -1,5 +1,6 @@
 package com.vise.baseble;
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -8,13 +9,18 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
 import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.callback.scan.PeriodLScanCallback;
 import com.vise.baseble.callback.scan.PeriodMacScanCallback;
 import com.vise.baseble.callback.scan.PeriodNameScanCallback;
 import com.vise.baseble.callback.scan.PeriodScanCallback;
@@ -30,8 +36,10 @@ import com.vise.baseble.utils.BleLog;
 import com.vise.baseble.utils.HexUtil;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -308,7 +316,8 @@ public class ViseBluetooth {
         }
     }
 
-   /*==================scan========================*/
+    /*==================Android API 18 Scan========================*/
+    @Deprecated
     public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback){
         if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(leScanCallback);
@@ -316,12 +325,14 @@ public class ViseBluetooth {
         }
     }
 
+    @Deprecated
     public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback){
         if (bluetoothAdapter != null) {
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
     }
 
+    @Deprecated
     public void startScan(PeriodScanCallback periodScanCallback){
         if (periodScanCallback == null) {
             throw new IllegalArgumentException("this PeriodScanCallback is Null!");
@@ -329,7 +340,56 @@ public class ViseBluetooth {
         periodScanCallback.setViseBluetooth(this).setScan(true).setScanTimeout(scanTimeout).scan();
     }
 
+    @Deprecated
     public void stopScan(PeriodScanCallback periodScanCallback){
+        if (periodScanCallback == null) {
+            throw new IllegalArgumentException("this PeriodScanCallback is Null!");
+        }
+        periodScanCallback.setViseBluetooth(this).setScan(false).removeHandlerMsg().scan();
+    }
+
+    /*==================Android API 21 Scan========================*/
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void startLeScan(ScanCallback leScanCallback){
+        if (bluetoothAdapter != null) {
+            bluetoothAdapter.getBluetoothLeScanner().startScan(leScanCallback);
+            state = State.SCAN_PROCESS;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void startLeScan(List<ScanFilter> filters, ScanSettings settings, ScanCallback leScanCallback){
+        if (bluetoothAdapter != null) {
+            bluetoothAdapter.getBluetoothLeScanner().startScan(filters, settings, leScanCallback);
+            state = State.SCAN_PROCESS;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void stopLeScan(ScanCallback leScanCallback){
+        if (bluetoothAdapter != null) {
+            bluetoothAdapter.getBluetoothLeScanner().stopScan(leScanCallback);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void startScan(PeriodLScanCallback periodScanCallback){
+        if (periodScanCallback == null) {
+            throw new IllegalArgumentException("this PeriodScanCallback is Null!");
+        }
+        periodScanCallback.setViseBluetooth(this).setScan(true).setScanTimeout(scanTimeout).scan();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void startScan(List<ScanFilter> filters, ScanSettings settings, PeriodLScanCallback periodScanCallback){
+        if (periodScanCallback == null) {
+            throw new IllegalArgumentException("this PeriodScanCallback is Null!");
+        }
+        periodScanCallback.setViseBluetooth(this).setScan(true).setScanTimeout(scanTimeout).setFilters(filters).setSettings(settings).scan();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void stopScan(PeriodLScanCallback periodScanCallback){
         if (periodScanCallback == null) {
             throw new IllegalArgumentException("this PeriodScanCallback is Null!");
         }
@@ -391,6 +451,70 @@ public class ViseBluetooth {
             throw new IllegalArgumentException("Illegal MAC!");
         }
         startScan(new PeriodMacScanCallback(mac) {
+            @Override
+            public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connect(bluetoothLeDevice, autoConnect, connectCallback);
+                    }
+                });
+            }
+
+            @Override
+            public void scanTimeout() {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (connectCallback != null) {
+                            connectCallback.onConnectFailure(new TimeoutException());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void connectByLName(String name, final boolean autoConnect, final IConnectCallback connectCallback){
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Illegal Name!");
+        }
+        List<ScanFilter> bleScanFilters = new ArrayList<>();
+        bleScanFilters.add(new ScanFilter.Builder().setDeviceName(name).build());
+        startScan(bleScanFilters, null, new PeriodLScanCallback() {
+            @Override
+            public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connect(bluetoothLeDevice, autoConnect, connectCallback);
+                    }
+                });
+            }
+
+            @Override
+            public void scanTimeout() {
+                runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (connectCallback != null) {
+                            connectCallback.onConnectFailure(new TimeoutException());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void connectByLMac(String mac, final boolean autoConnect, final IConnectCallback connectCallback){
+        if (mac == null || mac.split(":").length != 6) {
+            throw new IllegalArgumentException("Illegal MAC!");
+        }
+        List<ScanFilter> bleScanFilters = new ArrayList<>();
+        bleScanFilters.add(new ScanFilter.Builder().setDeviceAddress(mac).build());
+        startScan(bleScanFilters, null, new PeriodLScanCallback() {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
                 runOnMainThread(new Runnable() {
