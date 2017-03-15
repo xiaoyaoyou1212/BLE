@@ -318,16 +318,13 @@ public class DeviceControlActivity extends AppCompatActivity {
                 if ((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
                     mCharacteristic = characteristic;
                     ((EditText) findViewById(R.id.show_write_characteristic)).setText(characteristic.getUuid().toString());
-                }
-                if((charaProp & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
+                } else if((charaProp & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
                     ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
                     ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, bleCallback, false);
-                }
-                if((charaProp & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0){
+                } else if((charaProp & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0){
                     ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
                     ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, bleCallback, true);
-                }
-                if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
                     ViseBluetooth.getInstance().readCharacteristic(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
                         @Override
                         public void onSuccess(final BluetoothGattCharacteristic characteristic, int type) {

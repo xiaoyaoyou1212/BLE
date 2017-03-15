@@ -28,7 +28,3 @@ tasks.withType(JavaCompile) {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
-
-//apply from: '../jCenter.gradle'
-//apply from: '../jar.gradle'
-apply from: '../bintray.gradle'
