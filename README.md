@@ -1,6 +1,9 @@
 # BLE
 Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。
 
+- 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
+- 项目依赖：`compile project('com.vise.xiaoyaoyou:baseble:1.0.5')`
+
 ## 设备扫描
 ### 使用简介
 扫描包含三种方式，第一种方式是直接扫描所有设备，可以设置循环扫描，也可以设置超时时间，扫描到的设备可以添加到`BluetoothLeDeviceStore`中统一进行处理，使用方式如下：
