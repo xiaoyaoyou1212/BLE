@@ -318,12 +318,6 @@ public class DeviceControlActivity extends AppCompatActivity {
                 if ((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
                     mCharacteristic = characteristic;
                     ((EditText) findViewById(R.id.show_write_characteristic)).setText(characteristic.getUuid().toString());
-                } else if((charaProp & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
-                    ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
-                    ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, bleCallback, false);
-                } else if((charaProp & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0){
-                    ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
-                    ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, bleCallback, true);
                 } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
                     ViseBluetooth.getInstance().readCharacteristic(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
                         @Override
@@ -348,6 +342,13 @@ public class DeviceControlActivity extends AppCompatActivity {
                             BleLog.i("readCharacteristic onFailure:"+exception.getDescription());
                         }
                     });
+                }
+                if((charaProp & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
+                    ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
+                    ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, bleCallback, false);
+                } else if((charaProp & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0){
+                    ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
+                    ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, bleCallback, true);
                 }
                 return true;
             }
