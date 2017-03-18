@@ -351,7 +351,7 @@ public class ViseBluetooth {
     /*==================Android API 21 Scan========================*/
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void startLeScan(ScanCallback leScanCallback){
-        if (bluetoothAdapter != null) {
+        if (bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeScanner() != null) {
             bluetoothAdapter.getBluetoothLeScanner().startScan(leScanCallback);
             state = State.SCAN_PROCESS;
         }
@@ -359,7 +359,7 @@ public class ViseBluetooth {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void startLeScan(List<ScanFilter> filters, ScanSettings settings, ScanCallback leScanCallback){
-        if (bluetoothAdapter != null) {
+        if (bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeScanner() != null) {
             bluetoothAdapter.getBluetoothLeScanner().startScan(filters, settings, leScanCallback);
             state = State.SCAN_PROCESS;
         }
@@ -367,7 +367,7 @@ public class ViseBluetooth {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void stopLeScan(ScanCallback leScanCallback){
-        if (bluetoothAdapter != null) {
+        if (bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeScanner() != null) {
             bluetoothAdapter.getBluetoothLeScanner().stopScan(leScanCallback);
         }
     }
