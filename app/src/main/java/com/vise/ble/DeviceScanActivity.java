@@ -1,8 +1,14 @@
 package com.vise.ble;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -26,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DeviceScanActivity extends AppCompatActivity {
+
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 100;
 
     private TextView supportTv;
     private TextView statusTv;
@@ -94,22 +102,18 @@ public class DeviceScanActivity extends AppCompatActivity {
         super.onResume();
         boolean isSupport = BleUtil.isSupportBle(this);
         boolean isOpenBle = BleUtil.isBleEnable(this);
-        if(isSupport){
+        if (isSupport) {
             supportTv.setText(getString(R.string.supported));
-        } else{
+        } else {
             supportTv.setText(getString(R.string.not_supported));
         }
         if (isOpenBle) {
             statusTv.setText(getString(R.string.on));
-        } else{
+        } else {
             statusTv.setText(getString(R.string.off));
         }
         invalidateOptionsMenu();
-        if(BleUtil.isBleEnable(this)){
-            startScan();
-        } else{
-            BleUtil.enableBluetooth(this, 1);
-        }
+        checkBluetoothPermission();
     }
 
     @Override
@@ -143,11 +147,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_scan:
-                if(BleUtil.isBleEnable(this)){
-                    startScan();
-                } else{
-                    BleUtil.enableBluetooth(this, 1);
-                }
+                checkBluetoothPermission();
                 break;
             case R.id.menu_stop:
                 stopScan();
@@ -161,18 +161,67 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode == RESULT_OK){
+        if (resultCode == RESULT_OK) {
             statusTv.setText(getString(R.string.on));
-            if(requestCode == 1){
+            if (requestCode == 1) {
                 startScan();
             }
-        } else if(resultCode == RESULT_CANCELED){
+        } else if (resultCode == RESULT_CANCELED) {
             finish();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void startScan(){
+    /*  校验蓝牙权限  */
+    private void checkBluetoothPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            //校验是否已具有模糊定位权限
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+            } else {
+                //具有权限
+                scanBluetooth();
+            }
+        } else {
+            //系统不高于6.0直接执行
+            scanBluetooth();
+        }
+    }
+
+    /**
+     * 对返回的值进行处理，相当于StartActivityForResult
+     */
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        doNext(requestCode, grantResults);
+    }
+
+    private void doNext(int requestCode, int[] grantResults) {
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //同意权限
+                scanBluetooth();
+            } else {
+                // 权限拒绝，提示用户开启权限
+                denyPermission();
+            }
+        }
+    }
+
+    private void denyPermission() {
+        finish();
+    }
+
+    private void scanBluetooth() {
+        if (BleUtil.isBleEnable(this)) {
+            startScan();
+        } else {
+            BleUtil.enableBluetooth(this, 1);
+        }
+    }
+
+    private void startScan() {
         updateItemCount(0);
         if (bluetoothLeDeviceStore != null) {
             bluetoothLeDeviceStore.clear();
@@ -185,7 +234,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
-    private void stopScan(){
+    private void stopScan() {
         ViseBluetooth.getInstance().stopScan(periodScanCallback);
         invalidateOptionsMenu();
     }
@@ -208,11 +257,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         textView.setPadding(dpAsPixels, dpAsPixels, dpAsPixels, dpAsPixels);
 
         Linkify.addLinks(text, Linkify.ALL);
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.menu_about)
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.ok, null)
-                .setView(textView)
-                .show();
+        new AlertDialog.Builder(this).setTitle(R.string.menu_about).setCancelable(false).setPositiveButton(android.R.string.ok, null)
+                .setView(textView).show();
     }
 }
