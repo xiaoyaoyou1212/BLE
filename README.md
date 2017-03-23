@@ -2,7 +2,27 @@
 Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
+
 - 项目依赖：`compile project('com.vise.xiaoyaoyou:baseble:1.0.5')`
+
+### 版本说明
+
+- V1.0.5
+修复Android 5.0新扫描方式可能出现的空指针异常。
+
+- V1.0.3
+增加针对Android 5.0以上系统的新扫描方式。
+
+- V1.0.2
+优化初始化方式，将Context定义为Application级别。
+
+- V1.0.1
+优化通知回调功能。
+
+- V1.0.0
+项目初始提交。
+
+版本号说明：版本号第一位为大版本更新时使用，第二位为小功能更新时使用，第三位则是用来bug修复管理。
 
 ## 设备扫描
 ### 使用简介
