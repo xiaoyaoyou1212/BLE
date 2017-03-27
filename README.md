@@ -24,6 +24,128 @@ Android BLE基础操作框架，基于回调，操作简单。其中包含扫描
 
 版本号说明：版本号第一位为大版本更新时使用，第二位为小功能更新时使用，第三位则是用来bug修复管理。
 
+### 常见问题
+
+- #### 收发数据超过20字节怎么处理？
+
+如果收发数据超过20字节，在发送时需要进行==分包处理==，接收时则需要进行==组包处理==。由于该库是基础的通信库，与数据处理等不进行挂钩，而组包一般与协议相关，故没有在该库中进行处理，而需要上层在调用数据发送和接收数据时统一进行处理。由于最近有人在使用库时问到分包的问题，故在此统一进行说明下，使用时可参考如下方式进行分包组包处理。
+
+分包处理如下：
+```
+//存储待发送的数据队列
+private Queue<byte[]> dataInfoQueue = new LinkedList<>();
+
+private Handler handler = new Handler(){
+    @Override
+    public void handleMessage(Message msg) {
+        super.handleMessage(msg);
+    }
+};
+
+private Runnable runnable = new Runnable() {
+    @Override
+    public void run() {
+        send();
+    }
+};
+
+//外部调用发送数据方法
+public void send(byte[] data) {
+    if (dataInfoQueue != null) {
+        dataInfoQueue.clear();
+        dataInfoQueue = splitPacketFor20Byte(data);
+        handler.post(runnable);
+    }
+}
+
+//实际发送数据过程
+private void send() {
+    if (dataInfoQueue != null && !dataInfoQueue.isEmpty()) {
+        //检测到发送数据，直接发送
+        if (dataInfoQueue.peek() != null) {
+            ViseBluetooth.getInstance().writeCharacteristic(dataInfoQueue.poll(), new IBleCallback<BluetoothGattCharacteristic>() {
+
+                @Override
+                public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+
+                }
+
+                @Override
+                public void onFailure(BleException exception) {
+
+                }
+            });
+        }
+        //检测还有数据，延时后继续发送，一般延时100毫秒左右
+        if (dataInfoQueue.peek() != null) {
+            handler.postDelayed(runnable, 100);
+        }
+    }
+}
+
+//数据分包处理
+private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
+    Queue<byte[]> dataInfoQueue = new LinkedList<>();
+    if (data != null) {
+        int index = 0;
+        do {
+            byte[] surplusData = new byte[data.length - index];
+            byte[] currentData;
+            System.arraycopy(data, index, surplusData, 0, data.length - index);
+            if (surplusData.length <= 20) {
+                currentData = new byte[surplusData.length];
+                System.arraycopy(surplusData, 0, currentData, 0, surplusData.length);
+                index += surplusData.length;
+            } else {
+                currentData = new byte[20];
+                System.arraycopy(data, index, currentData, 0, 20);
+                index += 20;
+            }
+            dataInfoQueue.offer(data);
+        } while (index < data.length);
+    }
+    return dataInfoQueue;
+}
+```
+
+组包处理如下所示：
+```
+private byte[] buffer = new byte[1024];
+private int bufferIndex = 0;
+
+//数据组包处理，收到数据后就调用此方法
+public void parse(byte[] bytes) {
+    if (bytes == null) {
+        return;
+    }
+    BleLog.i("receive packet:" + HexUtil.encodeHexStr(bytes));
+    if (0 != bufferIndex) {//如果当前buffer有数据，就直接拷贝
+        System.arraycopy(bytes, 0, buffer, bufferIndex, bytes.length);
+    } else {//如果没有数据，判断当前的数据头部是不是协议头，这里默认协议头是0xFF
+        if (bytes[0] == 0xFF && bufferIndex == 0) {
+            //计算数据长度，根据协议中长度字段以及协议头、校验码长度
+            bufferLength = ConvertUtil.bytesToIntHigh(new byte[]{bytes[1], bytes[2]}, 0) + 3;
+            buffer = new byte[bufferLength];
+            System.arraycopy(bytes, 0, buffer, 0, bytes.length);
+        }
+    }
+    //数据包拷进来后要移位
+    bufferIndex += bytes.length;
+    final byte[] data = new byte[bufferIndex];
+    System.arraycopy(buffer, 0, data, 0, data.length);
+    if (isRightPacket(data)) {//判断数据是否符合协议要求
+        BleLog.i("receive data:" + HexUtil.encodeHexStr(data));
+        bufferIndex = 0;//位置清零
+        receiveData(data);
+    }
+}
+
+//数据处理
+private void receiveData(byte[] data) {
+    //处理组包后的数据
+}
+```
+
 ## 设备扫描
 ### 使用简介
 扫描包含三种方式，第一种方式是直接扫描所有设备，可以设置循环扫描，也可以设置超时时间，扫描到的设备可以添加到`BluetoothLeDeviceStore`中统一进行处理，使用方式如下：
