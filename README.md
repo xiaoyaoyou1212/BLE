@@ -3,7 +3,7 @@ Android BLE基础操作框架，基于回调，操作简单。其中包含扫描
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- 项目依赖：`compile project('com.vise.xiaoyaoyou:baseble:1.0.5')`
+- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.5'`
 
 ### QQ交流群
 ![QQ群](http://img.blog.csdn.net/20170327191310083)
