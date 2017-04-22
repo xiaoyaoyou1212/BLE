@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.vise.baseble.ViseBluetooth;
+import com.vise.baseble.callback.scan.PeriodLScanCallback;
 import com.vise.baseble.callback.scan.PeriodScanCallback;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
@@ -45,6 +46,29 @@ public class DeviceScanActivity extends AppCompatActivity {
     private DeviceAdapter adapter;
 
     private PeriodScanCallback periodScanCallback = new PeriodScanCallback() {
+        @Override
+        public void scanTimeout() {
+            BleLog.i("scan timeout");
+        }
+
+        @Override
+        public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
+            if (bluetoothLeDeviceStore != null) {
+                bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
+                bluetoothLeDeviceList = bluetoothLeDeviceStore.getDeviceList();
+            }
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.setDeviceList(bluetoothLeDeviceList);
+                    updateItemCount(adapter.getCount());
+                }
+            });
+        }
+    };
+
+    private PeriodLScanCallback periodLScanCallback = new PeriodLScanCallback() {
         @Override
         public void scanTimeout() {
             BleLog.i("scan timeout");
@@ -130,16 +154,27 @@ public class DeviceScanActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.scan, menu);
-        if (periodScanCallback != null && !periodScanCallback.isScanning()) {
-            menu.findItem(R.id.menu_stop).setVisible(false);
-            menu.findItem(R.id.menu_scan).setVisible(true);
-            menu.findItem(R.id.menu_refresh).setActionView(null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (periodLScanCallback != null && !periodLScanCallback.isScanning()) {
+                menu.findItem(R.id.menu_stop).setVisible(false);
+                menu.findItem(R.id.menu_scan).setVisible(true);
+                menu.findItem(R.id.menu_refresh).setActionView(null);
+            } else {
+                menu.findItem(R.id.menu_stop).setVisible(true);
+                menu.findItem(R.id.menu_scan).setVisible(false);
+                menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+            }
         } else {
-            menu.findItem(R.id.menu_stop).setVisible(true);
-            menu.findItem(R.id.menu_scan).setVisible(false);
-            menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+            if (periodScanCallback != null && !periodScanCallback.isScanning()) {
+                menu.findItem(R.id.menu_stop).setVisible(false);
+                menu.findItem(R.id.menu_scan).setVisible(true);
+                menu.findItem(R.id.menu_refresh).setActionView(null);
+            } else {
+                menu.findItem(R.id.menu_stop).setVisible(true);
+                menu.findItem(R.id.menu_scan).setVisible(false);
+                menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);
+            }
         }
-
         return true;
     }
 
@@ -174,7 +209,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     /*  校验蓝牙权限  */
     private void checkBluetoothPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //校验是否已具有模糊定位权限
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
@@ -230,12 +265,20 @@ public class DeviceScanActivity extends AppCompatActivity {
             bluetoothLeDeviceList.clear();
             adapter.setDeviceList(bluetoothLeDeviceList);
         }
-        ViseBluetooth.getInstance().setScanTimeout(-1).startScan(periodScanCallback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ViseBluetooth.getInstance().setScanTimeout(-1).startScan(periodLScanCallback);
+        } else {
+            ViseBluetooth.getInstance().setScanTimeout(-1).startScan(periodScanCallback);
+        }
         invalidateOptionsMenu();
     }
 
     private void stopScan() {
-        ViseBluetooth.getInstance().stopScan(periodScanCallback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ViseBluetooth.getInstance().stopScan(periodLScanCallback);
+        } else {
+            ViseBluetooth.getInstance().stopScan(periodScanCallback);
+        }
         invalidateOptionsMenu();
     }
 
