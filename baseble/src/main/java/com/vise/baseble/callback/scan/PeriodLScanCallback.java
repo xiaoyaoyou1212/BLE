@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.vise.baseble.ViseBluetooth;
+import com.vise.baseble.common.BleConstant;
 import com.vise.baseble.common.State;
 import com.vise.baseble.model.BluetoothLeDevice;
 
@@ -26,7 +27,7 @@ public abstract class PeriodLScanCallback extends ScanCallback {
     protected ViseBluetooth viseBluetooth;
     protected List<ScanFilter> filters;
     protected ScanSettings settings;
-    protected int scanTimeout = -1; //-1表示一直扫描
+    protected int scanTimeout = BleConstant.TIME_FOREVER; //表示一直扫描
     protected boolean isScan = true;
     protected boolean isScanning = false;
 
@@ -67,12 +68,12 @@ public abstract class PeriodLScanCallback extends ScanCallback {
         return scanTimeout;
     }
 
-    public void scan(){
-        if(isScan){
-            if(isScanning){
+    public void scan() {
+        if (isScan) {
+            if (isScanning) {
                 return;
             }
-            if(scanTimeout > 0){
+            if (scanTimeout > 0) {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -87,13 +88,13 @@ public abstract class PeriodLScanCallback extends ScanCallback {
             }
             isScanning = true;
             if (viseBluetooth != null) {
-                if(filters != null){
+                if (filters != null) {
                     viseBluetooth.startLeScan(filters, settings, PeriodLScanCallback.this);
-                } else{
+                } else {
                     viseBluetooth.startLeScan(PeriodLScanCallback.this);
                 }
             }
-        } else{
+        } else {
             isScanning = false;
             if (viseBluetooth != null) {
                 viseBluetooth.stopLeScan(PeriodLScanCallback.this);
@@ -101,7 +102,7 @@ public abstract class PeriodLScanCallback extends ScanCallback {
         }
     }
 
-    public PeriodLScanCallback removeHandlerMsg(){
+    public PeriodLScanCallback removeHandlerMsg() {
         handler.removeCallbacksAndMessages(null);
         return this;
     }
@@ -111,7 +112,8 @@ public abstract class PeriodLScanCallback extends ScanCallback {
         if (result == null) {
             return;
         }
-        onDeviceFound(new BluetoothLeDevice(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes(), System.currentTimeMillis()));
+        onDeviceFound(new BluetoothLeDevice(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes(), System
+                .currentTimeMillis()));
     }
 
     public abstract void scanTimeout();

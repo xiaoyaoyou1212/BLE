@@ -5,7 +5,7 @@ import com.vise.baseble.exception.GattException;
 import com.vise.baseble.exception.InitiatedException;
 import com.vise.baseble.exception.OtherException;
 import com.vise.baseble.exception.TimeoutException;
-import com.vise.baseble.utils.BleLog;
+import com.vise.log.ViseLog;
 
 /**
  * @Description: 异常默认处理
@@ -15,26 +15,26 @@ import com.vise.baseble.utils.BleLog;
 public class DefaultBleExceptionHandler extends BleExceptionHandler {
     @Override
     protected void onConnectException(ConnectException e) {
-        BleLog.e(e.getDescription());
+        ViseLog.e(e.getDescription());
     }
 
     @Override
     protected void onGattException(GattException e) {
-        BleLog.e(e.getDescription());
+        ViseLog.e(e.getDescription());
     }
 
     @Override
     protected void onTimeoutException(TimeoutException e) {
-        BleLog.e(e.getDescription());
+        ViseLog.e(e.getDescription());
     }
 
     @Override
     protected void onInitiatedException(InitiatedException e) {
-        BleLog.e(e.getDescription());
+        ViseLog.e(e.getDescription());
     }
 
     @Override
     protected void onOtherException(OtherException e) {
-        BleLog.e(e.getDescription());
+        ViseLog.e(e.getDescription());
     }
 }

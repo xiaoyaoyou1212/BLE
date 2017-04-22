@@ -17,7 +17,7 @@ import java.util.Map;
  * @date: 16/8/7 21:56.
  */
 public class AdRecordUtil {
-    private AdRecordUtil(){
+    private AdRecordUtil() {
         // TO AVOID INSTANTIATION
     }
 

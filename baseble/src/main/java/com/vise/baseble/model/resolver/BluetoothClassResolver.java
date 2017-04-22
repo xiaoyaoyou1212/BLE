@@ -140,7 +140,7 @@ public class BluetoothClassResolver {
             case BluetoothClass.Device.Major.WEARABLE:
                 return "Wearable";
             default:
-                return "Unknown (" +majorBtClass+ ")";
+                return "Unknown (" + majorBtClass + ")";
         }
     }
 }

@@ -27,6 +27,7 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.vise.xiaoyaoyou:viselog:1.1.0'
 }
 
 apply from: '../bintray.gradle'

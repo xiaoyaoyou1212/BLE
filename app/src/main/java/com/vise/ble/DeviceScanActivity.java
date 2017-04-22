@@ -25,9 +25,10 @@ import com.vise.baseble.callback.scan.PeriodLScanCallback;
 import com.vise.baseble.callback.scan.PeriodScanCallback;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
-import com.vise.baseble.utils.BleLog;
 import com.vise.baseble.utils.BleUtil;
 import com.vise.ble.adapter.DeviceAdapter;
+import com.vise.log.ViseLog;
+import com.vise.log.inner.LogcatTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     private PeriodScanCallback periodScanCallback = new PeriodScanCallback() {
         @Override
         public void scanTimeout() {
-            BleLog.i("scan timeout");
+            ViseLog.i("scan timeout");
         }
 
         @Override
@@ -71,7 +72,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     private PeriodLScanCallback periodLScanCallback = new PeriodLScanCallback() {
         @Override
         public void scanTimeout() {
-            BleLog.i("scan timeout");
+            ViseLog.i("scan timeout");
         }
 
         @Override
@@ -95,6 +96,8 @@ public class DeviceScanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_scan);
+        ViseLog.getLogConfig().configAllowLog(true);
+        ViseLog.plant(new LogcatTree());
         ViseBluetooth.getInstance().init(getApplicationContext());
         init();
     }

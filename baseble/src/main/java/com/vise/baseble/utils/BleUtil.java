@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 
+import com.vise.log.ViseLog;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.UUID;
@@ -26,7 +28,7 @@ public class BleUtil {
         activity.startActivityForResult(intent, requestCode);
     }
 
-    public static boolean isSupportBle(Context context){
+    public static boolean isSupportBle(Context context) {
         if (context == null || !context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             return false;
         }
@@ -34,8 +36,8 @@ public class BleUtil {
         return manager.getAdapter() != null;
     }
 
-    public static boolean isBleEnable(Context context){
-        if(!isSupportBle(context)){
+    public static boolean isBleEnable(Context context) {
+        if (!isSupportBle(context)) {
             return false;
         }
         BluetoothManager manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -45,11 +47,11 @@ public class BleUtil {
     public static void printServices(BluetoothGatt gatt) {
         if (gatt != null) {
             for (BluetoothGattService service : gatt.getServices()) {
-                BleLog.i("service: " + service.getUuid());
+                ViseLog.i("service: " + service.getUuid());
                 for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                    BleLog.d("  characteristic: " + characteristic.getUuid() + " value: " + Arrays.toString(characteristic.getValue()));
+                    ViseLog.d("  characteristic: " + characteristic.getUuid() + " value: " + Arrays.toString(characteristic.getValue()));
                     for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                        BleLog.v("        descriptor: " + descriptor.getUuid() + " value: " + Arrays.toString(descriptor.getValue()));
+                        ViseLog.v("        descriptor: " + descriptor.getUuid() + " value: " + Arrays.toString(descriptor.getValue()));
                     }
                 }
             }
@@ -57,6 +59,7 @@ public class BleUtil {
     }
 
     /*------------  BluetoothGatt  ------------ */
+
     /**
      * Clears the device cache. After uploading new hello4 the DFU target will have other services than before.
      */
@@ -68,11 +71,11 @@ public class BleUtil {
             final Method refresh = BluetoothGatt.class.getMethod("refresh");
             if (refresh != null) {
                 final boolean success = (Boolean) refresh.invoke(gatt);
-                BleLog.i("Refreshing result: " + success);
+                ViseLog.i("Refreshing result: " + success);
                 return success;
             }
         } catch (Exception e) {
-            BleLog.e("An exception occured while refreshing device", e);
+            ViseLog.e("An exception occured while refreshing device" + e);
         }
         return false;
     }

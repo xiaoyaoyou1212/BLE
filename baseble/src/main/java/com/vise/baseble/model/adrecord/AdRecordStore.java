@@ -48,10 +48,8 @@ public class AdRecordStore implements Parcelable {
      */
     public AdRecordStore(final SparseArray<AdRecord> adRecords) {
         mAdRecords = adRecords;
-        mLocalNameComplete = AdRecordUtil.getRecordDataAsString(
-                mAdRecords.get(AdRecord.BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME));
-        mLocalNameShort = AdRecordUtil.getRecordDataAsString(
-                mAdRecords.get(AdRecord.BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME));
+        mLocalNameComplete = AdRecordUtil.getRecordDataAsString(mAdRecords.get(AdRecord.BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME));
+        mLocalNameShort = AdRecordUtil.getRecordDataAsString(mAdRecords.get(AdRecord.BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME));
 
     }
 

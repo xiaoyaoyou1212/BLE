@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.vise.baseble.ViseBluetooth;
+import com.vise.baseble.common.BleConstant;
 import com.vise.baseble.common.State;
 import com.vise.baseble.model.BluetoothLeDevice;
 
@@ -18,7 +19,7 @@ public abstract class PeriodScanCallback implements LeScanCallback {
 
     protected Handler handler = new Handler(Looper.getMainLooper());
     protected ViseBluetooth viseBluetooth;
-    protected int scanTimeout = -1; //-1表示一直扫描
+    protected int scanTimeout = BleConstant.TIME_FOREVER; //表示一直扫描
     protected boolean isScan = true;
     protected boolean isScanning = false;
 
@@ -49,12 +50,12 @@ public abstract class PeriodScanCallback implements LeScanCallback {
         return scanTimeout;
     }
 
-    public void scan(){
-        if(isScan){
-            if(isScanning){
+    public void scan() {
+        if (isScan) {
+            if (isScanning) {
                 return;
             }
-            if(scanTimeout > 0){
+            if (scanTimeout > 0) {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -71,7 +72,7 @@ public abstract class PeriodScanCallback implements LeScanCallback {
             if (viseBluetooth != null) {
                 viseBluetooth.startLeScan(PeriodScanCallback.this);
             }
-        } else{
+        } else {
             isScanning = false;
             if (viseBluetooth != null) {
                 viseBluetooth.stopLeScan(PeriodScanCallback.this);
@@ -79,7 +80,7 @@ public abstract class PeriodScanCallback implements LeScanCallback {
         }
     }
 
-    public PeriodScanCallback removeHandlerMsg(){
+    public PeriodScanCallback removeHandlerMsg() {
         handler.removeCallbacksAndMessages(null);
         return this;
     }

@@ -59,13 +59,13 @@ public class DeviceDetailActivity extends AppCompatActivity {
         tvBondingState.setText(device.getBluetoothDeviceBondState());
 
         final String supportedServices;
-        if(device.getBluetoothDeviceKnownSupportedServices().isEmpty()){
+        if (device.getBluetoothDeviceKnownSupportedServices().isEmpty()) {
             supportedServices = getString(R.string.no_known_services);
         } else {
             final StringBuilder sb = new StringBuilder();
 
-            for(final BluetoothServiceType service : device.getBluetoothDeviceKnownSupportedServices()){
-                if(sb.length() > 0){
+            for (final BluetoothServiceType service : device.getBluetoothDeviceKnownSupportedServices()) {
+                if (sb.length() > 0) {
                     sb.append(", ");
                 }
 
@@ -181,10 +181,7 @@ public class DeviceDetailActivity extends AppCompatActivity {
 
                 for (final AdRecord record : adRecords) {
 
-                    appendAdRecordView(
-                            adapter,
-                            "#" + record.getType() + " " + record.getHumanReadableType(),
-                            record);
+                    appendAdRecordView(adapter, "#" + record.getType() + " " + record.getHumanReadableType(), record);
                 }
             }
         }

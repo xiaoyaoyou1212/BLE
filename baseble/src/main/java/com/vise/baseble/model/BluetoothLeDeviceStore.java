@@ -31,11 +31,11 @@ public class BluetoothLeDeviceStore {
         }
     }
 
-    public void removeDevice(BluetoothLeDevice device){
+    public void removeDevice(BluetoothLeDevice device) {
         if (device == null) {
             return;
         }
-        if(mDeviceMap.containsKey(device.getAddress())){
+        if (mDeviceMap.containsKey(device.getAddress())) {
             mDeviceMap.remove(device.getAddress());
         }
     }

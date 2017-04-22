@@ -9,5 +9,6 @@ import com.vise.baseble.exception.BleException;
  */
 public interface IBleCallback<T> {
     void onSuccess(T t, int type);
+
     void onFailure(BleException exception);
 }

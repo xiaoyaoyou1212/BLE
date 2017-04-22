@@ -13,7 +13,7 @@ public class SackOfViewsAdapter extends BaseAdapter {
     public SackOfViewsAdapter(int count) {
         this.views = new ArrayList(count);
 
-        for(int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i) {
             this.views.add(null);
         }
 
@@ -49,7 +49,7 @@ public class SackOfViewsAdapter extends BaseAdapter {
 
     public View getView(int position, View convertView, ViewGroup parent) {
         View result = this.views.get(position);
-        if(result == null) {
+        if (result == null) {
             result = this.newView(position, parent);
             this.views.set(position, result);
         }
@@ -58,7 +58,7 @@ public class SackOfViewsAdapter extends BaseAdapter {
     }
 
     public long getItemId(int position) {
-        return (long)position;
+        return (long) position;
     }
 
     public boolean hasView(View v) {

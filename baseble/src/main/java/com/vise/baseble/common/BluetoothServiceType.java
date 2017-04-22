@@ -7,16 +7,16 @@ import android.bluetooth.BluetoothClass;
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 16/8/7 22:07.
  */
-public enum  BluetoothServiceType {
-    AUDIO(BluetoothClass.Service.AUDIO),
-    CAPTURE(BluetoothClass.Service.CAPTURE),
-    INFORMATION(BluetoothClass.Service.INFORMATION),
-    LIMITED_DISCOVERABILITY(BluetoothClass.Service.LIMITED_DISCOVERABILITY),
-    NETWORKING(BluetoothClass.Service.NETWORKING),
-    OBJECT_TRANSFER(BluetoothClass.Service.OBJECT_TRANSFER),
-    POSITIONING(BluetoothClass.Service.POSITIONING),
-    RENDER(BluetoothClass.Service.RENDER),
-    TELEPHONY(BluetoothClass.Service.TELEPHONY);
+public enum BluetoothServiceType {
+    AUDIO(BluetoothClass.Service.AUDIO),    //音频服务
+    CAPTURE(BluetoothClass.Service.CAPTURE),    //捕捉服务
+    INFORMATION(BluetoothClass.Service.INFORMATION),    //信息服务
+    LIMITED_DISCOVERABILITY(BluetoothClass.Service.LIMITED_DISCOVERABILITY),    //有限发现服务
+    NETWORKING(BluetoothClass.Service.NETWORKING),  //网络服务
+    OBJECT_TRANSFER(BluetoothClass.Service.OBJECT_TRANSFER),    //对象传输服务
+    POSITIONING(BluetoothClass.Service.POSITIONING),    //定位服务
+    RENDER(BluetoothClass.Service.RENDER),  //给予服务
+    TELEPHONY(BluetoothClass.Service.TELEPHONY);    //电话服务
 
     private int code;
 
@@ -24,7 +24,7 @@ public enum  BluetoothServiceType {
         this.code = code;
     }
 
-    public int getCode(){
+    public int getCode() {
         return this.code;
     }
 }

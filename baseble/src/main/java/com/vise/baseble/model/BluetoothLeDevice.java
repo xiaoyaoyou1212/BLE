@@ -87,8 +87,7 @@ public class BluetoothLeDevice implements Parcelable {
         mDevice = device.getDevice();
         mFirstRssi = device.getFirstRssi();
         mFirstTimestamp = device.getFirstTimestamp();
-        mRecordStore = new AdRecordStore(
-                AdRecordUtil.parseScanRecordAsSparseArray(device.getScanRecord()));
+        mRecordStore = new AdRecordStore(AdRecordUtil.parseScanRecordAsSparseArray(device.getScanRecord()));
         mRssiLog = device.getRssiLog();
         mScanRecord = device.getScanRecord();
     }
@@ -142,38 +141,24 @@ public class BluetoothLeDevice implements Parcelable {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         final BluetoothLeDevice other = (BluetoothLeDevice) obj;
-        if (mCurrentRssi != other.mCurrentRssi)
-            return false;
-        if (mCurrentTimestamp != other.mCurrentTimestamp)
-            return false;
+        if (mCurrentRssi != other.mCurrentRssi) return false;
+        if (mCurrentTimestamp != other.mCurrentTimestamp) return false;
         if (mDevice == null) {
-            if (other.mDevice != null)
-                return false;
-        } else if (!mDevice.equals(other.mDevice))
-            return false;
-        if (mFirstRssi != other.mFirstRssi)
-            return false;
-        if (mFirstTimestamp != other.mFirstTimestamp)
-            return false;
+            if (other.mDevice != null) return false;
+        } else if (!mDevice.equals(other.mDevice)) return false;
+        if (mFirstRssi != other.mFirstRssi) return false;
+        if (mFirstTimestamp != other.mFirstTimestamp) return false;
         if (mRecordStore == null) {
-            if (other.mRecordStore != null)
-                return false;
-        } else if (!mRecordStore.equals(other.mRecordStore))
-            return false;
+            if (other.mRecordStore != null) return false;
+        } else if (!mRecordStore.equals(other.mRecordStore)) return false;
         if (mRssiLog == null) {
-            if (other.mRssiLog != null)
-                return false;
-        } else if (!mRssiLog.equals(other.mRssiLog))
-            return false;
-        if (!Arrays.equals(mScanRecord, other.mScanRecord))
-            return false;
+            if (other.mRssiLog != null) return false;
+        } else if (!mRssiLog.equals(other.mRssiLog)) return false;
+        if (!Arrays.equals(mScanRecord, other.mScanRecord)) return false;
         return true;
     }
 

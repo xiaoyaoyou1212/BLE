@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
+public class MergeAdapter extends BaseAdapter implements SectionIndexer {
     protected MergeAdapter.PieceStateRoster pieces = new MergeAdapter.PieceStateRoster();
 
     public MergeAdapter() {
@@ -38,7 +38,7 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
     }
 
     public void addViews(List<View> views, boolean enabled) {
-        if(enabled) {
+        if (enabled) {
             this.addAdapter(new MergeAdapter.EnabledSackAdapter(views));
         } else {
             this.addAdapter(new SackOfViewsAdapter(views));
@@ -48,10 +48,10 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
 
     public Object getItem(int position) {
         int size;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
-            ListAdapter piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
+            ListAdapter piece = (ListAdapter) i$.next();
             size = piece.getCount();
-            if(position < size) {
+            if (position < size) {
                 return piece.getItem(position);
             }
         }
@@ -61,10 +61,10 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
 
     public ListAdapter getAdapter(int position) {
         int size;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
-            ListAdapter piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
+            ListAdapter piece = (ListAdapter) i$.next();
             size = piece.getCount();
-            if(position < size) {
+            if (position < size) {
                 return piece;
             }
         }
@@ -76,8 +76,8 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         int total = 0;
 
         ListAdapter piece;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); total += piece.getCount()) {
-            piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); total += piece.getCount()) {
+            piece = (ListAdapter) i$.next();
         }
 
         return total;
@@ -87,8 +87,8 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         int total = 0;
 
         MergeAdapter.PieceState piece;
-        for(Iterator i$ = this.pieces.getRawPieces().iterator(); i$.hasNext(); total += piece.adapter.getViewTypeCount()) {
-            piece = (MergeAdapter.PieceState)i$.next();
+        for (Iterator i$ = this.pieces.getRawPieces().iterator(); i$.hasNext(); total += piece.adapter.getViewTypeCount()) {
+            piece = (MergeAdapter.PieceState) i$.next();
         }
 
         return Math.max(total, 1);
@@ -99,11 +99,11 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         int result = -1;
 
         MergeAdapter.PieceState piece;
-        for(Iterator i$ = this.pieces.getRawPieces().iterator(); i$.hasNext(); typeOffset += piece.adapter.getViewTypeCount()) {
-            piece = (MergeAdapter.PieceState)i$.next();
-            if(piece.isActive) {
+        for (Iterator i$ = this.pieces.getRawPieces().iterator(); i$.hasNext(); typeOffset += piece.adapter.getViewTypeCount()) {
+            piece = (MergeAdapter.PieceState) i$.next();
+            if (piece.isActive) {
                 int size = piece.adapter.getCount();
-                if(position < size) {
+                if (position < size) {
                     result = typeOffset + piece.adapter.getItemViewType(position);
                     break;
                 }
@@ -121,10 +121,10 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
 
     public boolean isEnabled(int position) {
         int size;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
-            ListAdapter piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
+            ListAdapter piece = (ListAdapter) i$.next();
             size = piece.getCount();
-            if(position < size) {
+            if (position < size) {
                 return piece.isEnabled(position);
             }
         }
@@ -134,10 +134,10 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
 
     public View getView(int position, View convertView, ViewGroup parent) {
         int size;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
-            ListAdapter piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
+            ListAdapter piece = (ListAdapter) i$.next();
             size = piece.getCount();
-            if(position < size) {
+            if (position < size) {
                 return piece.getView(position, convertView, parent);
             }
         }
@@ -147,10 +147,10 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
 
     public long getItemId(int position) {
         int size;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
-            ListAdapter piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
+            ListAdapter piece = (ListAdapter) i$.next();
             size = piece.getCount();
-            if(position < size) {
+            if (position < size) {
                 return piece.getItemId(position);
             }
         }
@@ -162,20 +162,20 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         int position = 0;
 
         ListAdapter piece;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position += piece.getCount()) {
-            piece = (ListAdapter)i$.next();
-            if(piece instanceof SectionIndexer) {
-                Object[] sections = ((SectionIndexer)piece).getSections();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position += piece.getCount()) {
+            piece = (ListAdapter) i$.next();
+            if (piece instanceof SectionIndexer) {
+                Object[] sections = ((SectionIndexer) piece).getSections();
                 int numSections = 0;
-                if(sections != null) {
+                if (sections != null) {
                     numSections = sections.length;
                 }
 
-                if(section < numSections) {
-                    return position + ((SectionIndexer)piece).getPositionForSection(section);
+                if (section < numSections) {
+                    return position + ((SectionIndexer) piece).getPositionForSection(section);
                 }
 
-                if(sections != null) {
+                if (sections != null) {
                     section -= numSections;
                 }
             }
@@ -188,20 +188,20 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         int section = 0;
 
         int size;
-        for(Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
-            ListAdapter piece = (ListAdapter)i$.next();
+        for (Iterator i$ = this.getPieces().iterator(); i$.hasNext(); position -= size) {
+            ListAdapter piece = (ListAdapter) i$.next();
             size = piece.getCount();
-            if(position < size) {
-                if(piece instanceof SectionIndexer) {
-                    return section + ((SectionIndexer)piece).getSectionForPosition(position);
+            if (position < size) {
+                if (piece instanceof SectionIndexer) {
+                    return section + ((SectionIndexer) piece).getSectionForPosition(position);
                 }
 
                 return 0;
             }
 
-            if(piece instanceof SectionIndexer) {
-                Object[] sections = ((SectionIndexer)piece).getSections();
-                if(sections != null) {
+            if (piece instanceof SectionIndexer) {
+                Object[] sections = ((SectionIndexer) piece).getSections();
+                if (sections != null) {
                     section += sections.length;
                 }
             }
@@ -214,17 +214,17 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         ArrayList sections = new ArrayList();
         Iterator i$ = this.getPieces().iterator();
 
-        while(i$.hasNext()) {
-            ListAdapter piece = (ListAdapter)i$.next();
-            if(piece instanceof SectionIndexer) {
-                Object[] curSections = ((SectionIndexer)piece).getSections();
-                if(curSections != null) {
+        while (i$.hasNext()) {
+            ListAdapter piece = (ListAdapter) i$.next();
+            if (piece instanceof SectionIndexer) {
+                Object[] curSections = ((SectionIndexer) piece).getSections();
+                if (curSections != null) {
                     Collections.addAll(sections, curSections);
                 }
             }
         }
 
-        if(sections.size() == 0) {
+        if (sections.size() == 0) {
             return new String[0];
         } else {
             return sections.toArray(new Object[sections.size()]);
@@ -288,9 +288,9 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         void setActive(ListAdapter adapter, boolean isActive) {
             Iterator i$ = this.pieces.iterator();
 
-            while(i$.hasNext()) {
-                MergeAdapter.PieceState state = (MergeAdapter.PieceState)i$.next();
-                if(state.adapter == adapter) {
+            while (i$.hasNext()) {
+                MergeAdapter.PieceState state = (MergeAdapter.PieceState) i$.next();
+                if (state.adapter == adapter) {
                     state.isActive = isActive;
                     this.active = null;
                     break;
@@ -302,9 +302,9 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         void setActive(View v, boolean isActive) {
             Iterator i$ = this.pieces.iterator();
 
-            while(i$.hasNext()) {
-                MergeAdapter.PieceState state = (MergeAdapter.PieceState)i$.next();
-                if(state.adapter instanceof SackOfViewsAdapter && ((SackOfViewsAdapter)state.adapter).hasView(v)) {
+            while (i$.hasNext()) {
+                MergeAdapter.PieceState state = (MergeAdapter.PieceState) i$.next();
+                if (state.adapter instanceof SackOfViewsAdapter && ((SackOfViewsAdapter) state.adapter).hasView(v)) {
                     state.isActive = isActive;
                     this.active = null;
                     break;
@@ -318,13 +318,13 @@ public class MergeAdapter extends BaseAdapter implements SectionIndexer  {
         }
 
         List<ListAdapter> getPieces() {
-            if(this.active == null) {
+            if (this.active == null) {
                 this.active = new ArrayList();
                 Iterator i$ = this.pieces.iterator();
 
-                while(i$.hasNext()) {
-                    MergeAdapter.PieceState state = (MergeAdapter.PieceState)i$.next();
-                    if(state.isActive) {
+                while (i$.hasNext()) {
+                    MergeAdapter.PieceState state = (MergeAdapter.PieceState) i$.next();
+                    if (state.isActive) {
                         this.active.add(state.adapter);
                     }
                 }
