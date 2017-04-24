@@ -286,6 +286,8 @@ public class DeviceControlActivity extends AppCompatActivity {
         mOutput.setText("");
         ((EditText) findViewById(R.id.show_write_characteristic)).setText("");
         ((EditText) findViewById(R.id.show_notify_characteristic)).setText("");
+        mOutputInfo = new StringBuilder();
+        simpleExpandableListAdapter = null;
     }
 
     private void showGattServices() {
