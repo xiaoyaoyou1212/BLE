@@ -18,8 +18,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.callback.data.IBleCallback;
+import com.vise.baseble.callback.data.ICharacteristicCallback;
+import com.vise.baseble.callback.data.IDescriptorCallback;
+import com.vise.baseble.callback.data.IRssiCallback;
 import com.vise.baseble.callback.scan.PeriodLScanCallback;
 import com.vise.baseble.callback.scan.PeriodMacScanCallback;
 import com.vise.baseble.callback.scan.PeriodNameScanCallback;
@@ -68,8 +71,8 @@ public class ViseBluetooth {
     private BluetoothGattCharacteristic characteristic;
     private BluetoothGattDescriptor descriptor;
     private IConnectCallback connectCallback;
+    private ICharacteristicCallback receiveCallback;
     private IBleCallback tempBleCallback;
-    private IBleCallback receiveBleCallback;
     private volatile Set<IBleCallback> bleCallbacks = new LinkedHashSet<>();
     private State state = State.DISCONNECT;
     private int scanTimeout = DEFAULT_SCAN_TIME;
@@ -184,11 +187,13 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (IBleCallback<BluetoothGattCharacteristic> bleCallback : bleCallbacks) {
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            bleCallback.onSuccess(characteristic, 0);
-                        } else {
-                            bleCallback.onFailure(new GattException(status));
+                    for (IBleCallback bleCallback : bleCallbacks) {
+                        if (bleCallback instanceof ICharacteristicCallback) {
+                            if (status == BluetoothGatt.GATT_SUCCESS) {
+                                ((ICharacteristicCallback) bleCallback).onSuccess(characteristic);
+                            } else {
+                                bleCallback.onFailure(new GattException(status));
+                            }
                         }
                     }
                     removeBleCallback(tempBleCallback);
@@ -208,11 +213,13 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (IBleCallback<BluetoothGattCharacteristic> bleCallback : bleCallbacks) {
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            bleCallback.onSuccess(characteristic, 0);
-                        } else {
-                            bleCallback.onFailure(new GattException(status));
+                    for (IBleCallback bleCallback : bleCallbacks) {
+                        if (bleCallback instanceof ICharacteristicCallback) {
+                            if (status == BluetoothGatt.GATT_SUCCESS) {
+                                ((ICharacteristicCallback) bleCallback).onSuccess(characteristic);
+                            } else {
+                                bleCallback.onFailure(new GattException(status));
+                            }
                         }
                     }
                     removeBleCallback(tempBleCallback);
@@ -226,8 +233,8 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (receiveBleCallback != null) {
-                        receiveBleCallback.onSuccess(characteristic, 0);
+                    if (receiveCallback != null) {
+                        receiveCallback.onSuccess(characteristic);
                     }
                 }
             });
@@ -245,11 +252,13 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (IBleCallback<BluetoothGattDescriptor> bleCallback : bleCallbacks) {
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            bleCallback.onSuccess(descriptor, 0);
-                        } else {
-                            bleCallback.onFailure(new GattException(status));
+                    for (IBleCallback bleCallback : bleCallbacks) {
+                        if (bleCallback instanceof IDescriptorCallback) {
+                            if (status == BluetoothGatt.GATT_SUCCESS) {
+                                ((IDescriptorCallback) bleCallback).onSuccess(descriptor);
+                            } else {
+                                bleCallback.onFailure(new GattException(status));
+                            }
                         }
                     }
                     removeBleCallback(tempBleCallback);
@@ -269,11 +278,13 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (IBleCallback<BluetoothGattDescriptor> bleCallback : bleCallbacks) {
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            bleCallback.onSuccess(descriptor, 0);
-                        } else {
-                            bleCallback.onFailure(new GattException(status));
+                    for (IBleCallback bleCallback : bleCallbacks) {
+                        if (bleCallback instanceof IDescriptorCallback) {
+                            if (status == BluetoothGatt.GATT_SUCCESS) {
+                                ((IDescriptorCallback) bleCallback).onSuccess(descriptor);
+                            } else {
+                                bleCallback.onFailure(new GattException(status));
+                            }
                         }
                     }
                     removeBleCallback(tempBleCallback);
@@ -293,11 +304,13 @@ public class ViseBluetooth {
             runOnMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    for (IBleCallback<Integer> bleCallback : bleCallbacks) {
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            bleCallback.onSuccess(rssi, 0);
-                        } else {
-                            bleCallback.onFailure(new GattException(status));
+                    for (IBleCallback bleCallback : bleCallbacks) {
+                        if (bleCallback instanceof IRssiCallback) {
+                            if (status == BluetoothGatt.GATT_SUCCESS) {
+                                ((IRssiCallback) bleCallback).onSuccess(rssi);
+                            } else {
+                                bleCallback.onFailure(new GattException(status));
+                            }
                         }
                     }
                     removeBleCallback(tempBleCallback);
@@ -563,12 +576,11 @@ public class ViseBluetooth {
         return uuid == null ? null : UUID.fromString(uuid);
     }
 
-    public boolean writeCharacteristic(byte[] data, IBleCallback<BluetoothGattCharacteristic> bleCallback) {
+    public boolean writeCharacteristic(byte[] data, ICharacteristicCallback bleCallback) {
         return writeCharacteristic(getCharacteristic(), data, bleCallback);
     }
 
-    public boolean writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data, final
-    IBleCallback<BluetoothGattCharacteristic> bleCallback) {
+    public boolean writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data, final ICharacteristicCallback bleCallback) {
         if (characteristic == null) {
             if (bleCallback != null) {
                 runOnMainThread(new Runnable() {
@@ -588,12 +600,11 @@ public class ViseBluetooth {
         return handleAfterInitialed(getBluetoothGatt().writeCharacteristic(characteristic), bleCallback);
     }
 
-    public boolean writeDescriptor(byte[] data, IBleCallback<BluetoothGattDescriptor> bleCallback) {
+    public boolean writeDescriptor(byte[] data, IDescriptorCallback bleCallback) {
         return writeDescriptor(getDescriptor(), data, bleCallback);
     }
 
-    public boolean writeDescriptor(BluetoothGattDescriptor descriptor, byte[] data, final IBleCallback<BluetoothGattDescriptor>
-            bleCallback) {
+    public boolean writeDescriptor(BluetoothGattDescriptor descriptor, byte[] data, final IDescriptorCallback bleCallback) {
         if (descriptor == null) {
             if (bleCallback != null) {
                 runOnMainThread(new Runnable() {
@@ -612,12 +623,11 @@ public class ViseBluetooth {
         return handleAfterInitialed(getBluetoothGatt().writeDescriptor(descriptor), bleCallback);
     }
 
-    public boolean readCharacteristic(IBleCallback<BluetoothGattCharacteristic> bleCallback) {
+    public boolean readCharacteristic(ICharacteristicCallback bleCallback) {
         return readCharacteristic(getCharacteristic(), bleCallback);
     }
 
-    public boolean readCharacteristic(BluetoothGattCharacteristic characteristic, final IBleCallback<BluetoothGattCharacteristic>
-            bleCallback) {
+    public boolean readCharacteristic(BluetoothGattCharacteristic characteristic, final ICharacteristicCallback bleCallback) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
             setCharacteristicNotification(getBluetoothGatt(), characteristic, false, false);
             listenAndTimer(bleCallback, MSG_READ_CHA);
@@ -636,28 +646,28 @@ public class ViseBluetooth {
         }
     }
 
-    public boolean readDescriptor(IBleCallback<BluetoothGattDescriptor> bleCallback) {
+    public boolean readDescriptor(IDescriptorCallback bleCallback) {
         return readDescriptor(getDescriptor(), bleCallback);
     }
 
-    public boolean readDescriptor(BluetoothGattDescriptor descriptor, IBleCallback<BluetoothGattDescriptor> bleCallback) {
+    public boolean readDescriptor(BluetoothGattDescriptor descriptor, IDescriptorCallback bleCallback) {
         listenAndTimer(bleCallback, MSG_READ_DES);
         return handleAfterInitialed(getBluetoothGatt().readDescriptor(descriptor), bleCallback);
     }
 
-    public boolean readRemoteRssi(IBleCallback<Integer> bleCallback) {
+    public boolean readRemoteRssi(IRssiCallback bleCallback) {
         listenAndTimer(bleCallback, MSG_READ_RSSI);
         return handleAfterInitialed(getBluetoothGatt().readRemoteRssi(), bleCallback);
     }
 
-    public boolean enableCharacteristicNotification(IBleCallback<BluetoothGattCharacteristic> bleCallback, boolean isIndication) {
+    public boolean enableCharacteristicNotification(ICharacteristicCallback bleCallback, boolean isIndication) {
         return enableCharacteristicNotification(getCharacteristic(), bleCallback, isIndication);
     }
 
-    public boolean enableCharacteristicNotification(BluetoothGattCharacteristic characteristic, final
-    IBleCallback<BluetoothGattCharacteristic> bleCallback, boolean isIndication) {
+    public boolean enableCharacteristicNotification(BluetoothGattCharacteristic characteristic, final ICharacteristicCallback
+            bleCallback, boolean isIndication) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-            receiveBleCallback = bleCallback;
+            receiveCallback = bleCallback;
             return setCharacteristicNotification(getBluetoothGatt(), characteristic, true, isIndication);
         } else {
             if (bleCallback != null) {
@@ -671,15 +681,6 @@ public class ViseBluetooth {
             }
             return false;
         }
-    }
-
-    public boolean enableDescriptorNotification(IBleCallback<BluetoothGattDescriptor> bleCallback) {
-        return enableDescriptorNotification(getDescriptor(), bleCallback);
-    }
-
-    public boolean enableDescriptorNotification(BluetoothGattDescriptor descriptor, IBleCallback<BluetoothGattDescriptor> bleCallback) {
-        receiveBleCallback = bleCallback;
-        return setDescriptorNotification(getBluetoothGatt(), descriptor, true);
     }
 
     public boolean setNotification(boolean enable, boolean isIndication) {
