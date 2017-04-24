@@ -1,6 +1,7 @@
 package com.vise.ble;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -46,30 +47,8 @@ public class DeviceScanActivity extends AppCompatActivity {
     private volatile List<BluetoothLeDevice> bluetoothLeDeviceList = new ArrayList<>();
     private DeviceAdapter adapter;
 
+    private PeriodLScanCallback periodLScanCallback;
     private PeriodScanCallback periodScanCallback = new PeriodScanCallback() {
-        @Override
-        public void scanTimeout() {
-            ViseLog.i("scan timeout");
-        }
-
-        @Override
-        public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
-            if (bluetoothLeDeviceStore != null) {
-                bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
-                bluetoothLeDeviceList = bluetoothLeDeviceStore.getDeviceList();
-            }
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.setDeviceList(bluetoothLeDeviceList);
-                    updateItemCount(adapter.getCount());
-                }
-            });
-        }
-    };
-
-    private PeriodLScanCallback periodLScanCallback = new PeriodLScanCallback() {
         @Override
         public void scanTimeout() {
             ViseLog.i("scan timeout");
@@ -122,6 +101,31 @@ public class DeviceScanActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            periodLScanCallback = new PeriodLScanCallback() {
+                @Override
+                public void scanTimeout() {
+                    ViseLog.i("scan timeout");
+                }
+
+                @Override
+                public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
+                    if (bluetoothLeDeviceStore != null) {
+                        bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
+                        bluetoothLeDeviceList = bluetoothLeDeviceStore.getDeviceList();
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter.setDeviceList(bluetoothLeDeviceList);
+                            updateItemCount(adapter.getCount());
+                        }
+                    });
+                }
+            };
+        }
     }
 
     @Override

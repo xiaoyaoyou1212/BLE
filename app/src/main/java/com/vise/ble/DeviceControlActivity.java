@@ -18,8 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vise.baseble.ViseBluetooth;
-import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.callback.data.ICharacteristicCallback;
 import com.vise.baseble.common.State;
 import com.vise.baseble.exception.BleException;
 import com.vise.baseble.model.BluetoothLeDevice;
@@ -82,20 +82,15 @@ public class DeviceControlActivity extends AppCompatActivity {
         }
     };
 
-    private IBleCallback bleCallback = new IBleCallback() {
+    private ICharacteristicCallback bleCallback = new ICharacteristicCallback() {
         @Override
-        public void onSuccess(Object o, int type) {
-            if (o == null) {
+        public void onSuccess(BluetoothGattCharacteristic characteristic) {
+            if (characteristic == null || characteristic.getValue() == null) {
                 return;
             }
-            if (o instanceof BluetoothGattCharacteristic) {
-                if (((BluetoothGattCharacteristic) o).getValue() == null) {
-                    return;
-                }
-                ViseLog.i("notify success:" + HexUtil.encodeHexStr(((BluetoothGattCharacteristic) o).getValue()));
-                mOutputInfo.append(HexUtil.encodeHexStr(((BluetoothGattCharacteristic) o).getValue())).append("\n");
-                mOutput.setText(mOutputInfo.toString());
-            }
+            ViseLog.i("notify success:" + HexUtil.encodeHexStr(characteristic.getValue()));
+            mOutputInfo.append(HexUtil.encodeHexStr(characteristic.getValue())).append("\n");
+            mOutput.setText(mOutputInfo.toString());
         }
 
         @Override
@@ -162,9 +157,9 @@ public class DeviceControlActivity extends AppCompatActivity {
                     return;
                 }
                 ViseBluetooth.getInstance().writeCharacteristic(mCharacteristic, HexUtil.decodeHex(mInput.getText().toString()
-                        .toCharArray()), new IBleCallback<BluetoothGattCharacteristic>() {
+                        .toCharArray()), new ICharacteristicCallback() {
                     @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic, int type) {
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
                         ViseLog.i("Send onSuccess!");
                     }
 
@@ -313,9 +308,9 @@ public class DeviceControlActivity extends AppCompatActivity {
                     mCharacteristic = characteristic;
                     ((EditText) findViewById(R.id.show_write_characteristic)).setText(characteristic.getUuid().toString());
                 } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                    ViseBluetooth.getInstance().readCharacteristic(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
+                    ViseBluetooth.getInstance().readCharacteristic(characteristic, new ICharacteristicCallback() {
                         @Override
-                        public void onSuccess(final BluetoothGattCharacteristic characteristic, int type) {
+                        public void onSuccess(final BluetoothGattCharacteristic characteristic) {
                             if (characteristic == null) {
                                 return;
                             }
