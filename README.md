@@ -3,12 +3,15 @@ Android BLE基础操作框架，基于回调，操作简单。其中包含扫描
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.6'`
+- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.7'`
 
 ### QQ交流群
 ![QQ群](http://img.blog.csdn.net/20170327191310083)
 
 ### 版本说明
+- V1.0.7
+    - 增加根据特定条件过滤扫描列表的回调，可以根据信号强度过滤，也可以根据设备名称正则过滤。
+
 - V1.0.6
     - 修改日志打印，使用ViseLog库作为日志打印基础库，日志管理更方便；
     - 修改数据操作回调相关，将IBleCallback进行拆分，此处使用泛型不太合理，故去掉泛型操作，防止出现类转换异常。
