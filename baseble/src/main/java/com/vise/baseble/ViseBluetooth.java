@@ -78,6 +78,7 @@ public class ViseBluetooth {
     private int scanTimeout = DEFAULT_SCAN_TIME;
     private int connectTimeout = DEFAULT_CONN_TIME;
     private int operateTimeout = DEFAULT_OPERATE_TIME;
+    private boolean isFound = false;
 
     private static ViseBluetooth viseBluetooth;
 
@@ -331,7 +332,6 @@ public class ViseBluetooth {
     }
 
     /*==================Android API 18 Scan========================*/
-    @Deprecated
     public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(leScanCallback);
@@ -339,14 +339,12 @@ public class ViseBluetooth {
         }
     }
 
-    @Deprecated
     public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
     }
 
-    @Deprecated
     public void startScan(PeriodScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
             throw new IllegalArgumentException("this PeriodScanCallback is Null!");
@@ -354,7 +352,6 @@ public class ViseBluetooth {
         periodScanCallback.setViseBluetooth(this).setScan(true).setScanTimeout(scanTimeout).scan();
     }
 
-    @Deprecated
     public void stopScan(PeriodScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
             throw new IllegalArgumentException("this PeriodScanCallback is Null!");
@@ -436,9 +433,11 @@ public class ViseBluetooth {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Illegal Name!");
         }
+        isFound = false;
         startScan(new PeriodNameScanCallback(name) {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
+                isFound = true;
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -449,6 +448,10 @@ public class ViseBluetooth {
 
             @Override
             public void scanTimeout() {
+                if (isFound) {
+                    isFound = false;
+                    return;
+                }
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -465,9 +468,11 @@ public class ViseBluetooth {
         if (mac == null || mac.split(":").length != 6) {
             throw new IllegalArgumentException("Illegal MAC!");
         }
+        isFound = false;
         startScan(new PeriodMacScanCallback(mac) {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
+                isFound = true;
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -478,6 +483,10 @@ public class ViseBluetooth {
 
             @Override
             public void scanTimeout() {
+                if (isFound) {
+                    isFound = false;
+                    return;
+                }
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -495,11 +504,13 @@ public class ViseBluetooth {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Illegal Name!");
         }
+        isFound = false;
         List<ScanFilter> bleScanFilters = new ArrayList<>();
         bleScanFilters.add(new ScanFilter.Builder().setDeviceName(name).build());
         startScan(bleScanFilters, null, new PeriodLScanCallback() {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
+                isFound = true;
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -510,6 +521,10 @@ public class ViseBluetooth {
 
             @Override
             public void scanTimeout() {
+                if (isFound) {
+                    isFound = false;
+                    return;
+                }
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -527,11 +542,13 @@ public class ViseBluetooth {
         if (mac == null || mac.split(":").length != 6) {
             throw new IllegalArgumentException("Illegal MAC!");
         }
+        isFound = false;
         List<ScanFilter> bleScanFilters = new ArrayList<>();
         bleScanFilters.add(new ScanFilter.Builder().setDeviceAddress(mac).build());
         startScan(bleScanFilters, null, new PeriodLScanCallback() {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
+                isFound = true;
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -542,6 +559,10 @@ public class ViseBluetooth {
 
             @Override
             public void scanTimeout() {
+                if (isFound) {
+                    isFound = false;
+                    return;
+                }
                 runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
