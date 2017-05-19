@@ -102,6 +102,11 @@ public class DeviceScanActivity extends AppCompatActivity {
             }
         });
 
+        /**
+         * 注：增加这个扫描回调处理是为了演示在使用5.0新API上的使用示例
+         * 以前的扫描方式完全可以在5.0以上系统使用，此项目中也做了一定的封装，
+         * 基本也能达到新API中扫描方式的大部分功能。
+         */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             periodLScanCallback = new PeriodLScanCallback() {
                 @Override

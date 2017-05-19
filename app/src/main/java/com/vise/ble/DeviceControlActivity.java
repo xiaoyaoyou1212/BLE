@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -29,8 +31,10 @@ import com.vise.log.ViseLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 public class DeviceControlActivity extends AppCompatActivity {
 
@@ -50,6 +54,73 @@ public class DeviceControlActivity extends AppCompatActivity {
     private BluetoothGattCharacteristic mCharacteristic;
     private StringBuilder mOutputInfo = new StringBuilder();
     private List<List<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
+
+    private Queue<byte[]> dataInfoQueue = new LinkedList<>();
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+        }
+    };
+
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            send();
+        }
+    };
+
+    private void send(byte[] data) {
+        if (dataInfoQueue != null) {
+            dataInfoQueue.clear();
+            dataInfoQueue = splitPacketFor20Byte(data);
+            handler.post(runnable);
+        }
+    }
+
+    private void send() {
+        if (dataInfoQueue != null && !dataInfoQueue.isEmpty()) {
+            if (dataInfoQueue.peek() != null) {
+                ViseBluetooth.getInstance().writeCharacteristic(mCharacteristic, dataInfoQueue.poll(), new ICharacteristicCallback() {
+                    @Override
+                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
+                        ViseLog.i("Send onSuccess!");
+                    }
+
+                    @Override
+                    public void onFailure(BleException exception) {
+                        ViseLog.i("Send onFail!");
+                    }
+                });
+            }
+            if (dataInfoQueue.peek() != null) {
+                handler.postDelayed(runnable, 100);
+            }
+        }
+    }
+
+    private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
+        Queue<byte[]> dataInfoQueue = new LinkedList<>();
+        if (data != null) {
+            int index = 0;
+            do {
+                byte[] surplusData = new byte[data.length - index];
+                byte[] currentData;
+                System.arraycopy(data, index, surplusData, 0, data.length - index);
+                if (surplusData.length <= 20) {
+                    currentData = new byte[surplusData.length];
+                    System.arraycopy(surplusData, 0, currentData, 0, surplusData.length);
+                    index += surplusData.length;
+                } else {
+                    currentData = new byte[20];
+                    System.arraycopy(data, index, currentData, 0, 20);
+                    index += 20;
+                }
+                dataInfoQueue.offer(currentData);
+            } while (index < data.length);
+        }
+        return dataInfoQueue;
+    }
 
     private IConnectCallback connectCallback = new IConnectCallback() {
         @Override
@@ -156,18 +227,7 @@ public class DeviceControlActivity extends AppCompatActivity {
                     Toast.makeText(DeviceControlActivity.this, "Please input hex data command!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                ViseBluetooth.getInstance().writeCharacteristic(mCharacteristic, HexUtil.decodeHex(mInput.getText().toString()
-                        .toCharArray()), new ICharacteristicCallback() {
-                    @Override
-                    public void onSuccess(BluetoothGattCharacteristic characteristic) {
-                        ViseLog.i("Send onSuccess!");
-                    }
-
-                    @Override
-                    public void onFailure(BleException exception) {
-                        ViseLog.i("Send onFail!");
-                    }
-                });
+                send(HexUtil.decodeHex(mInput.getText().toString().toCharArray()));
             }
         });
     }
