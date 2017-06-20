@@ -1,4 +1,7 @@
 # BLE
+
+[![Author](https://img.shields.io/badge/%E4%BD%9C%E8%80%85-%E8%83%A1%E4%BC%9F-blue.svg)](http://www.huwei.tech/) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/880ed281aff445f890766ccccbe81d7d)](https://www.codacy.com/app/xiaoyaoyou1212/BLE?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=xiaoyaoyou1212/BLE&amp;utm_campaign=Badge_Grade) [![License](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/LICENSE) [![JCenter](https://img.shields.io/badge/JCenter-1.0.8-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/1.0.8/) [![API](https://img.shields.io/badge/API-18%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=18)
+
 Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
