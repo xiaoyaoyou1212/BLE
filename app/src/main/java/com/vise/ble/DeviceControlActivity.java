@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+/**
+ * 设备数据操作相关展示界面
+ */
 public class DeviceControlActivity extends AppCompatActivity {
 
     private static final String LIST_NAME = "NAME";
@@ -50,11 +53,16 @@ public class DeviceControlActivity extends AppCompatActivity {
     private EditText mInput;
     private EditText mOutput;
 
+    //设备信息
     private BluetoothLeDevice mDevice;
+    //特征值
     private BluetoothGattCharacteristic mCharacteristic;
+    //输出数据展示
     private StringBuilder mOutputInfo = new StringBuilder();
+    //设备特征值集合
     private List<List<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
 
+    //发送队列，提供一种简单的处理方式，实际项目场景需要根据需求优化
     private Queue<byte[]> dataInfoQueue = new LinkedList<>();
     private Handler handler = new Handler(){
         @Override
@@ -99,6 +107,11 @@ public class DeviceControlActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 数据分包
+     * @param data
+     * @return
+     */
     private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
         Queue<byte[]> dataInfoQueue = new LinkedList<>();
         if (data != null) {
@@ -122,6 +135,9 @@ public class DeviceControlActivity extends AppCompatActivity {
         return dataInfoQueue;
     }
 
+    /**
+     * 连接回调
+     */
     private IConnectCallback connectCallback = new IConnectCallback() {
         @Override
         public void onConnectSuccess(BluetoothGatt gatt, int status) {
@@ -153,6 +169,9 @@ public class DeviceControlActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * 接收设备返回的数据回调
+     */
     private ICharacteristicCallback bleCallback = new ICharacteristicCallback() {
         @Override
         public void onSuccess(BluetoothGattCharacteristic characteristic) {
@@ -271,13 +290,13 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_connect:
+            case R.id.menu_connect://连接设备
                 invalidateOptionsMenu();
                 if (!ViseBluetooth.getInstance().isConnected()) {
                     ViseBluetooth.getInstance().connect(mDevice, false, connectCallback);
                 }
                 break;
-            case R.id.menu_disconnect:
+            case R.id.menu_disconnect://断开设备
                 invalidateOptionsMenu();
                 if (ViseBluetooth.getInstance().isConnected()) {
                     ViseBluetooth.getInstance().disconnect();
@@ -287,7 +306,11 @@ public class DeviceControlActivity extends AppCompatActivity {
         return true;
     }
 
-
+    /**
+     * 根据GATT服务显示该服务下的所有特征值
+     * @param gattServices GATT服务
+     * @return
+     */
     private SimpleExpandableListAdapter displayGattServices(final List<BluetoothGattService> gattServices) {
         if (gattServices == null) return null;
         String uuid;
@@ -350,6 +373,9 @@ public class DeviceControlActivity extends AppCompatActivity {
         simpleExpandableListAdapter = null;
     }
 
+    /**
+     * 显示GATT服务展示的信息
+     */
     private void showGattServices() {
         if (simpleExpandableListAdapter == null) {
             return;

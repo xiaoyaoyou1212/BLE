@@ -63,25 +63,30 @@ import static com.vise.baseble.common.BleConstant.MSG_WRITE_DES;
  */
 public class ViseBluetooth {
 
-    private Context context;
-    private BluetoothManager bluetoothManager;
-    private BluetoothAdapter bluetoothAdapter;
-    private BluetoothGatt bluetoothGatt;
-    private BluetoothGattService service;
-    private BluetoothGattCharacteristic characteristic;
-    private BluetoothGattDescriptor descriptor;
-    private IConnectCallback connectCallback;
-    private ICharacteristicCallback receiveCallback;
-    private IBleCallback tempBleCallback;
-    private volatile Set<IBleCallback> bleCallbacks = new LinkedHashSet<>();
-    private State state = State.DISCONNECT;
-    private int scanTimeout = DEFAULT_SCAN_TIME;
-    private int connectTimeout = DEFAULT_CONN_TIME;
-    private int operateTimeout = DEFAULT_OPERATE_TIME;
-    private boolean isFound = false;
+    private Context context;//上下文
+    private BluetoothManager bluetoothManager;//蓝牙管理
+    private BluetoothAdapter bluetoothAdapter;//蓝牙适配器
+    private BluetoothGatt bluetoothGatt;//蓝牙GATT
+    private BluetoothGattService service;//GATT服务
+    private BluetoothGattCharacteristic characteristic;//GATT特征值
+    private BluetoothGattDescriptor descriptor;//GATT属性描述
+    private IConnectCallback connectCallback;//连接回调
+    private ICharacteristicCallback receiveCallback;//接收数据回调
+    private IBleCallback tempBleCallback;//存储操作回调，方便取消管理
+    private volatile Set<IBleCallback> bleCallbacks = new LinkedHashSet<>();//操作回调集合
+    private State state = State.DISCONNECT;//设备状态描述
+    private int scanTimeout = DEFAULT_SCAN_TIME;//扫描超时时间
+    private int connectTimeout = DEFAULT_CONN_TIME;//连接超时时间
+    private int operateTimeout = DEFAULT_OPERATE_TIME;//数据操作超时时间
+    private boolean isFound = false;//是否发现设备
 
-    private static ViseBluetooth viseBluetooth;
+    private static ViseBluetooth viseBluetooth;//入口操作管理
 
+    /**
+     * 单例方式获取蓝牙通信入口
+     *
+     * @return 返回ViseBluetooth
+     */
     public static ViseBluetooth getInstance() {
         if (viseBluetooth == null) {
             synchronized (ViseBluetooth.class) {
@@ -93,6 +98,9 @@ public class ViseBluetooth {
         return viseBluetooth;
     }
 
+    /**
+     * handler处理连接超时和操作异常超时
+     */
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -114,8 +122,17 @@ public class ViseBluetooth {
         }
     };
 
+    /**
+     * 蓝牙所有相关操作的核心回调类
+     */
     private BluetoothGattCallback coreGattCallback = new BluetoothGattCallback() {
 
+        /**
+         * 连接状态改变，主要用来分析设备的连接与断开
+         * @param gatt GATT
+         * @param status 改变前状态
+         * @param newState 改变后状态
+         */
         @Override
         public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
             ViseLog.i("onConnectionStateChange  status: " + status + " ,newState: " + newState +
@@ -145,6 +162,11 @@ public class ViseBluetooth {
             }
         }
 
+        /**
+         * 发现服务，主要用来获取设备支持的服务列表
+         * @param gatt GATT
+         * @param status 当前状态
+         */
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
             ViseLog.i("onServicesDiscovered  status: " + status);
@@ -176,6 +198,12 @@ public class ViseBluetooth {
             }
         }
 
+        /**
+         * 读取特征值，主要用来读取该特征值包含的可读信息
+         * @param gatt GATT
+         * @param characteristic 特征值
+         * @param status 当前状态
+         */
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             ViseLog.i("onCharacteristicRead  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
@@ -202,6 +230,12 @@ public class ViseBluetooth {
             });
         }
 
+        /**
+         * 写入特征值，主要用来发送数据到设备
+         * @param gatt GATT
+         * @param characteristic 特征值
+         * @param status 当前状态
+         */
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             ViseLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
@@ -228,6 +262,11 @@ public class ViseBluetooth {
             });
         }
 
+        /**
+         * 特征值改变，主要用来接收设备返回的数据信息
+         * @param gatt GATT
+         * @param characteristic 特征值
+         */
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             ViseLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
@@ -241,6 +280,12 @@ public class ViseBluetooth {
             });
         }
 
+        /**
+         * 读取属性描述值，主要用来获取设备当前属性描述的值
+         * @param gatt GATT
+         * @param descriptor 属性描述
+         * @param status 当前状态
+         */
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, final BluetoothGattDescriptor descriptor, final int status) {
             ViseLog.i("onDescriptorRead  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()));
@@ -267,6 +312,12 @@ public class ViseBluetooth {
             });
         }
 
+        /**
+         * 写入属性描述值，主要用来根据当前属性描述值写入数据到设备
+         * @param gatt GATT
+         * @param descriptor 属性描述值
+         * @param status 当前状态
+         */
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, final BluetoothGattDescriptor descriptor, final int status) {
             ViseLog.i("onDescriptorWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()));
@@ -293,6 +344,12 @@ public class ViseBluetooth {
             });
         }
 
+        /**
+         * 阅读设备信号值
+         * @param gatt GATT
+         * @param rssi 设备当前信号
+         * @param status 当前状态
+         */
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, final int status) {
             ViseLog.i("onReadRemoteRssi  status: " + status + ", rssi:" + rssi);
@@ -323,6 +380,10 @@ public class ViseBluetooth {
     private ViseBluetooth() {
     }
 
+    /**
+     * 初始化
+     * @param context 上下文
+     */
     public void init(Context context) {
         if (this.context == null) {
             this.context = context.getApplicationContext();
@@ -332,6 +393,11 @@ public class ViseBluetooth {
     }
 
     /*==================Android API 18 Scan========================*/
+
+    /**
+     * 开始扫描
+     * @param leScanCallback 回调
+     */
     public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(leScanCallback);
@@ -339,12 +405,20 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 停止扫描
+     * @param leScanCallback 回调
+     */
     public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
     }
 
+    /**
+     * 开始扫描
+     * @param periodScanCallback 自定义回调
+     */
     public void startScan(PeriodScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
             throw new IllegalArgumentException("this PeriodScanCallback is Null!");
@@ -352,6 +426,10 @@ public class ViseBluetooth {
         periodScanCallback.setViseBluetooth(this).setScan(true).setScanTimeout(scanTimeout).scan();
     }
 
+    /**
+     * 停止扫描
+     * @param periodScanCallback 自定义回调
+     */
     public void stopScan(PeriodScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
             throw new IllegalArgumentException("this PeriodScanCallback is Null!");
@@ -360,6 +438,11 @@ public class ViseBluetooth {
     }
 
     /*==================Android API 21 Scan========================*/
+
+    /**
+     * 开始扫描
+     * @param leScanCallback 回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void startLeScan(ScanCallback leScanCallback) {
         if (bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeScanner() != null) {
@@ -368,6 +451,12 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 开始扫描
+     * @param filters 过滤条件
+     * @param settings 设置
+     * @param leScanCallback 回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void startLeScan(List<ScanFilter> filters, ScanSettings settings, ScanCallback leScanCallback) {
         if (bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeScanner() != null) {
@@ -376,6 +465,10 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 停止扫描
+     * @param leScanCallback 回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void stopLeScan(ScanCallback leScanCallback) {
         if (bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeScanner() != null) {
@@ -383,6 +476,10 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 开始扫描
+     * @param periodScanCallback 自定义回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void startScan(PeriodLScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
@@ -391,6 +488,12 @@ public class ViseBluetooth {
         periodScanCallback.setViseBluetooth(this).setScan(true).setScanTimeout(scanTimeout).scan();
     }
 
+    /**
+     * 开始扫描
+     * @param filters 过滤条件
+     * @param settings 设置
+     * @param periodScanCallback 自定义回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void startScan(List<ScanFilter> filters, ScanSettings settings, PeriodLScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
@@ -400,6 +503,10 @@ public class ViseBluetooth {
                 .scan();
     }
 
+    /**
+     * 停止扫描
+     * @param periodScanCallback 自定义回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void stopScan(PeriodLScanCallback periodScanCallback) {
         if (periodScanCallback == null) {
@@ -409,6 +516,14 @@ public class ViseBluetooth {
     }
 
     /*==================connect========================*/
+
+    /**
+     * 连接设备
+     * @param bluetoothDevice 设备信息
+     * @param autoConnect 是否自动连接
+     * @param connectCallback 连接回调
+     * @return GATT
+     */
     public synchronized BluetoothGatt connect(BluetoothDevice bluetoothDevice, boolean autoConnect, IConnectCallback connectCallback) {
         if (bluetoothDevice == null || connectCallback == null) {
             throw new IllegalArgumentException("this BluetoothDevice or IConnectCallback is Null!");
@@ -422,6 +537,12 @@ public class ViseBluetooth {
         return bluetoothDevice.connectGatt(this.context, autoConnect, coreGattCallback);
     }
 
+    /**
+     * 连接设备
+     * @param bluetoothLeDevice 自定义设备信息
+     * @param autoConnect 是否自动连接
+     * @param connectCallback 连接回调
+     */
     public void connect(BluetoothLeDevice bluetoothLeDevice, boolean autoConnect, IConnectCallback connectCallback) {
         if (bluetoothLeDevice == null) {
             throw new IllegalArgumentException("this BluetoothLeDevice is Null!");
@@ -429,6 +550,12 @@ public class ViseBluetooth {
         connect(bluetoothLeDevice.getDevice(), autoConnect, connectCallback);
     }
 
+    /**
+     * 连接指定名称的设备
+     * @param name 设备名称
+     * @param autoConnect 是否自动连接
+     * @param connectCallback 连接回调
+     */
     public void connectByName(String name, final boolean autoConnect, final IConnectCallback connectCallback) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Illegal Name!");
@@ -464,6 +591,12 @@ public class ViseBluetooth {
         });
     }
 
+    /**
+     * 连接指定Mac的设备
+     * @param mac 设备Mac
+     * @param autoConnect 是否自动连接
+     * @param connectCallback 连接回调
+     */
     public void connectByMac(String mac, final boolean autoConnect, final IConnectCallback connectCallback) {
         if (mac == null || mac.split(":").length != 6) {
             throw new IllegalArgumentException("Illegal MAC!");
@@ -499,6 +632,12 @@ public class ViseBluetooth {
         });
     }
 
+    /**
+     * 连接指定名称的设备
+     * @param name 设备名称
+     * @param autoConnect 是否自动连接
+     * @param connectCallback 连接回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void connectByLName(String name, final boolean autoConnect, final IConnectCallback connectCallback) {
         if (name == null || name.isEmpty()) {
@@ -537,6 +676,12 @@ public class ViseBluetooth {
         });
     }
 
+    /**
+     * 连接指定Mac的设备
+     * @param mac 设备Mac
+     * @param autoConnect 是否自动连接
+     * @param connectCallback 连接回调
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void connectByLMac(String mac, final boolean autoConnect, final IConnectCallback connectCallback) {
         if (mac == null || mac.split(":").length != 6) {
@@ -576,6 +721,14 @@ public class ViseBluetooth {
     }
 
     /*=================main operate========================*/
+
+    /**
+     * 设置UUID，这里设置完后面就不用传characteristic和descriptor
+     * @param serviceUUID 服务UUID
+     * @param characteristicUUID 特征值UUID
+     * @param descriptorUUID 属性描述UUID
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth withUUID(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID) {
         if (serviceUUID != null && bluetoothGatt != null) {
             service = bluetoothGatt.getService(serviceUUID);
@@ -589,18 +742,43 @@ public class ViseBluetooth {
         return this;
     }
 
+    /**
+     * 设置UUID，传入字符串形式，这里设置完后面就不用传characteristic和descriptor
+     * @param serviceUUID 服务UUID
+     * @param characteristicUUID 特征值UUID
+     * @param descriptorUUID 属性描述UUID
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth withUUIDString(String serviceUUID, String characteristicUUID, String descriptorUUID) {
         return withUUID(formUUID(serviceUUID), formUUID(characteristicUUID), formUUID(descriptorUUID));
     }
 
+    /**
+     * UUID转换
+     * @param uuid
+     * @return 返回UUID
+     */
     private UUID formUUID(String uuid) {
         return uuid == null ? null : UUID.fromString(uuid);
     }
 
+    /**
+     * 写入特征值数据
+     * @param data 待发送的数据
+     * @param bleCallback 发送回调
+     * @return 返回写入是否成功的状态
+     */
     public boolean writeCharacteristic(byte[] data, ICharacteristicCallback bleCallback) {
         return writeCharacteristic(getCharacteristic(), data, bleCallback);
     }
 
+    /**
+     * 写入特征值数据
+     * @param characteristic 特征值
+     * @param data 待发送的数据
+     * @param bleCallback 发送回调
+     * @return 返回写入是否成功的状态
+     */
     public boolean writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] data, final ICharacteristicCallback bleCallback) {
         if (characteristic == null) {
             if (bleCallback != null) {
@@ -621,10 +799,23 @@ public class ViseBluetooth {
         return handleAfterInitialed(getBluetoothGatt().writeCharacteristic(characteristic), bleCallback);
     }
 
+    /**
+     * 写入属性描述值
+     * @param data 待发送数据
+     * @param bleCallback 写入回调
+     * @return 返回写入是否成功的状态
+     */
     public boolean writeDescriptor(byte[] data, IDescriptorCallback bleCallback) {
         return writeDescriptor(getDescriptor(), data, bleCallback);
     }
 
+    /**
+     * 写入属性描述值
+     * @param descriptor 属性描述值
+     * @param data 待发送数据
+     * @param bleCallback 写入回调
+     * @return 返回写入是否成功的状态
+     */
     public boolean writeDescriptor(BluetoothGattDescriptor descriptor, byte[] data, final IDescriptorCallback bleCallback) {
         if (descriptor == null) {
             if (bleCallback != null) {
@@ -644,10 +835,21 @@ public class ViseBluetooth {
         return handleAfterInitialed(getBluetoothGatt().writeDescriptor(descriptor), bleCallback);
     }
 
+    /**
+     * 读取特征值
+     * @param bleCallback 读取回调
+     * @return 返回读取是否成功的状态
+     */
     public boolean readCharacteristic(ICharacteristicCallback bleCallback) {
         return readCharacteristic(getCharacteristic(), bleCallback);
     }
 
+    /**
+     * 读取特征值
+     * @param characteristic 特征值
+     * @param bleCallback 读取回调
+     * @return 返回写入是否成功的状态
+     */
     public boolean readCharacteristic(BluetoothGattCharacteristic characteristic, final ICharacteristicCallback bleCallback) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
             setCharacteristicNotification(getBluetoothGatt(), characteristic, false, false);
@@ -667,24 +869,53 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 读取属性描述值
+     * @param bleCallback 读取回调
+     * @return 返回读取是否成功的状态
+     */
     public boolean readDescriptor(IDescriptorCallback bleCallback) {
         return readDescriptor(getDescriptor(), bleCallback);
     }
 
+    /**
+     * 读取属性描述值
+     * @param descriptor 属性描述值
+     * @param bleCallback 读取回调
+     * @return 返回读取是否成功的状态
+     */
     public boolean readDescriptor(BluetoothGattDescriptor descriptor, IDescriptorCallback bleCallback) {
         listenAndTimer(bleCallback, MSG_READ_DES);
         return handleAfterInitialed(getBluetoothGatt().readDescriptor(descriptor), bleCallback);
     }
 
+    /**
+     * 读取设备信号值
+     * @param bleCallback 读取回调
+     * @return 返回读取是否成功的状态
+     */
     public boolean readRemoteRssi(IRssiCallback bleCallback) {
         listenAndTimer(bleCallback, MSG_READ_RSSI);
         return handleAfterInitialed(getBluetoothGatt().readRemoteRssi(), bleCallback);
     }
 
+    /**
+     * 设置特征值监听，用来设置获取设备返回数据的监听
+     * @param bleCallback 设备返回数据回调
+     * @param isIndication 是否是指示器方式，指示器方式比普通通知方式更可靠，底层有应答处理
+     * @return 返回设置监听是否成功
+     */
     public boolean enableCharacteristicNotification(ICharacteristicCallback bleCallback, boolean isIndication) {
         return enableCharacteristicNotification(getCharacteristic(), bleCallback, isIndication);
     }
 
+    /**
+     * 设置特征值监听，用来设置获取设备返回数据的监听
+     * @param characteristic 特征值
+     * @param bleCallback 设备返回数据回调
+     * @param isIndication 是否是指示器方式，指示器方式比普通通知方式更可靠，底层有应答处理
+     * @return 返回设置监听是否成功
+     */
     public boolean enableCharacteristicNotification(BluetoothGattCharacteristic characteristic, final ICharacteristicCallback
             bleCallback, boolean isIndication) {
         if (characteristic != null && (characteristic.getProperties() | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
@@ -704,16 +935,39 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 设置属性描述值的数据获取监听
+     * @param enable 是否可通知
+     * @param isIndication 是否是指示器方式
+     * @return 返回设置监听是否成功
+     */
     public boolean setNotification(boolean enable, boolean isIndication) {
         return setNotification(getBluetoothGatt(), getCharacteristic(), getDescriptor(), enable, isIndication);
     }
 
+    /**
+     * 设置属性描述值的数据获取监听
+     * @param gatt GATT
+     * @param characteristic 特征值
+     * @param descriptor 属性描述值
+     * @param enable 是否可通知
+     * @param isIndication 是否是指示器方式
+     * @return 返回设置监听是否成功
+     */
     public boolean setNotification(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, BluetoothGattDescriptor descriptor,
                                    boolean enable, boolean isIndication) {
         return setCharacteristicNotification(gatt, characteristic, enable, isIndication) && setDescriptorNotification(gatt, descriptor,
                 enable);
     }
 
+    /**
+     * 设置特征值监听，用来设置获取设备返回数据的监听
+     * @param gatt GATT
+     * @param characteristic 特征值
+     * @param enable 是否可通知
+     * @param isIndication 是否是指示器方式
+     * @return 返回设置监听是否成功
+     */
     public boolean setCharacteristicNotification(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, boolean enable, boolean
             isIndication) {
         if (gatt != null && characteristic != null) {
@@ -737,6 +991,13 @@ public class ViseBluetooth {
         return false;
     }
 
+    /**
+     * 设置属性描述值的数据获取监听
+     * @param gatt GATT
+     * @param descriptor 属性描述值
+     * @param enable 是否可通知
+     * @return 返回设置监听是否成功
+     */
     public boolean setDescriptorNotification(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, boolean enable) {
         if (gatt != null && descriptor != null) {
             ViseLog.i("Descriptor set notification value: " + enable);
@@ -750,6 +1011,12 @@ public class ViseBluetooth {
         return false;
     }
 
+    /**
+     * 初始化操作
+     * @param initiated 是否初始化成功
+     * @param bleCallback 操作回调
+     * @return 返回初始化是否成功
+     */
     private boolean handleAfterInitialed(boolean initiated, final IBleCallback bleCallback) {
         if (bleCallback != null) {
             if (!initiated) {
@@ -768,6 +1035,11 @@ public class ViseBluetooth {
         return initiated;
     }
 
+    /**
+     * 设置数据操作超时监听
+     * @param bleCallback 操作回调
+     * @param what 操作类型
+     */
     private synchronized void listenAndTimer(final IBleCallback bleCallback, int what) {
         if (bleCallbacks != null && handler != null) {
             this.tempBleCallback = bleCallback;
@@ -777,10 +1049,18 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 是否是主线程
+     * @return
+     */
     public boolean isMainThread() {
         return Looper.myLooper() == Looper.getMainLooper();
     }
 
+    /**
+     * 切换到主线程
+     * @param runnable
+     */
     public void runOnMainThread(Runnable runnable) {
         if (isMainThread()) {
             runnable.run();
@@ -791,6 +1071,10 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 设备是否连接
+     * @return 返回设备是否连接
+     */
     public boolean isConnected() {
         if (state == State.CONNECT_SUCCESS) {
             return true;
@@ -799,12 +1083,20 @@ public class ViseBluetooth {
         }
     }
 
+    /**
+     * 移除操作回调
+     * @param bleCallback
+     */
     public synchronized void removeBleCallback(IBleCallback bleCallback) {
         if (bleCallbacks != null && bleCallbacks.size() > 0) {
             bleCallbacks.remove(bleCallback);
         }
     }
 
+    /**
+     * 刷新设备缓存
+     * @return 返回是否刷新成功
+     */
     public synchronized boolean refreshDeviceCache() {
         try {
             final Method refresh = BluetoothGatt.class.getMethod("refresh");
@@ -819,18 +1111,27 @@ public class ViseBluetooth {
         return false;
     }
 
+    /**
+     * 主动断开设备连接
+     */
     public synchronized void disconnect() {
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }
     }
 
+    /**
+     * 关闭GATT
+     */
     public synchronized void close() {
         if (bluetoothGatt != null) {
             bluetoothGatt.close();
         }
     }
 
+    /**
+     * 清除设备的相关信息，一般是在不使用该设备时调用
+     */
     public synchronized void clear() {
         disconnect();
         refreshDeviceCache();
@@ -844,80 +1145,160 @@ public class ViseBluetooth {
     }
 
     /*==================get and set========================*/
+
+    /**
+     * 获取蓝牙管理
+     * @return 返回蓝牙管理
+     */
     public BluetoothManager getBluetoothManager() {
         return bluetoothManager;
     }
 
+    /**
+     * 获取蓝牙适配器
+     * @return 返回蓝牙适配器
+     */
     public BluetoothAdapter getBluetoothAdapter() {
         return bluetoothAdapter;
     }
 
+    /**
+     * 获取蓝牙GATT
+     * @return 返回蓝牙GATT
+     */
     public BluetoothGatt getBluetoothGatt() {
         return bluetoothGatt;
     }
 
+    /**
+     * 获取操作回调集合
+     * @return 返回操作回调集合
+     */
     public Set<IBleCallback> getBleCallbacks() {
         return bleCallbacks;
     }
 
+    /**
+     * 获取当前服务
+     * @return 返回当前服务
+     */
     public BluetoothGattService getService() {
         return service;
     }
 
+    /**
+     * 设置服务
+     * @param service 服务
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setService(BluetoothGattService service) {
         this.service = service;
         return this;
     }
 
+    /**
+     * 获取当前特征值
+     * @return 返回当前特征值
+     */
     public BluetoothGattCharacteristic getCharacteristic() {
         return characteristic;
     }
 
+    /**
+     * 设置特征值
+     * @param characteristic 特征值
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setCharacteristic(BluetoothGattCharacteristic characteristic) {
         this.characteristic = characteristic;
         return this;
     }
 
+    /**
+     * 获取当前属性描述值
+     * @return 返回当前属性描述值
+     */
     public BluetoothGattDescriptor getDescriptor() {
         return descriptor;
     }
 
+    /**
+     * 设置属性描述值
+     * @param descriptor 属性描述值
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setDescriptor(BluetoothGattDescriptor descriptor) {
         this.descriptor = descriptor;
         return this;
     }
 
+    /**
+     * 获取发送数据超时时间
+     * @return 返回发送数据超时时间
+     */
     public int getOperateTimeout() {
         return operateTimeout;
     }
 
+    /**
+     * 设置发送数据超时时间
+     * @param operateTimeout 发送数据超时时间
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setOperateTimeout(int operateTimeout) {
         this.operateTimeout = operateTimeout;
         return this;
     }
 
+    /**
+     * 获取连接超时时间
+     * @return 返回连接超时时间
+     */
     public int getConnectTimeout() {
         return connectTimeout;
     }
 
+    /**
+     * 设置连接超时时间
+     * @param connectTimeout 连接超时时间
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
         return this;
     }
 
+    /**
+     * 获取扫描超时时间
+     * @return 返回扫描超时时间
+     */
     public int getScanTimeout() {
         return scanTimeout;
     }
 
+    /**
+     * 设置扫描超时时间
+     * @param scanTimeout 扫描超时时间
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setScanTimeout(int scanTimeout) {
         this.scanTimeout = scanTimeout;
         return this;
     }
 
+    /**
+     * 获取设备当前状态
+     * @return 返回设备当前状态
+     */
     public State getState() {
         return state;
     }
 
+    /**
+     * 设置设备状态
+     * @param state 设备状态
+     * @return 返回ViseBluetooth
+     */
     public ViseBluetooth setState(State state) {
         this.state = state;
         return this;

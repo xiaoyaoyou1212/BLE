@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * 设备详细信息展示界面
+ */
 public class DeviceDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_DEVICE = "extra_device";
@@ -30,6 +33,12 @@ public class DeviceDetailActivity extends AppCompatActivity {
     private View mEmpty;
     private BluetoothLeDevice mDevice;
 
+    /**
+     * 追加广播包信息
+     * @param adapter
+     * @param title
+     * @param record
+     */
     private void appendAdRecordView(final MergeAdapter adapter, final String title, final AdRecord record) {
         final LinearLayout lt = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item_view_adrecord, null);
         final TextView tvString = (TextView) lt.findViewById(R.id.data_as_string);
@@ -43,6 +52,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
         adapter.addView(lt);
     }
 
+    /**
+     * 追加设备基础信息
+     * @param adapter
+     * @param device
+     */
     private void appendDeviceInfo(final MergeAdapter adapter, final BluetoothLeDevice device) {
         final LinearLayout lt = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item_view_device_info, null);
         final TextView tvName = (TextView) lt.findViewById(R.id.deviceName);
@@ -79,6 +93,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
         adapter.addView(lt);
     }
 
+    /**
+     * 追加信息头
+     * @param adapter
+     * @param title
+     */
     private void appendHeader(final MergeAdapter adapter, final String title) {
         final LinearLayout lt = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item_view_header, null);
         final TextView tvTitle = (TextView) lt.findViewById(R.id.title);
@@ -87,6 +106,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
         adapter.addView(lt);
     }
 
+    /**
+     * 追加设备信号信息
+     * @param adapter
+     * @param device
+     */
     private void appendRssiInfo(final MergeAdapter adapter, final BluetoothLeDevice device) {
         final LinearLayout lt = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item_view_rssi_info, null);
         final TextView tvFirstTimestamp = (TextView) lt.findViewById(R.id.firstTimestamp);
@@ -104,6 +128,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
         adapter.addView(lt);
     }
 
+    /**
+     * 追加简单信息
+     * @param adapter
+     * @param data
+     */
     private void appendSimpleText(final MergeAdapter adapter, final byte[] data) {
         appendSimpleText(adapter, HexUtil.encodeHexStr(data));
     }
@@ -160,6 +189,10 @@ public class DeviceDetailActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * 展示设备详细信息
+     * @param device 设备信息
+     */
     private void pupulateDetails(final BluetoothLeDevice device) {
         final MergeAdapter adapter = new MergeAdapter();
         if (device == null) {
@@ -188,6 +221,11 @@ public class DeviceDetailActivity extends AppCompatActivity {
         mList.setAdapter(adapter);
     }
 
+    /**
+     * 格式化时间
+     * @param time
+     * @return
+     */
     private static String formatTime(final long time) {
         String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS zzz";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ISO_FORMAT, Locale.CHINA);

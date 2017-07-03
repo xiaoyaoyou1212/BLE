@@ -34,6 +34,9 @@ import com.vise.log.inner.LogcatTree;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 设备扫描展示界面
+ */
 public class DeviceScanActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 100;
@@ -43,11 +46,16 @@ public class DeviceScanActivity extends AppCompatActivity {
     private ListView deviceLv;
     private TextView scanCountTv;
 
+    //设备扫描结果存储仓库
     private BluetoothLeDeviceStore bluetoothLeDeviceStore;
+    //设备扫描结果集合
     private volatile List<BluetoothLeDevice> bluetoothLeDeviceList = new ArrayList<>();
+    //设备扫描结果展示适配器
     private DeviceAdapter adapter;
 
+    //针对API 15以上版本的新扫描方式（可以不用该方式，下面的方式能兼容新API）
     private PeriodLScanCallback periodLScanCallback;
+    //自定义的扫描方式，基本能满足大部分需求
     private PeriodScanCallback periodScanCallback = new PeriodScanCallback() {
         @Override
         public void scanTimeout() {
@@ -56,6 +64,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         @Override
         public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
+            ViseLog.i("Founded Scan Device:" + bluetoothLeDevice);
             if (bluetoothLeDeviceStore != null) {
                 bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
                 bluetoothLeDeviceList = bluetoothLeDeviceStore.getDeviceList();
@@ -75,8 +84,9 @@ public class DeviceScanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_scan);
-        ViseLog.getLogConfig().configAllowLog(true);
-        ViseLog.plant(new LogcatTree());
+        ViseLog.getLogConfig().configAllowLog(true);//配置日志信息
+        ViseLog.plant(new LogcatTree());//添加Logcat打印信息
+        //蓝牙信息初始化，全局唯一，必须在应用初始化时调用
         ViseBluetooth.getInstance().init(getApplicationContext());
         init();
     }
@@ -94,6 +104,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         deviceLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                //点击某个扫描到的设备进入设备详细信息界面
                 BluetoothLeDevice device = (BluetoothLeDevice) adapter.getItem(position);
                 if (device == null) return;
                 Intent intent = new Intent(DeviceScanActivity.this, DeviceDetailActivity.class);
@@ -163,6 +174,11 @@ public class DeviceScanActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    /**
+     * 菜单栏的显示
+     * @param menu 菜单
+     * @return 返回是否拦截操作
+     */
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.scan, menu);
@@ -190,22 +206,33 @@ public class DeviceScanActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * 点击菜单栏的处理
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_scan:
+            case R.id.menu_scan://开始扫描
                 checkBluetoothPermission();
                 break;
-            case R.id.menu_stop:
+            case R.id.menu_stop://停止扫描
                 stopScan();
                 break;
-            case R.id.menu_about:
+            case R.id.menu_about://关于
                 displayAboutDialog();
                 break;
         }
         return true;
     }
 
+    /**
+     * 打开或关闭蓝牙后的回调
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
@@ -219,7 +246,9 @@ public class DeviceScanActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    /*  校验蓝牙权限  */
+    /**
+     * 检查蓝牙权限
+     */
     private void checkBluetoothPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //校验是否已具有模糊定位权限
@@ -244,6 +273,11 @@ public class DeviceScanActivity extends AppCompatActivity {
         doNext(requestCode, grantResults);
     }
 
+    /**
+     * 权限申请的下一步处理
+     * @param requestCode 申请码
+     * @param grantResults 申请结果
+     */
     private void doNext(int requestCode, int[] grantResults) {
         if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -256,6 +290,9 @@ public class DeviceScanActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 权限申请被拒绝的处理方式
+     */
     private void denyPermission() {
         finish();
     }
@@ -268,6 +305,9 @@ public class DeviceScanActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 开始扫描，可以不用区分版本，这里是方便演示
+     */
     private void startScan() {
         updateItemCount(0);
         if (bluetoothLeDeviceStore != null) {
@@ -285,6 +325,9 @@ public class DeviceScanActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
+    /**
+     * 停止扫描，可以不用区分版本，这里是方便演示
+     */
     private void stopScan() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ViseBluetooth.getInstance().stopScan(periodLScanCallback);
@@ -294,10 +337,17 @@ public class DeviceScanActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
+    /**
+     * 更新扫描到的设备个数
+     * @param count
+     */
     private void updateItemCount(final int count) {
         scanCountTv.setText(getString(R.string.formatter_item_count, String.valueOf(count)));
     }
 
+    /**
+     * 显示项目信息
+     */
     private void displayAboutDialog() {
         final int paddingSizeDp = 5;
         final float scale = getResources().getDisplayMetrics().density;
