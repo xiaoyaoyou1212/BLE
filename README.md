@@ -1,165 +1,28 @@
 # BLE
 
-[![Author](https://img.shields.io/badge/%E4%BD%9C%E8%80%85-%E8%83%A1%E4%BC%9F-blue.svg)](http://www.huwei.tech/) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/880ed281aff445f890766ccccbe81d7d)](https://www.codacy.com/app/xiaoyaoyou1212/BLE?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=xiaoyaoyou1212/BLE&amp;utm_campaign=Badge_Grade) [![License](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/LICENSE) [![JCenter](https://img.shields.io/badge/JCenter-1.0.8-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/1.0.8/) [![API](https://img.shields.io/badge/API-18%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=18)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/880ed281aff445f890766ccccbe81d7d)](https://www.codacy.com/app/xiaoyaoyou1212/BLE?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=xiaoyaoyou1212/BLE&amp;utm_campaign=Badge_Grade) [![License](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/LICENSE) [![API](https://img.shields.io/badge/API-18%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=18)
 
 Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.8'`
-
-### QQ交流群
-![QQ群](http://img.blog.csdn.net/20170327191310083)
+- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.9'`
 
 ### 版本说明
-- V1.0.8（2017-05-19）
-    - 修复连接指定设备中连接成功后继续返回连接失败的问题。
+[![LatestVersion](https://img.shields.io/badge/LatestVersion-1.0.9-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
 
-- V1.0.7（2017-04-25）
-    - 增加根据特定条件过滤扫描列表的回调，可以根据信号强度过滤，也可以根据设备名称正则过滤。
-
-- V1.0.6（2017-04-24）
-    - 修改日志打印，使用ViseLog库作为日志打印基础库，日志管理更方便；
-    - 修改数据操作回调相关，将IBleCallback进行拆分，此处使用泛型不太合理，故去掉泛型操作，防止出现类转换异常。
-
-- V1.0.5（2017-03-18）
-    - 修复Android 5.0新扫描方式可能出现的空指针异常。
-
-- V1.0.3（2016-10-29）
-    - 增加针对Android 5.0以上系统的新扫描方式。
-
-- V1.0.2（2016-09-01）
-    - 优化初始化方式，将Context定义为Application级别。
-
-- V1.0.1（2016-08-29）
-    - 优化通知回调功能。
-
-- V1.0.0（2016-08-05）
-    - 项目初始提交。
-
-版本号说明：版本号第一位为大版本更新时使用，第二位为小功能更新时使用，第三位则是用来bug修复管理。
+### 代码托管
+[![JCenter](https://img.shields.io/badge/JCenter-1.0.9-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/1.0.9/)
 
 ### 常见问题
+[![FAQ](https://img.shields.io/badge/FAQ-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-red.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/FAQ.md)
 
-- #### 收发数据超过20字节怎么处理？
-
-如果收发数据超过20字节，在发送时需要进行分包处理，接收时则需要进行组包处理。由于该库是基础的通信库，与数据处理等不进行挂钩，而组包一般与协议相关，故没有在该库中进行处理，而需要上层在调用数据发送和接收数据时统一进行处理。由于最近有人在使用库时问到分包的问题，故在此统一进行说明下，使用时可参考如下方式进行分包组包处理。
-
-分包处理如下：
-```
-//存储待发送的数据队列
-private Queue<byte[]> dataInfoQueue = new LinkedList<>();
-
-private Handler handler = new Handler(){
-    @Override
-    public void handleMessage(Message msg) {
-        super.handleMessage(msg);
-    }
-};
-
-private Runnable runnable = new Runnable() {
-    @Override
-    public void run() {
-        send();
-    }
-};
-
-//外部调用发送数据方法
-public void send(byte[] data) {
-    if (dataInfoQueue != null) {
-        dataInfoQueue.clear();
-        dataInfoQueue = splitPacketFor20Byte(data);
-        handler.post(runnable);
-    }
-}
-
-//实际发送数据过程
-private void send() {
-    if (dataInfoQueue != null && !dataInfoQueue.isEmpty()) {
-        //检测到发送数据，直接发送
-        if (dataInfoQueue.peek() != null) {
-            ViseBluetooth.getInstance().writeCharacteristic(dataInfoQueue.poll(), new IBleCallback<BluetoothGattCharacteristic>() {
-
-                @Override
-                public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
-
-                }
-
-                @Override
-                public void onFailure(BleException exception) {
-
-                }
-            });
-        }
-        //检测还有数据，延时后继续发送，一般延时100毫秒左右
-        if (dataInfoQueue.peek() != null) {
-            handler.postDelayed(runnable, 100);
-        }
-    }
-}
-
-//数据分包处理
-private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
-    Queue<byte[]> dataInfoQueue = new LinkedList<>();
-    if (data != null) {
-        int index = 0;
-        do {
-            byte[] surplusData = new byte[data.length - index];
-            byte[] currentData;
-            System.arraycopy(data, index, surplusData, 0, data.length - index);
-            if (surplusData.length <= 20) {
-                currentData = new byte[surplusData.length];
-                System.arraycopy(surplusData, 0, currentData, 0, surplusData.length);
-                index += surplusData.length;
-            } else {
-                currentData = new byte[20];
-                System.arraycopy(data, index, currentData, 0, 20);
-                index += 20;
-            }
-            dataInfoQueue.offer(currentData);
-        } while (index < data.length);
-    }
-    return dataInfoQueue;
-}
-```
-
-组包处理如下所示：
-```
-private byte[] buffer = new byte[1024];
-private int bufferIndex = 0;
-
-//数据组包处理，收到数据后就调用此方法
-public void parse(byte[] bytes) {
-    if (bytes == null) {
-        return;
-    }
-    BleLog.i("receive packet:" + HexUtil.encodeHexStr(bytes));
-    if (0 != bufferIndex) {//如果当前buffer有数据，就直接拷贝
-        System.arraycopy(bytes, 0, buffer, bufferIndex, bytes.length);
-    } else {//如果没有数据，判断当前的数据头部是不是协议头，这里默认协议头是0xFF
-        if (bytes[0] == 0xFF && bufferIndex == 0) {
-            //计算数据长度，根据协议中长度字段以及协议头、校验码长度
-            bufferLength = ConvertUtil.bytesToIntHigh(new byte[]{bytes[1], bytes[2]}, 0) + 3;
-            buffer = new byte[bufferLength];
-            System.arraycopy(bytes, 0, buffer, 0, bytes.length);
-        }
-    }
-    //数据包拷进来后要移位
-    bufferIndex += bytes.length;
-    final byte[] data = new byte[bufferIndex];
-    System.arraycopy(buffer, 0, data, 0, data.length);
-    if (isRightPacket(data)) {//判断数据是否符合协议要求
-        BleLog.i("receive data:" + HexUtil.encodeHexStr(data));
-        bufferIndex = 0;//位置清零
-        receiveData(data);
-    }
-}
-
-//数据处理
-private void receiveData(byte[] data) {
-    //处理组包后的数据
-}
-```
+### 效果展示
+![设备扫描](http://img.blog.csdn.net/20160828100329779)
+![设备连接](http://img.blog.csdn.net/20160828100240247)
+![设备详情](http://img.blog.csdn.net/20160828100259718)
+![设备详情](http://img.blog.csdn.net/20160828100315766)
+![设备服务](http://img.blog.csdn.net/20160828100343826)
 
 ## 设备扫描
 ### 使用简介
@@ -206,8 +69,6 @@ ViseBluetooth.getInstance().setScanTimeout(5000).startScan(new PeriodNameScanCal
 });
 ```
 其中扫描到的设备信息都统一放到`BluetoothLeDevice`中，其中包含了设备的所有信息，以下会详细讲解具体包含哪些信息。
-### 示例图
-![设备扫描](http://img.blog.csdn.net/20160828100329779)
 
 ## 设备连接
 ### 使用简介
@@ -269,8 +130,6 @@ ViseBluetooth.getInstance().connectByName(name, false, new IConnectCallback() {
 });
 ```
 连接成功后就可以进行相关处理，回调已在底层做了线程切换处理，可以直接操作视图。如果知道该设备服务的UUID，可直接调用`ViseBluetooth.getInstance().withUUIDString(serviceUUID, characteristicUUID, descriptorUUID);`，那么在下面操作设备时就不需要传特征(`BluetoothGattCharacteristic`)和描述(`BluetoothGattDescriptor`)相关参数，如果在连接成功后一直没设置UUID，那么在操作时则需要传该参数，该内容在下文的设备操作中会详细讲解，此处就不一一讲解了。
-### 示例图
-![设备连接](http://img.blog.csdn.net/20160828100240247)
 
 ## 设备详情
 ### 使用简介
@@ -291,9 +150,6 @@ ViseBluetooth.getInstance().connectByName(name, false, new IConnectCallback() {
 
 #### SCAN RECORD INFO(广播信息)
 根据扫描到的广播包`AdRecordStore`获取某个广播数据单元`AdRecord`的类型编号`record.getType()`，再根据编号获取广播数据单元的类型描述`record.getHumanReadableType()`以及该广播数据单元的长度及数据内容，最后通过`AdRecordUtil.getRecordDataAsString(record)`将数据内容转换成具体字符串。
-
-### 示例图
-![设备详情](http://img.blog.csdn.net/20160828100259718) ![设备详情](http://img.blog.csdn.net/20160828100315766)
 
 ## 设备操作
 ### 使用简介
@@ -418,16 +274,20 @@ ViseBluetooth.getInstance().writeCharacteristic(new byte[]{0x00,0x01,0x02}, new 
 ```
 此处的数据`new byte[]{0x00,0x01,0x02}`为模拟数据，在使用时替换为真实数据即可，切记每次发送的数据必须在20个字节内，如果大于20字节可采用分包机制进行处理。
 
-### 示例图
-![设备服务](http://img.blog.csdn.net/20160828100343826)
-
 ## 总结
 从以上的描述中可以知道，设备相关的所有操作都统一交给`ViseBluetooth`进行处理，并且该类是单例模式，全局只有一个，管理很方便。使用前必须要在Application中调用`ViseBluetooth.getInstance().init(this);`进行初始化，在连接设备成功时会自动获得一个`BluetoothGatt`，在断开连接时会将该`BluetoothGatt`关闭，上层不用关心连接数最大为6的限制问题，只需要在需要释放资源时调用`ViseBluetooth.getInstance().clear();`就行，简单易用，这也正是该项目的宗旨。
 
 ## 感谢
 在此要感谢两位作者提供的开源库[https://github.com/litesuits/android-lite-bluetoothLE](https://github.com/litesuits/android-lite-bluetoothLE)和[https://github.com/alt236/Bluetooth-LE-Library---Android](https://github.com/alt236/Bluetooth-LE-Library---Android)，这两个开源库对于本项目的完成提供了很大的帮助。
 
-### 关于作者
-#### 作者：胡伟
-#### 网站：[http://www.huwei.tech](http://www.huwei.tech)
-#### 博客：[http://blog.csdn.net/xiaoyaoyou1212](http://blog.csdn.net/xiaoyaoyou1212)
+### 关于我
+[![Website](https://img.shields.io/badge/Website-huwei-blue.svg)](http://www.huwei.tech/)
+[![GitHub](https://img.shields.io/badge/GitHub-xiaoyaoyou1212-blue.svg)](https://github.com/xiaoyaoyou1212)
+[![CSDN](https://img.shields.io/badge/CSDN-xiaoyaoyou1212-blue.svg)](http://blog.csdn.net/xiaoyaoyou1212)
+
+### 最后
+如果觉得该项目有帮助，请点下Star，您的支持是我开源的动力。如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
+
+![QQ群](http://img.blog.csdn.net/20170327191310083)
+
+*欢迎进群交流！*
