@@ -646,7 +646,7 @@ public class ViseBluetooth {
         isFound = false;
         List<ScanFilter> bleScanFilters = new ArrayList<>();
         bleScanFilters.add(new ScanFilter.Builder().setDeviceName(name).build());
-        startScan(bleScanFilters, null, new PeriodLScanCallback() {
+        startScan(bleScanFilters, new ScanSettings.Builder().build(), new PeriodLScanCallback() {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
                 isFound = true;
@@ -690,7 +690,7 @@ public class ViseBluetooth {
         isFound = false;
         List<ScanFilter> bleScanFilters = new ArrayList<>();
         bleScanFilters.add(new ScanFilter.Builder().setDeviceAddress(mac).build());
-        startScan(bleScanFilters, null, new PeriodLScanCallback() {
+        startScan(bleScanFilters, new ScanSettings.Builder().build(), new PeriodLScanCallback() {
             @Override
             public void onDeviceFound(final BluetoothLeDevice bluetoothLeDevice) {
                 isFound = true;
