@@ -6,13 +6,13 @@ Android BLE基础操作框架，基于回调，操作简单。其中包含扫描
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.9'`
+- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.10'`
 
 ### 版本说明
-[![LatestVersion](https://img.shields.io/badge/LatestVersion-1.0.9-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
+[![LatestVersion](https://img.shields.io/badge/LatestVersion-1.0.10-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
 
 ### 代码托管
-[![JCenter](https://img.shields.io/badge/JCenter-1.0.9-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/1.0.9/)
+[![JCenter](https://img.shields.io/badge/JCenter-1.0.10-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/1.0.10/)
 
 ### 常见问题
 [![FAQ](https://img.shields.io/badge/FAQ-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-red.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/FAQ.md)
@@ -190,9 +190,9 @@ for (final BluetoothGattService gattService : gattServices) {
 在获取到`BluetoothGattCharacteristic`后可进行如下操作：
 - 设置通知服务
 ```
-ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, new ICharacteristicCallback() {
     @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
     }
 
@@ -204,9 +204,9 @@ ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, new
 ```
 其中最后一个参数是设置该通知是否是指示器方式，指示器方式为有应答的通知方式，在传输时更为靠谱。如果在连接成功时已经知道该设备可通知的UUID并且已经设置成功，那么此处还可以如下设置：
 ```
-ViseBluetooth.getInstance().enableCharacteristicNotification(new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().enableCharacteristicNotification(new ICharacteristicCallback() {
     @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
     }
 
@@ -218,9 +218,9 @@ ViseBluetooth.getInstance().enableCharacteristicNotification(new IBleCallback<Bl
 ```
 - 读取信息
 ```
-ViseBluetooth.getInstance().readCharacteristic(characteristic, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().readCharacteristic(characteristic, new ICharacteristicCallback() {
     @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
     }
 
@@ -232,9 +232,9 @@ ViseBluetooth.getInstance().readCharacteristic(characteristic, new IBleCallback<
 ```
 同上，如果已设置过可读的UUID，那么此处也可以通过如下方式读取信息：
 ```
-ViseBluetooth.getInstance().readCharacteristic(new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().readCharacteristic(new ICharacteristicCallback() {
     @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
     }
 
@@ -246,9 +246,9 @@ ViseBluetooth.getInstance().readCharacteristic(new IBleCallback<BluetoothGattCha
 ```
 - 写入数据
 ```
-ViseBluetooth.getInstance().writeCharacteristic(characteristic, new byte[]{0x00,0x01,0x02}, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().writeCharacteristic(characteristic, new byte[]{0x00,0x01,0x02}, new ICharacteristicCallback() {
     @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
     }
 
@@ -260,9 +260,9 @@ ViseBluetooth.getInstance().writeCharacteristic(characteristic, new byte[]{0x00,
 ```
 同样，如果在连接成功时设置过可写UUID，那么此处也可以通过如下方式写入数据：
 ```
-ViseBluetooth.getInstance().writeCharacteristic(new byte[]{0x00,0x01,0x02}, new IBleCallback<BluetoothGattCharacteristic>() {
+ViseBluetooth.getInstance().writeCharacteristic(new byte[]{0x00,0x01,0x02}, new ICharacteristicCallback() {
     @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
+    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
     }
 
