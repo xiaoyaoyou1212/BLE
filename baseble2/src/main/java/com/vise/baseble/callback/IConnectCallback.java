@@ -13,4 +13,6 @@ public interface IConnectCallback {
     void onConnectSuccess(DeviceMirror deviceMirror);
     //连接失败
     void onConnectFailure(BleException exception);
+    //连接断开
+    void onDisconnect();
 }
