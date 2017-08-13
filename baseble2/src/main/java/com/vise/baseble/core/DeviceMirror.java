@@ -151,36 +151,17 @@ public class DeviceMirror {
         }
     };
 
-    public DeviceMirror() {
+    public DeviceMirror(BluetoothLeDevice bluetoothLeDevice) {
         deviceMirror = this;
+        this.bluetoothLeDevice = bluetoothLeDevice;
     }
 
-    /**
-     * 连接设备
-     * @param bluetoothDevice 设备信息
-     * @param autoConnect 是否自动连接
-     * @param connectCallback 连接回调
-     * @return GATT
-     */
-    public synchronized BluetoothGatt connect(BluetoothDevice bluetoothDevice, boolean autoConnect, IConnectCallback connectCallback) {
-        if (bluetoothDevice == null || connectCallback == null) {
-            throw new IllegalArgumentException("this BluetoothDevice or IConnectCallback is Null!");
-        }
+    public synchronized BluetoothGatt connect(IConnectCallback connectCallback) {
         this.connectCallback = connectCallback;
-        return bluetoothDevice.connectGatt(ViseBle.getInstance().getContext(), autoConnect, coreGattCallback);
-    }
-
-    /**
-     * 连接设备
-     * @param bluetoothLeDevice 自定义设备信息
-     * @param autoConnect 是否自动连接
-     * @param connectCallback 连接回调
-     */
-    public void connect(BluetoothLeDevice bluetoothLeDevice, boolean autoConnect, IConnectCallback connectCallback) {
-        if (bluetoothLeDevice == null) {
-            throw new IllegalArgumentException("this BluetoothLeDevice is Null!");
+        if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
+            return bluetoothLeDevice.getDevice().connectGatt(ViseBle.getInstance().getContext(), false, coreGattCallback);
         }
-        connect(bluetoothLeDevice.getDevice(), autoConnect, connectCallback);
+        return null;
     }
 
     /**
