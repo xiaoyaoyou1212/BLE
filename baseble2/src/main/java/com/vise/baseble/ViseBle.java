@@ -4,7 +4,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 
-import com.vise.baseble.callback.ScanCallback;
+import com.vise.baseble.callback.scan.ScanCallback;
+import com.vise.baseble.core.DeviceMirrorPool;
 
 import static com.vise.baseble.common.BleConstant.DEFAULT_CONN_TIME;
 import static com.vise.baseble.common.BleConstant.DEFAULT_OPERATE_TIME;
@@ -22,7 +23,7 @@ public class ViseBle {
     private int scanTimeout = DEFAULT_SCAN_TIME;//扫描超时时间
     private int connectTimeout = DEFAULT_CONN_TIME;//连接超时时间
     private int operateTimeout = DEFAULT_OPERATE_TIME;//数据操作超时时间
-    private boolean isFound = false;//是否发现设备
+    private DeviceMirrorPool deviceMirrorPool;//设备连接池
 
     private static ViseBle instance;//入口操作管理
 

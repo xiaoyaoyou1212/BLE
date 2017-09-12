@@ -1,7 +1,6 @@
 package com.vise.ble;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
