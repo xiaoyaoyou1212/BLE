@@ -14,19 +14,26 @@ import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.log.ViseLog;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 /**
  * @Description: 设备镜像（设备连接成功后返回的设备信息模型）
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
  * @date: 17/8/1 23:11.
  */
 public class DeviceMirror {
-    private ConnectState state = ConnectState.CONNECT_DISCONNECT;//设备状态描述
-    private DeviceMirror deviceMirror;
+    private final DeviceMirror deviceMirror;
+    private final String uniqueSymbol;//唯一符号
+    private final BluetoothLeDevice bluetoothLeDevice;//设备基础信息
+
     private BluetoothGatt bluetoothGatt;//蓝牙GATT
     private BluetoothGattService service;//GATT服务
     private BluetoothGattCharacteristic characteristic;//GATT特征值
     private BluetoothGattDescriptor descriptor;//GATT属性描述
-    private BluetoothLeDevice bluetoothLeDevice;//设备基础信息
+    private ConnectState state = ConnectState.CONNECT_DISCONNECT;//设备状态描述
+
+    private LinkedBlockingQueue<DataPacket> writePacketBufferQueue = new LinkedBlockingQueue<>();
+
     private IConnectCallback connectCallback;//连接回调
 
     /**
@@ -153,6 +160,7 @@ public class DeviceMirror {
     public DeviceMirror(BluetoothLeDevice bluetoothLeDevice) {
         deviceMirror = this;
         this.bluetoothLeDevice = bluetoothLeDevice;
+        this.uniqueSymbol = bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName();
     }
 
     public synchronized BluetoothGatt connect(IConnectCallback connectCallback) {
@@ -161,6 +169,14 @@ public class DeviceMirror {
             return bluetoothLeDevice.getDevice().connectGatt(ViseBle.getInstance().getContext(), false, coreGattCallback);
         }
         return null;
+    }
+
+    /**
+     * 获取设备唯一标识
+     * @return
+     */
+    public String getUniqueSymbol() {
+        return uniqueSymbol;
     }
 
     /**

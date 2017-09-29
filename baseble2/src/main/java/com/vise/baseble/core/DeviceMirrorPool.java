@@ -1,6 +1,9 @@
 package com.vise.baseble.core;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,30 +12,53 @@ import java.util.Map;
  * @date: 17/8/1 23:18.
  */
 public class DeviceMirrorPool {
-    private final Map<String, DeviceMirror> mDeviceMirrorMap;
+    private final int DEVICE_MIRROR_SIZE = 5;
+
+    private final LruHashMap<String, DeviceMirror> DEVICE_MIRROR_MAP;
 
     public DeviceMirrorPool() {
-        mDeviceMirrorMap = new HashMap<>();
+        DEVICE_MIRROR_MAP = new LruHashMap<>(DEVICE_MIRROR_SIZE);
     }
 
-    public void addDevice(DeviceMirror deviceMirror) {
+    public DeviceMirrorPool(int deviceMirrorSize) {
+        DEVICE_MIRROR_MAP = new LruHashMap<>(deviceMirrorSize);
+    }
+
+    public void addDeviceMirror(DeviceMirror deviceMirror) {
         if (deviceMirror == null) {
             return;
         }
+        if (!DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
+            DEVICE_MIRROR_MAP.put(deviceMirror.getUniqueSymbol(), deviceMirror);
+        }
     }
 
-    public void removeDevice(DeviceMirror deviceMirror) {
+    public void removeDeviceMirror(DeviceMirror deviceMirror) {
         if (deviceMirror == null) {
             return;
+        }
+        if (DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
+            DEVICE_MIRROR_MAP.remove(deviceMirror.getUniqueSymbol());
         }
     }
 
     public void clear() {
-        mDeviceMirrorMap.clear();
+        DEVICE_MIRROR_MAP.clear();
     }
 
     public Map<String, DeviceMirror> getDeviceMirrorMap() {
-        return mDeviceMirrorMap;
+        return DEVICE_MIRROR_MAP;
+    }
+
+    public List<DeviceMirror> getDeviceMirrorList() {
+        final List<DeviceMirror> deviceMirrors = new ArrayList<>(DEVICE_MIRROR_MAP.values());
+        Collections.sort(deviceMirrors, new Comparator<DeviceMirror>() {
+            @Override
+            public int compare(final DeviceMirror lhs, final DeviceMirror rhs) {
+                return lhs.getUniqueSymbol().compareToIgnoreCase(rhs.getUniqueSymbol());
+            }
+        });
+        return deviceMirrors;
     }
 
 }

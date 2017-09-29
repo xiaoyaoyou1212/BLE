@@ -4,8 +4,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 
+import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
+import com.vise.baseble.callback.scan.SingleFilterScanCallback;
+import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
+import com.vise.baseble.exception.TimeoutException;
+import com.vise.baseble.model.BluetoothLeDevice;
+import com.vise.baseble.model.BluetoothLeDeviceStore;
+
+import java.util.UUID;
 
 import static com.vise.baseble.common.BleConstant.DEFAULT_CONN_TIME;
 import static com.vise.baseble.common.BleConstant.DEFAULT_OPERATE_TIME;
@@ -24,6 +33,7 @@ public class ViseBle {
     private int connectTimeout = DEFAULT_CONN_TIME;//连接超时时间
     private int operateTimeout = DEFAULT_OPERATE_TIME;//数据操作超时时间
     private DeviceMirrorPool deviceMirrorPool;//设备连接池
+    private DeviceMirror deviceMirror;//连接的设备
 
     private static ViseBle instance;//入口操作管理
 
@@ -55,6 +65,7 @@ public class ViseBle {
             this.context = context.getApplicationContext();
             bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
+            deviceMirrorPool = new DeviceMirrorPool();
         }
     }
 
@@ -98,6 +109,78 @@ public class ViseBle {
             throw new IllegalArgumentException("this ScanCallback is Null!");
         }
         periodScanCallback.setScan(false).removeHandlerMsg().scan();
+    }
+
+    public void connect(BluetoothLeDevice bluetoothLeDevice, IConnectCallback connectCallback) {
+        if (bluetoothLeDevice == null || connectCallback == null) {
+            return;
+        }
+        deviceMirror = new DeviceMirror(bluetoothLeDevice);
+        deviceMirror.connect(connectCallback);
+    }
+
+    public void connectByMac(String mac, final IConnectCallback connectCallback) {
+        if (mac == null || connectCallback == null) {
+            return;
+        }
+        startScan(new SingleFilterScanCallback(new IScanCallback() {
+            @Override
+            public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+            }
+
+            @Override
+            public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+                if (bluetoothLeDeviceStore.getDeviceList().size() > 0 ) {
+                    connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
+                }
+            }
+
+            @Override
+            public void onScanTimeout() {
+                connectCallback.onConnectFailure(new TimeoutException());
+            }
+        }).setDeviceMac(mac));
+    }
+
+    public void connectByName(String name, final IConnectCallback connectCallback) {
+        if (name == null || connectCallback == null) {
+            return;
+        }
+        startScan(new SingleFilterScanCallback(new IScanCallback() {
+            @Override
+            public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+            }
+
+            @Override
+            public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+                if (bluetoothLeDeviceStore.getDeviceList().size() > 0 ) {
+                    connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
+                }
+            }
+
+            @Override
+            public void onScanTimeout() {
+                connectCallback.onConnectFailure(new TimeoutException());
+            }
+        }).setDeviceName(name));
+    }
+
+    public void writeData(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID, byte[] data) {
+
+    }
+
+    public void readData(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID, byte[] data) {
+
+    }
+
+    public void registerNotifyListener(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID) {
+
+    }
+
+    public void unregisterNotifyListener(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID) {
+
     }
 
     /**
