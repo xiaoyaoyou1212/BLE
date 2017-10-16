@@ -1,5 +1,8 @@
 package com.vise.baseble.core;
 
+import com.vise.baseble.common.BleConfig;
+import com.vise.baseble.model.BluetoothLeDevice;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,12 +15,10 @@ import java.util.Map;
  * @date: 17/8/1 23:18.
  */
 public class DeviceMirrorPool {
-    private final int DEVICE_MIRROR_SIZE = 5;
-
     private final LruHashMap<String, DeviceMirror> DEVICE_MIRROR_MAP;
 
     public DeviceMirrorPool() {
-        DEVICE_MIRROR_MAP = new LruHashMap<>(DEVICE_MIRROR_SIZE);
+        DEVICE_MIRROR_MAP = new LruHashMap<>(BleConfig.getInstance().getMaxConnectCount());
     }
 
     public DeviceMirrorPool(int deviceMirrorSize) {
@@ -40,6 +41,20 @@ public class DeviceMirrorPool {
         if (DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
             DEVICE_MIRROR_MAP.remove(deviceMirror.getUniqueSymbol());
         }
+    }
+
+    public boolean isContainDevice(DeviceMirror deviceMirror) {
+        if (deviceMirror != null && DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isContainDevice(BluetoothLeDevice bluetoothLeDevice) {
+        if (bluetoothLeDevice != null && DEVICE_MIRROR_MAP.containsKey(bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName())) {
+            return true;
+        }
+        return false;
     }
 
     public void clear() {

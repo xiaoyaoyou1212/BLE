@@ -60,7 +60,7 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
                     @Override
                     public void run() {
                         isScanning = false;
-                        ViseBle.getInstance().stopLeScan(ScanCallback.this);
+                        ViseBle.getInstance().stopScan(ScanCallback.this);
 
                         if (bluetoothLeDeviceStore.getDeviceMap() != null
                                 && bluetoothLeDeviceStore.getDeviceMap().size() > 0) {
@@ -72,10 +72,10 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
                 }, scanTimeout);
             }
             isScanning = true;
-            ViseBle.getInstance().startLeScan(ScanCallback.this);
+            ViseBle.getInstance().startScan(ScanCallback.this);
         } else {
             isScanning = false;
-            ViseBle.getInstance().stopLeScan(ScanCallback.this);
+            ViseBle.getInstance().stopScan(ScanCallback.this);
         }
     }
 

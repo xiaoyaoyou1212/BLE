@@ -5,9 +5,13 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 
 import com.vise.baseble.ViseBle;
 import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.common.ConnectState;
 import com.vise.baseble.exception.ConnectException;
 import com.vise.baseble.model.BluetoothLeDevice;
@@ -36,6 +40,13 @@ public class DeviceMirror {
 
     private IConnectCallback connectCallback;//连接回调
 
+    private final Handler handler = new Handler(Looper.myLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+        }
+    };
+
     /**
      * 蓝牙所有相关操作的核心回调类
      */
@@ -55,13 +66,9 @@ public class DeviceMirror {
                 gatt.discoverServices();
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 state = ConnectState.CONNECT_DISCONNECT;
+                close();
                 if (connectCallback != null) {
-                    close();
-                    if (status == 0) {
-                        connectCallback.onDisconnect();
-                    } else {
-                        connectCallback.onConnectFailure(new ConnectException(gatt, status));
-                    }
+                    connectCallback.onDisconnect();
                 }
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
                 state = ConnectState.CONNECT_PROCESS;
@@ -84,8 +91,8 @@ public class DeviceMirror {
                 }
             } else {
                 state = ConnectState.CONNECT_FAILURE;
+                close();
                 if (connectCallback != null) {
-                    close();
                     connectCallback.onConnectFailure(new ConnectException(gatt, status));
                 }
             }
@@ -163,8 +170,14 @@ public class DeviceMirror {
         this.uniqueSymbol = bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName();
     }
 
-    public synchronized BluetoothGatt connect(IConnectCallback connectCallback) {
+    public BluetoothGatt connect(IConnectCallback connectCallback) {
         this.connectCallback = connectCallback;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }, BleConfig.getInstance().getConnectTimeout());
         if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
             return bluetoothLeDevice.getDevice().connectGatt(ViseBle.getInstance().getContext(), false, coreGattCallback);
         }

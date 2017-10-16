@@ -8,11 +8,13 @@ import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.callback.scan.SingleFilterScanCallback;
+import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
 import com.vise.baseble.exception.TimeoutException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
+import com.vise.log.ViseLog;
 
 import java.util.UUID;
 
@@ -29,9 +31,6 @@ public class ViseBle {
     private Context context;//上下文
     private BluetoothManager bluetoothManager;//蓝牙管理
     private BluetoothAdapter bluetoothAdapter;//蓝牙适配器
-    private int scanTimeout = DEFAULT_SCAN_TIME;//扫描超时时间
-    private int connectTimeout = DEFAULT_CONN_TIME;//连接超时时间
-    private int operateTimeout = DEFAULT_OPERATE_TIME;//数据操作超时时间
     private DeviceMirrorPool deviceMirrorPool;//设备连接池
     private DeviceMirror deviceMirror;//连接的设备
 
@@ -61,7 +60,7 @@ public class ViseBle {
      * @param context 上下文
      */
     public void init(Context context) {
-        if (this.context == null) {
+        if (this.context == null && context != null) {
             this.context = context.getApplicationContext();
             bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
@@ -73,7 +72,7 @@ public class ViseBle {
      * 开始扫描
      * @param leScanCallback 回调
      */
-    public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+    public void startScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(leScanCallback);
         }
@@ -83,7 +82,7 @@ public class ViseBle {
      * 停止扫描
      * @param leScanCallback 回调
      */
-    public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+    public void stopScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
@@ -93,30 +92,34 @@ public class ViseBle {
      * 开始扫描
      * @param periodScanCallback 自定义回调
      */
-    public void startScan(ScanCallback periodScanCallback) {
-        if (periodScanCallback == null) {
+    public void startScan(ScanCallback scanCallback) {
+        if (scanCallback == null) {
             throw new IllegalArgumentException("this ScanCallback is Null!");
         }
-        periodScanCallback.setScan(true).setScanTimeout(scanTimeout).scan();
+        scanCallback.setScan(true).setScanTimeout(BleConfig.getInstance().getScanTimeout()).scan();
     }
 
     /**
      * 停止扫描
      * @param periodScanCallback 自定义回调
      */
-    public void stopScan(ScanCallback periodScanCallback) {
-        if (periodScanCallback == null) {
+    public void stopScan(ScanCallback scanCallback) {
+        if (scanCallback == null) {
             throw new IllegalArgumentException("this ScanCallback is Null!");
         }
-        periodScanCallback.setScan(false).removeHandlerMsg().scan();
+        scanCallback.setScan(false).removeHandlerMsg().scan();
     }
 
     public void connect(BluetoothLeDevice bluetoothLeDevice, IConnectCallback connectCallback) {
         if (bluetoothLeDevice == null || connectCallback == null) {
             return;
         }
-        deviceMirror = new DeviceMirror(bluetoothLeDevice);
-        deviceMirror.connect(connectCallback);
+        if (!deviceMirrorPool.isContainDevice(bluetoothLeDevice)) {
+            deviceMirror = new DeviceMirror(bluetoothLeDevice);
+            deviceMirror.connect(connectCallback);
+        } else {
+            ViseLog.i("This device is connected.");
+        }
     }
 
     public void connectByMac(String mac, final IConnectCallback connectCallback) {
@@ -207,57 +210,4 @@ public class ViseBle {
         return bluetoothAdapter;
     }
 
-    /**
-     * 获取发送数据超时时间
-     * @return 返回发送数据超时时间
-     */
-    public int getOperateTimeout() {
-        return operateTimeout;
-    }
-
-    /**
-     * 设置发送数据超时时间
-     * @param operateTimeout 发送数据超时时间
-     * @return 返回ViseBle
-     */
-    public ViseBle setOperateTimeout(int operateTimeout) {
-        this.operateTimeout = operateTimeout;
-        return this;
-    }
-
-    /**
-     * 获取连接超时时间
-     * @return 返回连接超时时间
-     */
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    /**
-     * 设置连接超时时间
-     * @param connectTimeout 连接超时时间
-     * @return 返回ViseBle
-     */
-    public ViseBle setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-        return this;
-    }
-
-    /**
-     * 获取扫描超时时间
-     * @return 返回扫描超时时间
-     */
-    public int getScanTimeout() {
-        return scanTimeout;
-    }
-
-    /**
-     * 设置扫描超时时间
-     * @param scanTimeout 扫描超时时间
-     * @return 返回ViseBle
-     */
-    public ViseBle setScanTimeout(int scanTimeout) {
-        this.scanTimeout = scanTimeout;
-        return this;
-    }
 }
