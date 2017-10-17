@@ -14,11 +14,15 @@ import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.common.ConnectState;
 import com.vise.baseble.exception.ConnectException;
+import com.vise.baseble.exception.TimeoutException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.log.ViseLog;
 
 import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.vise.baseble.common.BleConstant.MSG_CONNECT_RETRY;
+import static com.vise.baseble.common.BleConstant.MSG_CONNECT_TIMEOUT;
 
 /**
  * @Description: 设备镜像（设备连接成功后返回的设备信息模型）
@@ -39,11 +43,29 @@ public class DeviceMirror {
     private LinkedBlockingQueue<DataPacket> writePacketBufferQueue = new LinkedBlockingQueue<>();
 
     private IConnectCallback connectCallback;//连接回调
+    private int connectRetryCount = 0;//当前连接重试次数
 
     private final Handler handler = new Handler(Looper.myLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+            if (msg.what == MSG_CONNECT_TIMEOUT) {
+                if (connectRetryCount < BleConfig.getInstance().getConnectRetryCount()) {
+                    connectRetryCount++;
+                    if (handler != null) {
+                        handler.sendEmptyMessageDelayed(MSG_CONNECT_RETRY, BleConfig.getInstance().getConnectRetryInterval());
+                    }
+                    ViseLog.i("handleMessage connectRetryCount is " + connectRetryCount);
+                } else {
+                    state = ConnectState.CONNECT_TIMEOUT;
+                    close();
+                    if (connectCallback != null) {
+                        connectCallback.onConnectFailure(new TimeoutException());
+                    }
+                    ViseLog.i("handleMessage connectTimeout.");
+                }
+            } else if (msg.what == MSG_CONNECT_RETRY) {
+                connect();
+            }
         }
     };
 
@@ -83,17 +105,30 @@ public class DeviceMirror {
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
             ViseLog.i("onServicesDiscovered  status: " + status);
+            if (handler != null) {
+                handler.removeMessages(MSG_CONNECT_TIMEOUT);
+            }
             if (status == 0) {
                 bluetoothGatt = gatt;
                 state = ConnectState.CONNECT_SUCCESS;
                 if (connectCallback != null) {
                     connectCallback.onConnectSuccess(deviceMirror);
                 }
+                ViseLog.i("onServicesDiscovered connectSuccess.");
             } else {
-                state = ConnectState.CONNECT_FAILURE;
-                close();
-                if (connectCallback != null) {
-                    connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                if (connectRetryCount < BleConfig.getInstance().getConnectRetryCount()) {
+                    connectRetryCount++;
+                    if (handler != null) {
+                        handler.sendEmptyMessageDelayed(MSG_CONNECT_RETRY, BleConfig.getInstance().getConnectRetryInterval());
+                    }
+                    ViseLog.i("onServicesDiscovered connectRetryCount is " + connectRetryCount);
+                } else {
+                    state = ConnectState.CONNECT_FAILURE;
+                    close();
+                    if (connectCallback != null) {
+                        connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                    }
+                    ViseLog.i("onServicesDiscovered connectFailure.");
                 }
             }
         }
@@ -170,18 +205,17 @@ public class DeviceMirror {
         this.uniqueSymbol = bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName();
     }
 
-    public BluetoothGatt connect(IConnectCallback connectCallback) {
-        this.connectCallback = connectCallback;
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }, BleConfig.getInstance().getConnectTimeout());
-        if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
-            return bluetoothLeDevice.getDevice().connectGatt(ViseBle.getInstance().getContext(), false, coreGattCallback);
+    /**
+     * 连接设备
+     * @param connectCallback
+     */
+    public void connect(IConnectCallback connectCallback) {
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
         }
-        return null;
+        this.connectCallback = connectCallback;
+        connectRetryCount = 0;
+        connect();
     }
 
     /**
@@ -287,6 +321,18 @@ public class DeviceMirror {
     public synchronized void close() {
         if (bluetoothGatt != null) {
             bluetoothGatt.close();
+        }
+    }
+
+    /*=============================================================================================*/
+
+    private synchronized void connect() {
+        if (handler != null) {
+            handler.sendMessageDelayed(handler.obtainMessage(MSG_CONNECT_TIMEOUT, connectCallback), BleConfig.getInstance().getConnectTimeout());
+        }
+        state = ConnectState.CONNECT_PROCESS;
+        if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
+            bluetoothLeDevice.getDevice().connectGatt(ViseBle.getInstance().getContext(), false, coreGattCallback);
         }
     }
 }

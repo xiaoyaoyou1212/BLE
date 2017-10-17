@@ -18,4 +18,16 @@ public class BleConstant {
     public static final int DEFAULT_RETRY_COUNT = 3;
 
     public static final int DEFAULT_MAX_CONNECT_COUNT = 5;
+
+    public static final int MSG_WRITE_CHA = 1;
+    public static final int MSG_WRITE_DES = 2;
+    public static final int MSG_READ_CHA = 3;
+    public static final int MSG_READ_DES = 4;
+    public static final int MSG_READ_RSSI = 5;
+    public static final int MSG_CONNECT_TIMEOUT = 6;
+    public static final int MSG_WRITE_DATA_TIMEOUT = 7;
+    public static final int MSG_READ_DATA_TIMEOUT = 8;
+    public static final int MSG_CONNECT_RETRY = 9;
+    public static final int MSG_WRITE_DATA_RETRY = 10;
+    public static final int MSG_READ_DATA_RETRY = 11;
 }

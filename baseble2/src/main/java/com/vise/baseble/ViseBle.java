@@ -18,10 +18,6 @@ import com.vise.log.ViseLog;
 
 import java.util.UUID;
 
-import static com.vise.baseble.common.BleConstant.DEFAULT_CONN_TIME;
-import static com.vise.baseble.common.BleConstant.DEFAULT_OPERATE_TIME;
-import static com.vise.baseble.common.BleConstant.DEFAULT_SCAN_TIME;
-
 /**
  * @Description: BLE设备操作入口
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
