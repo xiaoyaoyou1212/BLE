@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 
+import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
@@ -28,7 +29,6 @@ public class ViseBle {
     private BluetoothManager bluetoothManager;//蓝牙管理
     private BluetoothAdapter bluetoothAdapter;//蓝牙适配器
     private DeviceMirrorPool deviceMirrorPool;//设备连接池
-    private DeviceMirror deviceMirror;//连接的设备
 
     private static ViseBle instance;//入口操作管理
 
@@ -106,18 +106,28 @@ public class ViseBle {
         scanCallback.setScan(false).removeHandlerMsg().scan();
     }
 
+    /**
+     * 连接设备
+     * @param bluetoothLeDevice
+     * @param connectCallback
+     */
     public void connect(BluetoothLeDevice bluetoothLeDevice, IConnectCallback connectCallback) {
         if (bluetoothLeDevice == null || connectCallback == null) {
             return;
         }
         if (!deviceMirrorPool.isContainDevice(bluetoothLeDevice)) {
-            deviceMirror = new DeviceMirror(bluetoothLeDevice);
+            DeviceMirror deviceMirror = new DeviceMirror(bluetoothLeDevice);
             deviceMirror.connect(connectCallback);
         } else {
             ViseLog.i("This device is connected.");
         }
     }
 
+    /**
+     * 连接指定mac地址的设备
+     * @param mac
+     * @param connectCallback
+     */
     public void connectByMac(String mac, final IConnectCallback connectCallback) {
         if (mac == null || connectCallback == null) {
             return;
@@ -142,6 +152,11 @@ public class ViseBle {
         }).setDeviceMac(mac));
     }
 
+    /**
+     * 连接指定设备名称的设备
+     * @param name
+     * @param connectCallback
+     */
     public void connectByName(String name, final IConnectCallback connectCallback) {
         if (name == null || connectCallback == null) {
             return;
@@ -166,20 +181,41 @@ public class ViseBle {
         }).setDeviceName(name));
     }
 
-    public void writeData(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID, byte[] data) {
+    /**
+     * 写入数据
+     * @param deviceMirror
+     * @param data
+     * @param bleCallback
+     * @param <T>
+     */
+    public <T> void writeData(DeviceMirror deviceMirror, byte[] data, IBleCallback<T> bleCallback) {
+        if (deviceMirror != null && deviceMirror.isConnected()) {
 
+        }
     }
 
-    public void readData(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID, byte[] data) {
+    /**
+     * 读取数据
+     * @param deviceMirror
+     * @param bleCallback
+     * @param <T>
+     */
+    public <T> void readData(DeviceMirror deviceMirror, IBleCallback<T> bleCallback) {
+        if (deviceMirror != null && deviceMirror.isConnected()) {
 
+        }
     }
 
-    public void registerNotifyListener(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID) {
+    /**
+     * 通过通知获取数据
+     * @param deviceMirror
+     * @param bleCallback
+     * @param <T>
+     */
+    public <T> void notifyData(DeviceMirror deviceMirror, IBleCallback<T> bleCallback) {
+        if (deviceMirror != null && deviceMirror.isConnected()) {
 
-    }
-
-    public void unregisterNotifyListener(UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID) {
-
+        }
     }
 
     /**
@@ -206,4 +242,11 @@ public class ViseBle {
         return bluetoothAdapter;
     }
 
+    /**
+     * 获取设备镜像池
+     * @return
+     */
+    public DeviceMirrorPool getDeviceMirrorPool() {
+        return deviceMirrorPool;
+    }
 }

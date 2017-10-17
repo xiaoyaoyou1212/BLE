@@ -10,15 +10,21 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.vise.baseble.ViseBle;
+import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.common.ConnectState;
+import com.vise.baseble.common.PropertyType;
 import com.vise.baseble.exception.ConnectException;
 import com.vise.baseble.exception.TimeoutException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.log.ViseLog;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.vise.baseble.common.BleConstant.MSG_CONNECT_RETRY;
@@ -35,15 +41,15 @@ public class DeviceMirror {
     private final BluetoothLeDevice bluetoothLeDevice;//设备基础信息
 
     private BluetoothGatt bluetoothGatt;//蓝牙GATT
-    private BluetoothGattService service;//GATT服务
-    private BluetoothGattCharacteristic characteristic;//GATT特征值
-    private BluetoothGattDescriptor descriptor;//GATT属性描述
-    private ConnectState state = ConnectState.CONNECT_DISCONNECT;//设备状态描述
-
-    private LinkedBlockingQueue<DataPacket> writePacketBufferQueue = new LinkedBlockingQueue<>();
-
     private IConnectCallback connectCallback;//连接回调
     private int connectRetryCount = 0;//当前连接重试次数
+    private ConnectState connectState = ConnectState.CONNECT_DISCONNECT;//设备状态描述
+    private HashMap<String, BluetoothGattInfo> writeInfoMap = new HashMap<>();//写入数据GATT信息集合
+    private HashMap<String, BluetoothGattInfo> readInfoMap = new HashMap<>();//读取数据GATT信息集合
+    private HashMap<String, BluetoothGattInfo> notifyInfoMap = new HashMap<>();//通知数据GATT信息集合
+    private HashMap<String, BluetoothGattInfo> indicateInfoMap = new HashMap<>();//指示器数据GATT信息集合
+    private HashMap<String, IBleCallback> bleCallbackMap = new HashMap<>();//数据操作回调集合
+    private LinkedBlockingQueue<DataPacket> writePacketBufferQueue = new LinkedBlockingQueue<>();
 
     private final Handler handler = new Handler(Looper.myLooper()) {
         @Override
@@ -56,7 +62,7 @@ public class DeviceMirror {
                     }
                     ViseLog.i("handleMessage connectRetryCount is " + connectRetryCount);
                 } else {
-                    state = ConnectState.CONNECT_TIMEOUT;
+                    connectState = ConnectState.CONNECT_TIMEOUT;
                     close();
                     if (connectCallback != null) {
                         connectCallback.onConnectFailure(new TimeoutException());
@@ -87,13 +93,13 @@ public class DeviceMirror {
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 gatt.discoverServices();
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                state = ConnectState.CONNECT_DISCONNECT;
+                connectState = ConnectState.CONNECT_DISCONNECT;
                 close();
                 if (connectCallback != null) {
                     connectCallback.onDisconnect();
                 }
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
-                state = ConnectState.CONNECT_PROCESS;
+                connectState = ConnectState.CONNECT_PROCESS;
             }
         }
 
@@ -110,10 +116,11 @@ public class DeviceMirror {
             }
             if (status == 0) {
                 bluetoothGatt = gatt;
-                state = ConnectState.CONNECT_SUCCESS;
+                connectState = ConnectState.CONNECT_SUCCESS;
                 if (connectCallback != null) {
                     connectCallback.onConnectSuccess(deviceMirror);
                 }
+                ViseBle.getInstance().getDeviceMirrorPool().addDeviceMirror(deviceMirror);
                 ViseLog.i("onServicesDiscovered connectSuccess.");
             } else {
                 if (connectRetryCount < BleConfig.getInstance().getConnectRetryCount()) {
@@ -123,7 +130,7 @@ public class DeviceMirror {
                     }
                     ViseLog.i("onServicesDiscovered connectRetryCount is " + connectRetryCount);
                 } else {
-                    state = ConnectState.CONNECT_FAILURE;
+                    connectState = ConnectState.CONNECT_FAILURE;
                     close();
                     if (connectCallback != null) {
                         connectCallback.onConnectFailure(new ConnectException(gatt, status));
@@ -218,6 +225,39 @@ public class DeviceMirror {
         connect();
     }
 
+    public void withUUID(PropertyType propertyType, UUID serviceUUID, UUID characteristicUUID, UUID descriptorUUID) {
+        if (propertyType != null && serviceUUID != null && characteristicUUID != null) {
+            BluetoothGattInfo bluetoothGattInfo = new BluetoothGattInfo(bluetoothGatt, serviceUUID, characteristicUUID, descriptorUUID);
+            String key;
+            if (descriptorUUID != null) {
+                key = serviceUUID.toString() + characteristicUUID.toString() + descriptorUUID.toString();
+            } else {
+                key = serviceUUID.toString() + characteristicUUID.toString();
+            }
+            if (propertyType == PropertyType.PROPERTY_READ) {
+                readInfoMap.put(key, bluetoothGattInfo);
+            } else if (propertyType == PropertyType.PROPERTY_WRITE) {
+                writeInfoMap.put(key, bluetoothGattInfo);
+            } else if (propertyType == PropertyType.PROPERTY_NOTIFY) {
+                notifyInfoMap.put(key, bluetoothGattInfo);
+            } else if (propertyType == PropertyType.PROPERTY_INDICATE) {
+                indicateInfoMap.put(key, bluetoothGattInfo);
+            }
+        }
+    }
+
+    public void withUUID(PropertyType propertyType, String serviceUUID, String characteristicUUID, String descriptorUUID) {
+        withUUID(propertyType, formUUID(serviceUUID), formUUID(characteristicUUID), formUUID(descriptorUUID));
+    }
+
+    public void registerNotifyListener() {
+
+    }
+
+    public void unregisterNotifyListener() {
+
+    }
+
     /**
      * 获取设备唯一标识
      * @return
@@ -235,75 +275,19 @@ public class DeviceMirror {
     }
 
     /**
-     * 获取当前服务
-     * @return 返回当前服务
-     */
-    public BluetoothGattService getService() {
-        return service;
-    }
-
-    /**
-     * 设置服务
-     * @param service 服务
-     * @return 返回DeviceMirror
-     */
-    public DeviceMirror setService(BluetoothGattService service) {
-        this.service = service;
-        return this;
-    }
-
-    /**
-     * 获取当前特征值
-     * @return 返回当前特征值
-     */
-    public BluetoothGattCharacteristic getCharacteristic() {
-        return characteristic;
-    }
-
-    /**
-     * 设置特征值
-     * @param characteristic 特征值
-     * @return 返回DeviceMirror
-     */
-    public DeviceMirror setCharacteristic(BluetoothGattCharacteristic characteristic) {
-        this.characteristic = characteristic;
-        return this;
-    }
-
-    /**
-     * 获取当前属性描述值
-     * @return 返回当前属性描述值
-     */
-    public BluetoothGattDescriptor getDescriptor() {
-        return descriptor;
-    }
-
-    /**
-     * 设置属性描述值
-     * @param descriptor 属性描述值
-     * @return 返回DeviceMirror
-     */
-    public DeviceMirror setDescriptor(BluetoothGattDescriptor descriptor) {
-        this.descriptor = descriptor;
-        return this;
-    }
-
-    /**
      * 获取设备连接状态
      * @return 返回设备连接状态
      */
-    public ConnectState getState() {
-        return state;
+    public ConnectState getConnectState() {
+        return connectState;
     }
 
     /**
-     * 设置设备连接状态
-     * @param state 设备连接状态
-     * @return 返回ViseBle
+     * 设备是否连接
+     * @return
      */
-    public DeviceMirror setConnectState(ConnectState state) {
-        this.state = state;
-        return this;
+    public boolean isConnected() {
+        return connectState == ConnectState.CONNECT_SUCCESS;
     }
 
     /**
@@ -324,13 +308,20 @@ public class DeviceMirror {
         }
     }
 
-    /*=============================================================================================*/
+    /**
+     * UUID转换
+     * @param uuid
+     * @return 返回UUID
+     */
+    private UUID formUUID(String uuid) {
+        return uuid == null ? null : UUID.fromString(uuid);
+    }
 
     private synchronized void connect() {
         if (handler != null) {
             handler.sendMessageDelayed(handler.obtainMessage(MSG_CONNECT_TIMEOUT, connectCallback), BleConfig.getInstance().getConnectTimeout());
         }
-        state = ConnectState.CONNECT_PROCESS;
+        connectState = ConnectState.CONNECT_PROCESS;
         if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
             bluetoothLeDevice.getDevice().connectGatt(ViseBle.getInstance().getContext(), false, coreGattCallback);
         }
