@@ -4,20 +4,19 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 
-import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.callback.IRssiCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.callback.scan.SingleFilterScanCallback;
 import com.vise.baseble.common.BleConfig;
+import com.vise.baseble.common.PropertyType;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
 import com.vise.baseble.exception.TimeoutException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.log.ViseLog;
-
-import java.util.UUID;
 
 /**
  * @Description: BLE设备操作入口
@@ -185,36 +184,53 @@ public class ViseBle {
      * 写入数据
      * @param deviceMirror
      * @param data
-     * @param bleCallback
-     * @param <T>
      */
-    public <T> void writeData(DeviceMirror deviceMirror, byte[] data, IBleCallback<T> bleCallback) {
-        if (deviceMirror != null && deviceMirror.isConnected()) {
-
+    public void writeData(DeviceMirror deviceMirror, byte[] data) {
+        if (deviceMirror != null  && deviceMirror.isConnected() && data != null) {
+            deviceMirror.writeData(data);
         }
     }
 
     /**
      * 读取数据
      * @param deviceMirror
-     * @param bleCallback
-     * @param <T>
      */
-    public <T> void readData(DeviceMirror deviceMirror, IBleCallback<T> bleCallback) {
+    public void readData(DeviceMirror deviceMirror) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
-
+            deviceMirror.readData();
         }
     }
 
     /**
-     * 通过通知获取数据
+     * 读取设备信号值
      * @param deviceMirror
-     * @param bleCallback
-     * @param <T>
+     * @param rssiCallback
      */
-    public <T> void notifyData(DeviceMirror deviceMirror, IBleCallback<T> bleCallback) {
-        if (deviceMirror != null && deviceMirror.isConnected()) {
+    public void readRemoteRssi(DeviceMirror deviceMirror, IRssiCallback rssiCallback) {
+        if (deviceMirror != null && deviceMirror.isConnected() && rssiCallback != null) {
+            deviceMirror.readRemoteRssi(rssiCallback);
+        }
+    }
 
+    /**
+     * 注册获取数据通知
+     * @param deviceMirror
+     * @param propertyType
+     */
+    public void registerNotifyListener(DeviceMirror deviceMirror, PropertyType propertyType) {
+        if (deviceMirror != null && deviceMirror.isConnected()) {
+            deviceMirror.registerNotifyListener(propertyType);
+        }
+    }
+
+    /**
+     * 取消获取数据通知
+     * @param deviceMirror
+     * @param propertyType
+     */
+    public void unregisterNotifyListener(DeviceMirror deviceMirror, PropertyType propertyType) {
+        if (deviceMirror != null && deviceMirror.isConnected()) {
+            deviceMirror.unregisterNotifyListener(propertyType);
         }
     }
 
