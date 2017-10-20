@@ -9,5 +9,6 @@ import com.vise.baseble.exception.BleException;
  */
 public interface IRssiCallback {
     void onSuccess(int rssi);
+
     void onFailure(BleException exception);
 }

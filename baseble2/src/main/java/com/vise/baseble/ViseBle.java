@@ -4,13 +4,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 
+import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.callback.IRssiCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.callback.scan.SingleFilterScanCallback;
 import com.vise.baseble.common.BleConfig;
-import com.vise.baseble.common.PropertyType;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
 import com.vise.baseble.exception.TimeoutException;
@@ -52,6 +52,7 @@ public class ViseBle {
 
     /**
      * 初始化
+     *
      * @param context 上下文
      */
     public void init(Context context) {
@@ -65,6 +66,7 @@ public class ViseBle {
 
     /**
      * 开始扫描
+     *
      * @param leScanCallback 回调
      */
     public void startScan(BluetoothAdapter.LeScanCallback leScanCallback) {
@@ -75,6 +77,7 @@ public class ViseBle {
 
     /**
      * 停止扫描
+     *
      * @param leScanCallback 回调
      */
     public void stopScan(BluetoothAdapter.LeScanCallback leScanCallback) {
@@ -85,6 +88,7 @@ public class ViseBle {
 
     /**
      * 开始扫描
+     *
      * @param periodScanCallback 自定义回调
      */
     public void startScan(ScanCallback scanCallback) {
@@ -96,6 +100,7 @@ public class ViseBle {
 
     /**
      * 停止扫描
+     *
      * @param periodScanCallback 自定义回调
      */
     public void stopScan(ScanCallback scanCallback) {
@@ -107,6 +112,7 @@ public class ViseBle {
 
     /**
      * 连接设备
+     *
      * @param bluetoothLeDevice
      * @param connectCallback
      */
@@ -124,8 +130,9 @@ public class ViseBle {
 
     /**
      * 连接指定mac地址的设备
-     * @param mac
-     * @param connectCallback
+     *
+     * @param mac             设备mac地址
+     * @param connectCallback 连接回调
      */
     public void connectByMac(String mac, final IConnectCallback connectCallback) {
         if (mac == null || connectCallback == null) {
@@ -139,7 +146,7 @@ public class ViseBle {
 
             @Override
             public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
-                if (bluetoothLeDeviceStore.getDeviceList().size() > 0 ) {
+                if (bluetoothLeDeviceStore.getDeviceList().size() > 0) {
                     connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
                 }
             }
@@ -153,8 +160,9 @@ public class ViseBle {
 
     /**
      * 连接指定设备名称的设备
-     * @param name
-     * @param connectCallback
+     *
+     * @param name            设备名称
+     * @param connectCallback 连接回调
      */
     public void connectByName(String name, final IConnectCallback connectCallback) {
         if (name == null || connectCallback == null) {
@@ -168,7 +176,7 @@ public class ViseBle {
 
             @Override
             public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
-                if (bluetoothLeDeviceStore.getDeviceList().size() > 0 ) {
+                if (bluetoothLeDeviceStore.getDeviceList().size() > 0) {
                     connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
                 }
             }
@@ -182,18 +190,20 @@ public class ViseBle {
 
     /**
      * 写入数据
-     * @param deviceMirror
-     * @param data
+     *
+     * @param deviceMirror 设备镜像
+     * @param data         待发送数据（不能超过20字节）
      */
     public void writeData(DeviceMirror deviceMirror, byte[] data) {
-        if (deviceMirror != null  && deviceMirror.isConnected() && data != null) {
+        if (deviceMirror != null && deviceMirror.isConnected() && data != null) {
             deviceMirror.writeData(data);
         }
     }
 
     /**
      * 读取数据
-     * @param deviceMirror
+     *
+     * @param deviceMirror 设备镜像
      */
     public void readData(DeviceMirror deviceMirror) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
@@ -203,8 +213,9 @@ public class ViseBle {
 
     /**
      * 读取设备信号值
-     * @param deviceMirror
-     * @param rssiCallback
+     *
+     * @param deviceMirror 设备镜像
+     * @param rssiCallback 信号回调
      */
     public void readRemoteRssi(DeviceMirror deviceMirror, IRssiCallback rssiCallback) {
         if (deviceMirror != null && deviceMirror.isConnected() && rssiCallback != null) {
@@ -214,28 +225,53 @@ public class ViseBle {
 
     /**
      * 注册获取数据通知
-     * @param deviceMirror
-     * @param propertyType
+     *
+     * @param deviceMirror 设备镜像
+     * @param isIndication 是否是指示器方式
      */
-    public void registerNotifyListener(DeviceMirror deviceMirror, PropertyType propertyType) {
+    public void registerNotifyListener(DeviceMirror deviceMirror, boolean isIndication) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
-            deviceMirror.registerNotifyListener(propertyType);
+            deviceMirror.registerNotify(isIndication);
         }
     }
 
     /**
      * 取消获取数据通知
-     * @param deviceMirror
-     * @param propertyType
+     *
+     * @param deviceMirror 设备镜像
+     * @param isIndication 是否是指示器方式
      */
-    public void unregisterNotifyListener(DeviceMirror deviceMirror, PropertyType propertyType) {
+    public void unregisterNotifyListener(DeviceMirror deviceMirror, boolean isIndication) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
-            deviceMirror.unregisterNotifyListener(propertyType);
+            deviceMirror.unregisterNotify(isIndication);
+        }
+    }
+
+    /**
+     * 设置接收数据监听
+     *
+     * @param deviceMirror    设备镜像
+     * @param key             接收数据回调key，由serviceUUID+characteristicUUID+descriptorUUID组成
+     * @param receiveCallback 接收数据回调
+     */
+    public void setNotifyListener(DeviceMirror deviceMirror, String key, IBleCallback receiveCallback) {
+        if (deviceMirror != null && deviceMirror.isConnected()) {
+            deviceMirror.setNotifyListener(key, receiveCallback);
+        }
+    }
+
+    /**
+     * 清除资源，在退出应用时调用
+     */
+    public void clear() {
+        if (deviceMirrorPool != null) {
+            deviceMirrorPool.clear();
         }
     }
 
     /**
      * 获取Context
+     *
      * @return 返回Context
      */
     public Context getContext() {
@@ -244,6 +280,7 @@ public class ViseBle {
 
     /**
      * 获取蓝牙管理
+     *
      * @return 返回蓝牙管理
      */
     public BluetoothManager getBluetoothManager() {
@@ -252,6 +289,7 @@ public class ViseBle {
 
     /**
      * 获取蓝牙适配器
+     *
      * @return 返回蓝牙适配器
      */
     public BluetoothAdapter getBluetoothAdapter() {
@@ -260,6 +298,7 @@ public class ViseBle {
 
     /**
      * 获取设备镜像池
+     *
      * @return
      */
     public DeviceMirrorPool getDeviceMirrorPool() {

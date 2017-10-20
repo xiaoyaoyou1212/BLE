@@ -10,5 +10,6 @@ import com.vise.baseble.exception.BleException;
  */
 public interface IBleCallback {
     void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo);
+
     void onFailure(BleException exception);
 }

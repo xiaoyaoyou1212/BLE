@@ -11,8 +11,10 @@ import com.vise.baseble.exception.BleException;
 public interface IConnectCallback {
     //连接成功
     void onConnectSuccess(DeviceMirror deviceMirror);
+
     //连接失败
     void onConnectFailure(BleException exception);
+
     //连接断开
-    void onDisconnect();
+    void onDisconnect(boolean isActive);
 }

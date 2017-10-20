@@ -6,6 +6,7 @@ import com.vise.baseble.model.BluetoothLeDevice;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,10 @@ public class DeviceMirrorPool {
     }
 
     public void clear() {
+        Iterator<Map.Entry<String, DeviceMirror>> deviceMirrorIterator = DEVICE_MIRROR_MAP.entrySet().iterator();
+        while (deviceMirrorIterator.hasNext()) {
+            deviceMirrorIterator.next().getValue().clear();
+        }
         DEVICE_MIRROR_MAP.clear();
     }
 

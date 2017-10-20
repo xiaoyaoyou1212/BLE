@@ -100,6 +100,7 @@ public class BleConfig {
 
     /**
      * 获取连接重试次数
+     *
      * @return
      */
     public int getConnectRetryCount() {
@@ -108,6 +109,7 @@ public class BleConfig {
 
     /**
      * 设置连接重试次数
+     *
      * @param connectRetryCount
      * @return
      */
@@ -118,6 +120,7 @@ public class BleConfig {
 
     /**
      * 获取连接重试间隔时间
+     *
      * @return
      */
     public int getConnectRetryInterval() {
@@ -126,6 +129,7 @@ public class BleConfig {
 
     /**
      * 设置连接重试间隔时间
+     *
      * @param connectRetryInterval
      * @return
      */
@@ -136,6 +140,7 @@ public class BleConfig {
 
     /**
      * 获取最大连接数量
+     *
      * @return
      */
     public int getMaxConnectCount() {
@@ -144,6 +149,7 @@ public class BleConfig {
 
     /**
      * 设置最大连接数量
+     *
      * @param maxConnectCount
      * @return
      */
@@ -154,6 +160,7 @@ public class BleConfig {
 
     /**
      * 获取操作数据重试次数
+     *
      * @return
      */
     public int getOperateRetryCount() {
@@ -162,6 +169,7 @@ public class BleConfig {
 
     /**
      * 设置操作数据重试次数
+     *
      * @param operateRetryCount
      * @return
      */
@@ -172,6 +180,7 @@ public class BleConfig {
 
     /**
      * 获取操作数据重试间隔时间
+     *
      * @return
      */
     public int getOperateRetryInterval() {
@@ -180,6 +189,7 @@ public class BleConfig {
 
     /**
      * 设置操作数据重试间隔时间
+     *
      * @param operateRetryInterval
      * @return
      */

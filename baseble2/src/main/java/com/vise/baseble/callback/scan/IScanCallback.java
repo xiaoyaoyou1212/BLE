@@ -10,8 +10,10 @@ import com.vise.baseble.model.BluetoothLeDeviceStore;
 public interface IScanCallback {
     //发现设备
     void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore);
+
     //扫描完成
     void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore);
+
     //扫描超时
     void onScanTimeout();
 }
