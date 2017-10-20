@@ -89,7 +89,7 @@ public class ViseBle {
     /**
      * 开始扫描
      *
-     * @param periodScanCallback 自定义回调
+     * @param scanCallback 自定义回调
      */
     public void startScan(ScanCallback scanCallback) {
         if (scanCallback == null) {
@@ -101,7 +101,7 @@ public class ViseBle {
     /**
      * 停止扫描
      *
-     * @param periodScanCallback 自定义回调
+     * @param scanCallback 自定义回调
      */
     public void stopScan(ScanCallback scanCallback) {
         if (scanCallback == null) {
@@ -229,7 +229,7 @@ public class ViseBle {
      * @param deviceMirror 设备镜像
      * @param isIndication 是否是指示器方式
      */
-    public void registerNotifyListener(DeviceMirror deviceMirror, boolean isIndication) {
+    public void registerNotify(DeviceMirror deviceMirror, boolean isIndication) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
             deviceMirror.registerNotify(isIndication);
         }
@@ -241,7 +241,7 @@ public class ViseBle {
      * @param deviceMirror 设备镜像
      * @param isIndication 是否是指示器方式
      */
-    public void unregisterNotifyListener(DeviceMirror deviceMirror, boolean isIndication) {
+    public void unregisterNotify(DeviceMirror deviceMirror, boolean isIndication) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
             deviceMirror.unregisterNotify(isIndication);
         }
