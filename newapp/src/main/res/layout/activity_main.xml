@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <Button
+        android:id="@+id/device_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="扫描设备"
+        android:textColor="@color/colorPrimary"/>
+
+    <Button
+        android:id="@+id/device_connect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="连接设备"
+        android:textColor="@color/colorPrimary"/>
+
+    <Button
+        android:id="@+id/device_send_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="发送数据"
+        android:textColor="@color/colorPrimary"/>
+
+    <Button
+        android:id="@+id/device_read_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="读取数据"
+        android:textColor="@color/colorPrimary"/>
+
+    <Button
+        android:id="@+id/device_receive_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="接收数据"
+        android:textColor="@color/colorPrimary"/>
+
+</LinearLayout>

@@ -40,7 +40,7 @@ public class SingleFilterScanCallback extends ScanCallback {
                 hasFound.set(true);
                 isScanning = false;
                 removeHandlerMsg();
-                ViseBle.getInstance().stopLeScan(SingleFilterScanCallback.this);
+                ViseBle.getInstance().stopScan(SingleFilterScanCallback.this);
                 bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
                 scanCallback.onScanFinish(bluetoothLeDeviceStore);
             } else if (bluetoothLeDevice != null && bluetoothLeDevice.getName() != null && deviceName != null
@@ -48,7 +48,7 @@ public class SingleFilterScanCallback extends ScanCallback {
                 hasFound.set(true);
                 isScanning = false;
                 removeHandlerMsg();
-                ViseBle.getInstance().stopLeScan(SingleFilterScanCallback.this);
+                ViseBle.getInstance().stopScan(SingleFilterScanCallback.this);
                 bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
                 scanCallback.onScanFinish(bluetoothLeDeviceStore);
             }
