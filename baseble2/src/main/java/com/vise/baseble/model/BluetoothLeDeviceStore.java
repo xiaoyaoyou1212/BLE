@@ -61,4 +61,11 @@ public class BluetoothLeDeviceStore {
 
         return methodResult;
     }
+
+    @Override
+    public String toString() {
+        return "BluetoothLeDeviceStore{" +
+                "DeviceList=" + getDeviceList() +
+                '}';
+    }
 }

@@ -6,6 +6,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.vise.baseble.ViseBle;
+import com.vise.baseble.callback.IBleCallback;
+import com.vise.baseble.callback.IConnectCallback;
+import com.vise.baseble.callback.scan.IScanCallback;
+import com.vise.baseble.callback.scan.ScanCallback;
+import com.vise.baseble.common.PropertyType;
+import com.vise.baseble.core.BluetoothGattInfo;
+import com.vise.baseble.core.DeviceMirror;
+import com.vise.baseble.exception.BleException;
+import com.vise.baseble.model.BluetoothLeDeviceStore;
+import com.vise.baseble.utils.HexUtil;
+import com.vise.log.ViseLog;
+import com.vise.log.inner.LogcatTree;
+
 /**
  * @Description:
  * @author: <a href="http://xiaoyaoyou1212.360doc.com">DAWI</a>
@@ -19,10 +33,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mDevice_read_data;
     private Button mDevice_receive_data;
 
+    private DeviceMirror mDeviceMirrorFirst;
+    private DeviceMirror mDeviceMirrorSecond;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ViseLog.getLogConfig().configAllowLog(true);//配置日志信息
+        ViseLog.plant(new LogcatTree());//添加Logcat打印信息
+        //蓝牙相关配置修改
+        ViseBle.config()
+                .setScanTimeout(5000)
+                .setMaxConnectCount(1);
+        //蓝牙信息初始化，全局唯一，必须在应用初始化时调用
+        ViseBle.getInstance().init(getApplicationContext());
         init();
     }
 
@@ -51,15 +76,140 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.device_scan:
+                scan();
                 break;
             case R.id.device_connect:
+                connect();
                 break;
             case R.id.device_send_data:
+                write();
                 break;
             case R.id.device_read_data:
+                read();
                 break;
             case R.id.device_receive_data:
+                receive();
                 break;
+        }
+    }
+
+    private void scan() {
+        ViseLog.i("start scan");
+        ViseBle.getInstance().startScan(new ScanCallback(new IScanCallback() {
+            @Override
+            public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            }
+
+            @Override
+            public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+                ViseLog.i("onScanFinish" + bluetoothLeDeviceStore);
+            }
+
+            @Override
+            public void onScanTimeout() {
+                ViseLog.i("onScanTimeout");
+            }
+        }));
+    }
+
+    private void connect() {
+        ViseLog.i("start connect");
+        ViseBle.getInstance().connectByName("HET-175690-31-9", new IConnectCallback() {
+            @Override
+            public void onConnectSuccess(DeviceMirror deviceMirror) {
+                ViseLog.i("onConnectSuccess HET-175690-31-9 " + deviceMirror);
+                mDeviceMirrorFirst = deviceMirror;
+            }
+
+            @Override
+            public void onConnectFailure(BleException exception) {
+                ViseLog.i("onConnectFailure" + exception);
+            }
+
+            @Override
+            public void onDisconnect(boolean isActive) {
+                ViseLog.i("onDisconnect");
+            }
+        });
+        /*ViseBle.getInstance().connectByName("HET-A5C9AC-31-9", new IConnectCallback() {
+            @Override
+            public void onConnectSuccess(DeviceMirror deviceMirror) {
+                ViseLog.i("onConnectSuccess HET-A5C9AC-31-9 " + deviceMirror);
+                mDeviceMirrorSecond = deviceMirror;
+            }
+
+            @Override
+            public void onConnectFailure(BleException exception) {
+                ViseLog.i("onConnectFailure" + exception);
+            }
+
+            @Override
+            public void onDisconnect(boolean isActive) {
+                ViseLog.i("onDisconnect");
+            }
+        });*/
+    }
+
+    private void write() {
+        if (mDeviceMirrorFirst != null) {
+            mDeviceMirrorFirst.withUUID(new IBleCallback() {
+                @Override
+                public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
+                }
+
+                @Override
+                public void onFailure(BleException exception) {
+                    ViseLog.i("onFailure:" + exception);
+                }
+            }, PropertyType.PROPERTY_WRITE, Constants.UUID.SERIAL_DATA_SERVICE_UUID, Constants.UUID.WRITE_DATA_CHARACTERISTIC_UUID, null);
+            mDeviceMirrorFirst.writeData(new byte[]{});
+        }
+    }
+
+    private void read() {
+        if (mDeviceMirrorFirst != null) {
+            mDeviceMirrorFirst.withUUID(new IBleCallback() {
+                @Override
+                public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
+                }
+
+                @Override
+                public void onFailure(BleException exception) {
+                    ViseLog.i("onFailure:" + exception);
+                }
+            }, PropertyType.PROPERTY_READ, Constants.UUID.BATTERY_SERVICE_UUID, Constants.UUID.BATTERY_LEVEL_CHARACTERISTIC_UUID, null);
+            mDeviceMirrorFirst.readData();
+        }
+    }
+
+    private void receive() {
+        if (mDeviceMirrorFirst != null) {
+            mDeviceMirrorFirst.withUUID(new IBleCallback() {
+                @Override
+                public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
+                    ViseBle.getInstance().setNotifyListener(mDeviceMirrorFirst, Constants.UUID.SERIAL_DATA_SERVICE_UUID
+                            + Constants.UUID.INDICATE_DATA_CHARACTERISTIC_UUID, new IBleCallback() {
+                        @Override
+                        public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                            ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
+                        }
+
+                        @Override
+                        public void onFailure(BleException exception) {
+                            ViseLog.i("onFailure:" + exception);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(BleException exception) {
+                    ViseLog.i("onFailure:" + exception);
+                }
+            }, PropertyType.PROPERTY_INDICATE, Constants.UUID.SERIAL_DATA_SERVICE_UUID, Constants.UUID.INDICATE_DATA_CHARACTERISTIC_UUID, null);
+            mDeviceMirrorFirst.registerNotify(true);
         }
     }
 }

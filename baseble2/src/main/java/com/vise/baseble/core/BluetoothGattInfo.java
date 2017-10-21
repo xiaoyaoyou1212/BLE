@@ -40,4 +40,9 @@ public class BluetoothGattInfo {
     public BluetoothGattService getService() {
         return service;
     }
+
+    public BluetoothGattInfo setDescriptor(BluetoothGattDescriptor descriptor) {
+        this.descriptor = descriptor;
+        return this;
+    }
 }

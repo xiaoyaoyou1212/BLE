@@ -3,6 +3,8 @@ package com.vise.baseble;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
@@ -30,6 +32,7 @@ public class ViseBle {
     private DeviceMirrorPool deviceMirrorPool;//设备连接池
 
     private static ViseBle instance;//入口操作管理
+    private static BleConfig bleConfig = BleConfig.getInstance();
 
     /**
      * 单例方式获取蓝牙通信入口
@@ -51,6 +54,14 @@ public class ViseBle {
     }
 
     /**
+     * 获取配置对象，可进行相关配置的修改
+     * @return
+     */
+    public static BleConfig config() {
+        return bleConfig;
+    }
+
+    /**
      * 初始化
      *
      * @param context 上下文
@@ -69,7 +80,7 @@ public class ViseBle {
      *
      * @param leScanCallback 回调
      */
-    public void startScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+    public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.startLeScan(leScanCallback);
         }
@@ -80,7 +91,7 @@ public class ViseBle {
      *
      * @param leScanCallback 回调
      */
-    public void stopScan(BluetoothAdapter.LeScanCallback leScanCallback) {
+    public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
         if (bluetoothAdapter != null) {
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
@@ -118,6 +129,7 @@ public class ViseBle {
      */
     public void connect(BluetoothLeDevice bluetoothLeDevice, IConnectCallback connectCallback) {
         if (bluetoothLeDevice == null || connectCallback == null) {
+            ViseLog.e("This bluetoothLeDevice or connectCallback is null.");
             return;
         }
         if (!deviceMirrorPool.isContainDevice(bluetoothLeDevice)) {
@@ -136,6 +148,7 @@ public class ViseBle {
      */
     public void connectByMac(String mac, final IConnectCallback connectCallback) {
         if (mac == null || connectCallback == null) {
+            ViseLog.e("This mac or connectCallback is null.");
             return;
         }
         startScan(new SingleFilterScanCallback(new IScanCallback() {
@@ -145,9 +158,16 @@ public class ViseBle {
             }
 
             @Override
-            public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            public void onScanFinish(final BluetoothLeDeviceStore bluetoothLeDeviceStore) {
                 if (bluetoothLeDeviceStore.getDeviceList().size() > 0) {
-                    connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
+                        }
+                    });
+                } else {
+                    connectCallback.onConnectFailure(new TimeoutException());
                 }
             }
 
@@ -166,6 +186,7 @@ public class ViseBle {
      */
     public void connectByName(String name, final IConnectCallback connectCallback) {
         if (name == null || connectCallback == null) {
+            ViseLog.e("This name or connectCallback is null.");
             return;
         }
         startScan(new SingleFilterScanCallback(new IScanCallback() {
@@ -175,9 +196,16 @@ public class ViseBle {
             }
 
             @Override
-            public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            public void onScanFinish(final BluetoothLeDeviceStore bluetoothLeDeviceStore) {
                 if (bluetoothLeDeviceStore.getDeviceList().size() > 0) {
-                    connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            connect(bluetoothLeDeviceStore.getDeviceList().get(0), connectCallback);
+                        }
+                    });
+                } else {
+                    connectCallback.onConnectFailure(new TimeoutException());
                 }
             }
 
