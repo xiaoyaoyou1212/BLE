@@ -15,5 +15,9 @@ public class Constants {
         /*Battery Service*/
         public static final String BATTERY_SERVICE_UUID = "0000180f-0000-1000-8000-00805f9b34fb";
         public static final String BATTERY_LEVEL_CHARACTERISTIC_UUID = "00002a19-0000-1000-8000-00805f9b34fb";//当前设备电量信息
+
+        public static final String BLE_SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb";
+        public static final String BLE_NOTIFY_UUID = "0000fff7-0000-1000-8000-00805f9b34fb";
+        public static final String BLE_WRITE_UUID = "0000fff6-0000-1000-8000-00805f9b34fb";
     }
 }

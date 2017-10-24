@@ -170,6 +170,7 @@ public class DeviceMirror {
         public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             ViseLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                long currentTime = System.currentTimeMillis();
                 handleSuccessData(writeInfoMap, characteristic.getValue(), status, false, false);
             } else {
                 writeFailure(new GattException(status), false, false);
@@ -619,6 +620,7 @@ public class DeviceMirror {
                 bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic().getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
             }
             bluetoothGattInfoValue.setDescriptor(bluetoothGattDescriptor);
+            bluetoothGattInfoKey = bluetoothGattInfoKey + bluetoothGattDescriptor.getUuid().toString();
             if (isIndication) {
                 if (enable) {
                     bluetoothGattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
@@ -815,6 +817,9 @@ public class DeviceMirror {
                 }
             }
         }
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
     }
 
     /**
@@ -855,6 +860,9 @@ public class DeviceMirror {
                     }
                 }
             }
+        }
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
         }
     }
 }

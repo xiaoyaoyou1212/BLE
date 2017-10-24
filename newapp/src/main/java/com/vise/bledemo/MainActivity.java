@@ -20,6 +20,8 @@ import com.vise.baseble.utils.HexUtil;
 import com.vise.log.ViseLog;
 import com.vise.log.inner.LogcatTree;
 
+import java.nio.ByteBuffer;
+
 /**
  * @Description:
  * @author: <a href="http://xiaoyaoyou1212.360doc.com">DAWI</a>
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private DeviceMirror mDeviceMirrorFirst;
     private DeviceMirror mDeviceMirrorSecond;
+    private int count = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -114,10 +117,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void connect() {
         ViseLog.i("start connect");
-        ViseBle.getInstance().connectByName("HET-175690-31-9", new IConnectCallback() {
+        ViseBle.getInstance().connectByName("het-31-8", new IConnectCallback() {
             @Override
             public void onConnectSuccess(DeviceMirror deviceMirror) {
-                ViseLog.i("onConnectSuccess HET-175690-31-9 " + deviceMirror);
+                ViseLog.i("onConnectSuccess het-31-8 " + deviceMirror);
                 mDeviceMirrorFirst = deviceMirror;
             }
 
@@ -128,13 +131,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onDisconnect(boolean isActive) {
-                ViseLog.i("onDisconnect");
+                ViseLog.i("onDisconnect:" + isActive);
             }
         });
-        /*ViseBle.getInstance().connectByName("HET-A5C9AC-31-9", new IConnectCallback() {
+        ViseBle.getInstance().connectByName("HET-175690-31-9", new IConnectCallback() {
             @Override
             public void onConnectSuccess(DeviceMirror deviceMirror) {
-                ViseLog.i("onConnectSuccess HET-A5C9AC-31-9 " + deviceMirror);
+                ViseLog.i("onConnectSuccess HET-175690-31-9 " + deviceMirror);
                 mDeviceMirrorSecond = deviceMirror;
             }
 
@@ -147,29 +150,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onDisconnect(boolean isActive) {
                 ViseLog.i("onDisconnect");
             }
-        });*/
+        });
     }
 
     private void write() {
         if (mDeviceMirrorFirst != null) {
+            final ByteBuffer byteBuffer = ByteBuffer.allocate(20);
+            for (int i = 0; i < 20; i++) {
+                byteBuffer.put((byte) 0x00);
+            }
             mDeviceMirrorFirst.withUUID(new IBleCallback() {
                 @Override
                 public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
-                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
+                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data) + "###" + count);
+                    if (count < 20) {
+                        count++;
+                        mDeviceMirrorFirst.writeData(byteBuffer.array());
+                    }
                 }
 
                 @Override
                 public void onFailure(BleException exception) {
                     ViseLog.i("onFailure:" + exception);
                 }
-            }, PropertyType.PROPERTY_WRITE, Constants.UUID.SERIAL_DATA_SERVICE_UUID, Constants.UUID.WRITE_DATA_CHARACTERISTIC_UUID, null);
-            mDeviceMirrorFirst.writeData(new byte[]{});
+            }, PropertyType.PROPERTY_WRITE, Constants.UUID.BLE_SERVICE_UUID, Constants.UUID.BLE_WRITE_UUID, null);
+            mDeviceMirrorFirst.writeData(byteBuffer.array());
+            ViseLog.i("start write data:" + HexUtil.encodeHexStr(byteBuffer.array()));
+            /*for (int i = 0; i < 20; i++) {
+                count = i;
+                mDeviceMirrorFirst.writeData(byteBuffer.array());
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }*/
         }
     }
 
     private void read() {
-        if (mDeviceMirrorFirst != null) {
-            mDeviceMirrorFirst.withUUID(new IBleCallback() {
+        if (mDeviceMirrorSecond != null) {
+            mDeviceMirrorSecond.withUUID(new IBleCallback() {
                 @Override
                 public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
                     ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
@@ -180,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ViseLog.i("onFailure:" + exception);
                 }
             }, PropertyType.PROPERTY_READ, Constants.UUID.BATTERY_SERVICE_UUID, Constants.UUID.BATTERY_LEVEL_CHARACTERISTIC_UUID, null);
-            mDeviceMirrorFirst.readData();
+            mDeviceMirrorSecond.readData();
         }
     }
 
@@ -190,8 +211,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
                     ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
-                    ViseBle.getInstance().setNotifyListener(mDeviceMirrorFirst, Constants.UUID.SERIAL_DATA_SERVICE_UUID
-                            + Constants.UUID.INDICATE_DATA_CHARACTERISTIC_UUID, new IBleCallback() {
+                    ViseBle.getInstance().setNotifyListener(mDeviceMirrorFirst, Constants.UUID.BLE_SERVICE_UUID
+                            + Constants.UUID.BLE_NOTIFY_UUID, new IBleCallback() {
                         @Override
                         public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
                             ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
@@ -208,8 +229,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void onFailure(BleException exception) {
                     ViseLog.i("onFailure:" + exception);
                 }
-            }, PropertyType.PROPERTY_INDICATE, Constants.UUID.SERIAL_DATA_SERVICE_UUID, Constants.UUID.INDICATE_DATA_CHARACTERISTIC_UUID, null);
-            mDeviceMirrorFirst.registerNotify(true);
+            }, PropertyType.PROPERTY_NOTIFY, Constants.UUID.BLE_SERVICE_UUID, Constants.UUID.BLE_NOTIFY_UUID, null);
+            mDeviceMirrorFirst.registerNotify(false);
         }
     }
 }
