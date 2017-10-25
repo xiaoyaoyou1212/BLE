@@ -6,7 +6,6 @@ import com.vise.baseble.model.BluetoothLeDevice;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +25,7 @@ public class DeviceMirrorPool {
         DEVICE_MIRROR_MAP = new LruHashMap<>(deviceMirrorSize);
     }
 
-    public void addDeviceMirror(DeviceMirror deviceMirror) {
+    public synchronized void addDeviceMirror(DeviceMirror deviceMirror) {
         if (deviceMirror == null) {
             return;
         }
@@ -35,7 +34,7 @@ public class DeviceMirrorPool {
         }
     }
 
-    public void removeDeviceMirror(DeviceMirror deviceMirror) {
+    public synchronized void removeDeviceMirror(DeviceMirror deviceMirror) {
         if (deviceMirror == null) {
             return;
         }
@@ -45,23 +44,29 @@ public class DeviceMirrorPool {
     }
 
     public boolean isContainDevice(DeviceMirror deviceMirror) {
-        if (deviceMirror != null && DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
-            return true;
+        if (deviceMirror == null || !DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     public boolean isContainDevice(BluetoothLeDevice bluetoothLeDevice) {
-        if (bluetoothLeDevice != null && DEVICE_MIRROR_MAP.containsKey(bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName())) {
-            return true;
+        if (bluetoothLeDevice == null || !DEVICE_MIRROR_MAP.containsKey(bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName())) {
+            return false;
         }
-        return false;
+        return true;
     }
 
-    public void clear() {
-        Iterator<Map.Entry<String, DeviceMirror>> deviceMirrorIterator = DEVICE_MIRROR_MAP.entrySet().iterator();
-        while (deviceMirrorIterator.hasNext()) {
-            deviceMirrorIterator.next().getValue().clear();
+    public synchronized void disconnect() {
+        for (Map.Entry<String, DeviceMirror> stringDeviceMirrorEntry : DEVICE_MIRROR_MAP.entrySet()) {
+            stringDeviceMirrorEntry.getValue().disconnect();
+        }
+        DEVICE_MIRROR_MAP.clear();
+    }
+
+    public synchronized void clear() {
+        for (Map.Entry<String, DeviceMirror> stringDeviceMirrorEntry : DEVICE_MIRROR_MAP.entrySet()) {
+            stringDeviceMirrorEntry.getValue().clear();
         }
         DEVICE_MIRROR_MAP.clear();
     }

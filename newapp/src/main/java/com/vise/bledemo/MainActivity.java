@@ -37,7 +37,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private DeviceMirror mDeviceMirrorFirst;
     private DeviceMirror mDeviceMirrorSecond;
-    private int count = 0;
+    private DeviceMirror mDeviceMirrorThird;
+    private int count1 = 0;
+    private int count2 = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //蓝牙相关配置修改
         ViseBle.config()
                 .setScanTimeout(5000)
-                .setMaxConnectCount(1);
+                .setMaxConnectCount(2);
         //蓝牙信息初始化，全局唯一，必须在应用初始化时调用
         ViseBle.getInstance().init(getApplicationContext());
         init();
@@ -117,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void connect() {
         ViseLog.i("start connect");
-        ViseBle.getInstance().connectByName("het-31-8", new IConnectCallback() {
+        ViseBle.getInstance().connectByMac("20:91:48:79:60:14", new IConnectCallback() {
             @Override
             public void onConnectSuccess(DeviceMirror deviceMirror) {
                 ViseLog.i("onConnectSuccess het-31-8 " + deviceMirror);
@@ -126,29 +128,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onConnectFailure(BleException exception) {
-                ViseLog.i("onConnectFailure" + exception);
+                ViseLog.i("onConnectFailure het-31-8 " + exception);
             }
 
             @Override
             public void onDisconnect(boolean isActive) {
-                ViseLog.i("onDisconnect:" + isActive);
+                ViseLog.i("onDisconnect het-31-8:" + isActive);
             }
         });
-        ViseBle.getInstance().connectByName("HET-175690-31-9", new IConnectCallback() {
+        ViseBle.getInstance().connectByMac("20:91:48:79:6B:54", new IConnectCallback() {
             @Override
             public void onConnectSuccess(DeviceMirror deviceMirror) {
-                ViseLog.i("onConnectSuccess HET-175690-31-9 " + deviceMirror);
+                ViseLog.i("onConnectSuccess het-31-6 #1 " + deviceMirror);
                 mDeviceMirrorSecond = deviceMirror;
             }
 
             @Override
             public void onConnectFailure(BleException exception) {
-                ViseLog.i("onConnectFailure" + exception);
+                ViseLog.i("onConnectFailure het-31-6 #1 " + exception);
             }
 
             @Override
             public void onDisconnect(boolean isActive) {
-                ViseLog.i("onDisconnect");
+                ViseLog.i("onDisconnect het-31-6 #1:" + isActive);
+            }
+        });
+        ViseBle.getInstance().connectByMac("20:91:48:79:58:2D", new IConnectCallback() {
+            @Override
+            public void onConnectSuccess(DeviceMirror deviceMirror) {
+                ViseLog.i("onConnectSuccess het-31-6 #2 " + deviceMirror);
+                mDeviceMirrorThird = deviceMirror;
+            }
+
+            @Override
+            public void onConnectFailure(BleException exception) {
+                ViseLog.i("onConnectFailure het-31-6 #2 " + exception);
+            }
+
+            @Override
+            public void onDisconnect(boolean isActive) {
+                ViseLog.i("onDisconnect het-31-6 #2:" + isActive);
+            }
+        });
+        ViseBle.getInstance().connectByMac("ED:60:F1:17:56:90", new IConnectCallback() {
+            @Override
+            public void onConnectSuccess(DeviceMirror deviceMirror) {
+                ViseLog.i("onConnectSuccess HET-175690-31-9 " + deviceMirror);
+                mDeviceMirrorThird = deviceMirror;
+            }
+
+            @Override
+            public void onConnectFailure(BleException exception) {
+                ViseLog.i("onConnectFailure HET-175690-31-9 " + exception);
+            }
+
+            @Override
+            public void onDisconnect(boolean isActive) {
+                ViseLog.i("onDisconnect HET-175690-31-9:" + isActive);
             }
         });
     }
@@ -162,9 +198,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mDeviceMirrorFirst.withUUID(new IBleCallback() {
                 @Override
                 public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
-                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data) + "###" + count);
-                    if (count < 20) {
-                        count++;
+                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data) + "###" + count1);
+                    if (count1 < 20) {
+                        count1++;
                         mDeviceMirrorFirst.writeData(byteBuffer.array());
                     }
                 }
@@ -176,21 +212,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }, PropertyType.PROPERTY_WRITE, Constants.UUID.BLE_SERVICE_UUID, Constants.UUID.BLE_WRITE_UUID, null);
             mDeviceMirrorFirst.writeData(byteBuffer.array());
             ViseLog.i("start write data:" + HexUtil.encodeHexStr(byteBuffer.array()));
-            /*for (int i = 0; i < 20; i++) {
-                count = i;
-                mDeviceMirrorFirst.writeData(byteBuffer.array());
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        }
+        if (mDeviceMirrorSecond != null) {
+            final ByteBuffer byteBuffer = ByteBuffer.allocate(20);
+            for (int i = 0; i < 20; i++) {
+                byteBuffer.put((byte) 0x00);
+            }
+            mDeviceMirrorSecond.withUUID(new IBleCallback() {
+                @Override
+                public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                    ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data) + "###" + count2);
+                    if (count2 < 20) {
+                        count2++;
+                        mDeviceMirrorSecond.writeData(byteBuffer.array());
+                    }
                 }
-            }*/
+
+                @Override
+                public void onFailure(BleException exception) {
+                    ViseLog.i("onFailure:" + exception);
+                }
+            }, PropertyType.PROPERTY_WRITE, Constants.UUID.BLE_SERVICE_UUID, Constants.UUID.BLE_WRITE_UUID, null);
+            mDeviceMirrorSecond.writeData(byteBuffer.array());
+            ViseLog.i("start write data:" + HexUtil.encodeHexStr(byteBuffer.array()));
         }
     }
 
     private void read() {
-        if (mDeviceMirrorSecond != null) {
-            mDeviceMirrorSecond.withUUID(new IBleCallback() {
+        if (mDeviceMirrorThird != null) {
+            mDeviceMirrorThird.withUUID(new IBleCallback() {
                 @Override
                 public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
                     ViseLog.i("onSuccess:" + HexUtil.encodeHexStr(data));
@@ -201,8 +251,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ViseLog.i("onFailure:" + exception);
                 }
             }, PropertyType.PROPERTY_READ, Constants.UUID.BATTERY_SERVICE_UUID, Constants.UUID.BATTERY_LEVEL_CHARACTERISTIC_UUID, null);
-            mDeviceMirrorSecond.readData();
+            mDeviceMirrorThird.readData();
         }
+        ViseLog.i("@@@" + ViseBle.getInstance().getDeviceMirrorPool().getDeviceMirrorMap());
+        ViseBle.getInstance().disconnect();
     }
 
     private void receive() {

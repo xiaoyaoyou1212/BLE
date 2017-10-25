@@ -18,6 +18,9 @@ public class LruHashMap<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     protected boolean removeEldestEntry(Map.Entry eldest) {
+        if (size() > MAX_SAVE_SIZE && eldest.getValue() instanceof DeviceMirror) {
+            ((DeviceMirror) eldest.getValue()).disconnect();
+        }
         return size() > MAX_SAVE_SIZE;
     }
 

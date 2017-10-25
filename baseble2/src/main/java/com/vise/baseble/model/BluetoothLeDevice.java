@@ -158,8 +158,10 @@ public class BluetoothLeDevice implements Parcelable {
         if (mRssiLog == null) {
             if (other.mRssiLog != null) return false;
         } else if (!mRssiLog.equals(other.mRssiLog)) return false;
-        if (!Arrays.equals(mScanRecord, other.mScanRecord)) return false;
-        return true;
+        if (Arrays.equals(mScanRecord, other.mScanRecord)) {
+            return true;
+        }
+        return false;
     }
 
     /**
