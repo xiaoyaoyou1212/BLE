@@ -289,6 +289,15 @@ public class ViseBle {
     }
 
     /**
+     * 断开所有设备
+     */
+    public void disconnect() {
+        if (deviceMirrorPool != null) {
+            deviceMirrorPool.disconnect();
+        }
+    }
+
+    /**
      * 清除资源，在退出应用时调用
      */
     public void clear() {

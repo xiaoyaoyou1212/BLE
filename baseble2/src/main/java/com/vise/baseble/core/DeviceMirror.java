@@ -170,6 +170,7 @@ public class DeviceMirror {
         public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             ViseLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                long currentTime = System.currentTimeMillis();
                 handleSuccessData(writeInfoMap, characteristic.getValue(), status, false, false);
             } else {
                 writeFailure(new GattException(status), false, false);
@@ -184,9 +185,7 @@ public class DeviceMirror {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             ViseLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
-            Iterator<Map.Entry<String, IBleCallback>> bleCallbackIterator = receiveCallbackMap.entrySet().iterator();
-            while (bleCallbackIterator.hasNext()) {
-                Map.Entry<String, IBleCallback> entry = bleCallbackIterator.next();
+            for (Map.Entry<String, IBleCallback> entry : receiveCallbackMap.entrySet()) {
                 String bleCallbackKey = entry.getKey();
                 IBleCallback bleCallbackValue = entry.getValue();
                 if (bleCallbackValue != null) {
@@ -507,6 +506,9 @@ public class DeviceMirror {
             isActiveDisconnect = true;
             bluetoothGatt.disconnect();
         }
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
     }
 
     /**
@@ -604,9 +606,7 @@ public class DeviceMirror {
             handler.sendEmptyMessageDelayed(MSG_RECEIVE_DATA_TIMEOUT, BleConfig.getInstance().getOperateTimeout());
         }
         boolean success = false;
-        Iterator<Map.Entry<String, BluetoothGattInfo>> bluetoothGattInfoIterator = enableInfoMap.entrySet().iterator();
-        while (bluetoothGattInfoIterator.hasNext()) {
-            Map.Entry<String, BluetoothGattInfo> entry = bluetoothGattInfoIterator.next();
+        for (Map.Entry<String, BluetoothGattInfo> entry : enableInfoMap.entrySet()) {
             String bluetoothGattInfoKey = entry.getKey();
             BluetoothGattInfo bluetoothGattInfoValue = entry.getValue();
             if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null) {
@@ -619,6 +619,7 @@ public class DeviceMirror {
                 bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic().getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
             }
             bluetoothGattInfoValue.setDescriptor(bluetoothGattDescriptor);
+            bluetoothGattInfoKey = bluetoothGattInfoKey + bluetoothGattDescriptor.getUuid().toString();
             if (isIndication) {
                 if (enable) {
                     bluetoothGattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
@@ -650,9 +651,7 @@ public class DeviceMirror {
             handler.sendEmptyMessageDelayed(MSG_READ_DATA_TIMEOUT, BleConfig.getInstance().getOperateTimeout());
         }
         boolean success = false;
-        Iterator<Map.Entry<String, BluetoothGattInfo>> bluetoothGattInfoIterator = readInfoMap.entrySet().iterator();
-        while (bluetoothGattInfoIterator.hasNext()) {
-            Map.Entry<String, BluetoothGattInfo> entry = bluetoothGattInfoIterator.next();
+        for (Map.Entry<String, BluetoothGattInfo> entry : readInfoMap.entrySet()) {
             String bluetoothGattInfoKey = entry.getKey();
             BluetoothGattInfo bluetoothGattInfoValue = entry.getValue();
             if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() != null) {
@@ -676,9 +675,7 @@ public class DeviceMirror {
             handler.sendEmptyMessageDelayed(MSG_WRITE_DATA_TIMEOUT, BleConfig.getInstance().getOperateTimeout());
         }
         boolean success = false;
-        Iterator<Map.Entry<String, BluetoothGattInfo>> bluetoothGattInfoIterator = writeInfoMap.entrySet().iterator();
-        while (bluetoothGattInfoIterator.hasNext()) {
-            Map.Entry<String, BluetoothGattInfo> entry = bluetoothGattInfoIterator.next();
+        for (Map.Entry<String, BluetoothGattInfo> entry : writeInfoMap.entrySet()) {
             String bluetoothGattInfoKey = entry.getKey();
             BluetoothGattInfo bluetoothGattInfoValue = entry.getValue();
             if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() != null) {
@@ -815,6 +812,9 @@ public class DeviceMirror {
                 }
             }
         }
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
     }
 
     /**
@@ -855,6 +855,9 @@ public class DeviceMirror {
                     }
                 }
             }
+        }
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
         }
     }
 }
