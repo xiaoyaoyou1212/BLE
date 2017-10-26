@@ -303,15 +303,15 @@ public class DeviceControlActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect://连接设备
-                invalidateOptionsMenu();
                 if (!ViseBle.getInstance().isConnect(mDevice)) {
                     ViseBle.getInstance().connect(mDevice, connectCallback);
+                    invalidateOptionsMenu();
                 }
                 break;
             case R.id.menu_disconnect://断开设备
-                invalidateOptionsMenu();
                 if (ViseBle.getInstance().isConnect(mDevice)) {
                     ViseBle.getInstance().disconnect(mDevice);
+                    invalidateOptionsMenu();
                 }
                 break;
         }

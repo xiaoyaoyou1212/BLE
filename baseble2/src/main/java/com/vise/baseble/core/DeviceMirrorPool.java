@@ -132,9 +132,11 @@ public class DeviceMirrorPool {
      * @return
      */
     public synchronized DeviceMirror getDeviceMirror(BluetoothLeDevice bluetoothLeDevice) {
-        if (bluetoothLeDevice != null && DEVICE_MIRROR_MAP.containsKey(bluetoothLeDevice.getAddress() +
-                bluetoothLeDevice.getName())) {
-            return DEVICE_MIRROR_MAP.get(bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName());
+        if (bluetoothLeDevice != null) {
+            String key = bluetoothLeDevice.getAddress() + bluetoothLeDevice.getName();
+            if (DEVICE_MIRROR_MAP.containsKey(key)) {
+                return DEVICE_MIRROR_MAP.get(key);
+            }
         }
         return null;
     }

@@ -111,8 +111,8 @@ public class DeviceMirror {
                 connectState = ConnectState.CONNECT_DISCONNECT;
                 close();
                 if (connectCallback != null) {
-                    connectCallback.onDisconnect(isActiveDisconnect);
                     ViseBle.getInstance().getDeviceMirrorPool().removeDeviceMirror(deviceMirror);
+                    connectCallback.onDisconnect(isActiveDisconnect);
                 }
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
                 connectState = ConnectState.CONNECT_PROCESS;

@@ -298,7 +298,7 @@ public class ViseBle {
      */
     public DeviceMirror getDeviceMirror(BluetoothLeDevice bluetoothLeDevice) {
         if (deviceMirrorPool != null) {
-            deviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+            return deviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
         }
         return null;
     }
