@@ -8,4 +8,24 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="GridLayoutDataTextView">
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:ellipsize">none</item>
+        <item name="android:singleLine">false</item>
+        <item name="android:scrollHorizontally">false</item>
+        <item name="android:maxLines">100</item>
+        <item name="android:inputType">textMultiLine</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="GridLayoutDataTextViewMonospace" parent="@style/GridLayoutDataTextView">
+        <item name="android:typeface">monospace</item>
+    </style>
+
+    <style name="GridLayoutTitleTextView">
+        <item name="android:textSize">12sp</item>
+    </style>
+
 </resources>

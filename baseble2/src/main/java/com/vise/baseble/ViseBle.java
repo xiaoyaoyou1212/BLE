@@ -13,6 +13,7 @@ import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.callback.scan.SingleFilterScanCallback;
 import com.vise.baseble.common.BleConfig;
+import com.vise.baseble.common.ConnectState;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
 import com.vise.baseble.exception.TimeoutException;
@@ -55,6 +56,7 @@ public class ViseBle {
 
     /**
      * 获取配置对象，可进行相关配置的修改
+     *
      * @return
      */
     public static BleConfig config() {
@@ -285,6 +287,56 @@ public class ViseBle {
     public void setNotifyListener(DeviceMirror deviceMirror, String key, IBleCallback receiveCallback) {
         if (deviceMirror != null && deviceMirror.isConnected()) {
             deviceMirror.setNotifyListener(key, receiveCallback);
+        }
+    }
+
+    /**
+     * 获取连接池中的设备镜像，如果没有连接则返回空
+     *
+     * @param bluetoothLeDevice
+     * @return
+     */
+    public DeviceMirror getDeviceMirror(BluetoothLeDevice bluetoothLeDevice) {
+        if (deviceMirrorPool != null) {
+            deviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        }
+        return null;
+    }
+
+    /**
+     * 获取该设备连接状态
+     *
+     * @param bluetoothLeDevice
+     * @return
+     */
+    public ConnectState getConnectState(BluetoothLeDevice bluetoothLeDevice) {
+        if (deviceMirrorPool != null) {
+            return deviceMirrorPool.getConnectState(bluetoothLeDevice);
+        }
+        return ConnectState.CONNECT_DISCONNECT;
+    }
+
+    /**
+     * 判断该设备是否已连接
+     *
+     * @param bluetoothLeDevice
+     * @return
+     */
+    public boolean isConnect(BluetoothLeDevice bluetoothLeDevice) {
+        if (deviceMirrorPool != null) {
+            return deviceMirrorPool.isContainDevice(bluetoothLeDevice);
+        }
+        return false;
+    }
+
+    /**
+     * 断开某一个设备
+     *
+     * @param bluetoothLeDevice
+     */
+    public void disconnect(BluetoothLeDevice bluetoothLeDevice) {
+        if (deviceMirrorPool != null) {
+            deviceMirrorPool.disconnect(bluetoothLeDevice);
         }
     }
 

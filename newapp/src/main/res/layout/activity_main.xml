@@ -1,41 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-    <Button
-        android:id="@+id/device_scan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="扫描设备"
-        android:textColor="@color/colorPrimary"/>
+    android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/device_connect"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="连接设备"
-        android:textColor="@color/colorPrimary"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="15dp">
+        <GridLayout
+            android:id="@+id/main_grid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:paddingBottom="15dp">
 
-    <Button
-        android:id="@+id/device_send_data"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="发送数据"
-        android:textColor="@color/colorPrimary"/>
+            <TextView
+                android:layout_column="0"
+                android:layout_gravity="center_horizontal"
+                android:layout_row="0"
+                android:text="@string/label_bluetooth_le_status"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
 
-    <Button
-        android:id="@+id/device_read_data"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="读取数据"
-        android:textColor="@color/colorPrimary"/>
+            <TextView
+                android:id="@+id/main_ble_support"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:layout_marginLeft="28dp"
+                android:layout_row="0"
+                android:gravity="right"
+                android:text="@string/not_supported"
+                android:textSize="12sp"/>
 
-    <Button
-        android:id="@+id/device_receive_data"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="接收数据"
-        android:textColor="@color/colorPrimary"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:text="@string/label_bluetooth_status"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
 
-</LinearLayout>
+            <TextView
+                android:id="@+id/main_ble_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:layout_marginLeft="28dp"
+                android:layout_row="1"
+                android:gravity="right"
+                android:text="@string/off"
+                android:textSize="12sp"/>
+        </GridLayout>
+
+        <View
+            android:id="@+id/upperSepparator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/holo_blue_dark"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/connected_info_linear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/lowerSepparator"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/holo_blue_dark"/>
+
+                <TextView
+                    android:id="@+id/connected_device_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/formatter_item_count"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/connected_list_linear"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@id/connected_info_linear"
+                android:layout_alignParentTop="true"
+                android:orientation="vertical">
+
+                <ListView
+                    android:id="@android:id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:overScrollMode="never"
+                    android:scrollbars="none"/>
+
+                <TextView
+                    android:id="@android:id/empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:text="@string/no_data"/>
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="30dp"
+        android:src="@android:drawable/ic_input_add" />
+</FrameLayout>

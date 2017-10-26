@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:overScrollMode="never"
+    android:padding="15dp"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <GridLayout
+            android:id="@+id/deviceInformation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_device_address"/>
+
+            <TextView
+                android:id="@+id/device_address"
+                style="@style/GridLayoutDataTextView"/>
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_state"/>
+
+            <TextView
+                android:id="@+id/connection_state"
+                style="@style/GridLayoutDataTextView"/>
+        </GridLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/holo_blue_dark"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <Button
+                android:id="@+id/select_write_characteristic"
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_select_write_characteristic"/>
+
+            <EditText
+                android:id="@+id/show_write_characteristic"
+                style="@style/GridLayoutDataTextView"
+                android:layout_width="match_parent"
+                android:enabled="false"/>
+
+            <Button
+                android:id="@+id/select_notify_characteristic"
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_select_notify_characteristic"/>
+
+            <EditText
+                android:id="@+id/show_notify_characteristic"
+                style="@style/GridLayoutDataTextView"
+                android:layout_width="match_parent"
+                android:enabled="false"/>
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_input"/>
+
+            <EditText
+                android:id="@+id/input"
+                style="@style/GridLayoutDataTextView"
+                android:layout_width="match_parent"/>
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_output"/>
+
+            <EditText
+                android:id="@+id/output"
+                style="@style/GridLayoutDataTextView"
+                android:layout_width="match_parent"
+                android:enabled="false"/>
+
+            <Button
+                android:id="@+id/send"
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_send"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/holo_blue_dark"/>
+
+        <Button
+            android:id="@+id/select_read_characteristic"
+            style="@style/GridLayoutTitleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_select_read_characteristic"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/holo_blue_dark"/>
+
+        <GridLayout
+            android:id="@+id/gattInformation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_uuid"/>
+
+            <TextView
+                android:id="@+id/uuid"
+                style="@style/GridLayoutDataTextViewMonospace"/>
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_desc"/>
+
+            <TextView
+                android:id="@+id/description"
+                style="@style/GridLayoutDataTextViewMonospace"/>
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_as_string"/>
+
+            <TextView
+                android:id="@+id/data_as_string"
+                style="@style/GridLayoutDataTextViewMonospace"/>
+
+            <TextView
+                style="@style/GridLayoutTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_as_array"/>
+
+            <TextView
+                android:id="@+id/data_as_array"
+                style="@style/GridLayoutDataTextViewMonospace"/>
+        </GridLayout>
+    </LinearLayout>
+</ScrollView>
