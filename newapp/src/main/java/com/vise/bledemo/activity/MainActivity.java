@@ -17,11 +17,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.vise.baseble.ViseBle;
-import com.vise.baseble.common.BleConstant;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.BleUtil;
 import com.vise.bledemo.R;
 import com.vise.bledemo.adapter.DeviceAdapter;
+import com.vise.bledemo.common.BluetoothDeviceManager;
 import com.vise.log.ViseLog;
 import com.vise.log.inner.LogcatTree;
 
@@ -45,12 +45,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ViseLog.getLogConfig().configAllowLog(true);//配置日志信息
         ViseLog.plant(new LogcatTree());//添加Logcat打印信息
-        //蓝牙相关配置修改
-        ViseBle.config()
-                .setScanTimeout(BleConstant.TIME_FOREVER)
-                .setMaxConnectCount(3);
-        //蓝牙信息初始化，全局唯一，必须在应用初始化时调用
-        ViseBle.getInstance().init(getApplicationContext());
+        BluetoothDeviceManager.getInstance().init(this);
         init();
     }
 

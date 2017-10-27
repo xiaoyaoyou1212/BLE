@@ -104,7 +104,7 @@ public class DeviceMirror {
         @Override
         public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
             ViseLog.i("onConnectionStateChange  status: " + status + " ,newState: " + newState +
-                    "  ,thread: " + Thread.currentThread().getId());
+                    "  ,thread: " + Thread.currentThread());
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 gatt.discoverServices();
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
@@ -130,7 +130,7 @@ public class DeviceMirror {
          */
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, final int status) {
-            ViseLog.i("onServicesDiscovered  status: " + status);
+            ViseLog.i("onServicesDiscovered  status: " + status + "  ,thread: " + Thread.currentThread());
             if (handler != null) {
                 handler.removeMessages(MSG_CONNECT_TIMEOUT);
             }
@@ -156,7 +156,8 @@ public class DeviceMirror {
          */
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
-            ViseLog.i("onCharacteristicRead  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
+            ViseLog.i("onCharacteristicRead  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()) +
+                    "  ,thread: " + Thread.currentThread());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 handleSuccessData(readInfoMap, characteristic.getValue(), status, false, true);
             } else {
@@ -172,8 +173,8 @@ public class DeviceMirror {
          */
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
-            ViseLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic
-                    .getValue()));
+            ViseLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()) +
+                    "  ,thread: " + Thread.currentThread());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 handleSuccessData(writeInfoMap, characteristic.getValue(), status, false, false);
             } else {
@@ -188,7 +189,8 @@ public class DeviceMirror {
          */
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
-            ViseLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()));
+            ViseLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()) +
+                    "  ,thread: " + Thread.currentThread());
             for (Map.Entry<String, IBleCallback> entry : receiveCallbackMap.entrySet()) {
                 String bleCallbackKey = entry.getKey();
                 IBleCallback bleCallbackValue = entry.getValue();
@@ -206,7 +208,8 @@ public class DeviceMirror {
          */
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, final BluetoothGattDescriptor descriptor, final int status) {
-            ViseLog.i("onDescriptorRead  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()));
+            ViseLog.i("onDescriptorRead  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()) +
+                    "  ,thread: " + Thread.currentThread());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 handleSuccessData(readInfoMap, descriptor.getValue(), status, true, true);
             } else {
@@ -222,7 +225,8 @@ public class DeviceMirror {
          */
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, final BluetoothGattDescriptor descriptor, final int status) {
-            ViseLog.i("onDescriptorWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()));
+            ViseLog.i("onDescriptorWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(descriptor.getValue()) +
+                    "  ,thread: " + Thread.currentThread());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 handleSuccessData(writeInfoMap, descriptor.getValue(), status, true, false);
             } else {
@@ -243,7 +247,8 @@ public class DeviceMirror {
          */
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            ViseLog.i("onReadRemoteRssi  status: " + status + ", rssi:" + rssi);
+            ViseLog.i("onReadRemoteRssi  status: " + status + ", rssi:" + rssi +
+                    "  ,thread: " + Thread.currentThread());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (rssiCallback != null) {
                     rssiCallback.onSuccess(rssi);
