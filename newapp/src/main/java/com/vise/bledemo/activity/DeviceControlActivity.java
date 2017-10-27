@@ -23,7 +23,7 @@ import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.common.ConnectState;
 import com.vise.baseble.common.PropertyType;
-import com.vise.baseble.core.BluetoothGattInfo;
+import com.vise.baseble.core.BluetoothGattChannel;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.exception.BleException;
 import com.vise.baseble.model.BluetoothLeDevice;
@@ -70,7 +70,7 @@ public class DeviceControlActivity extends AppCompatActivity {
 
     //发送队列，提供一种简单的处理方式，实际项目场景需要根据需求优化
     private Queue<byte[]> dataInfoQueue = new LinkedList<>();
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -105,6 +105,7 @@ public class DeviceControlActivity extends AppCompatActivity {
 
     /**
      * 数据分包
+     *
      * @param data
      * @return
      */
@@ -187,7 +188,7 @@ public class DeviceControlActivity extends AppCompatActivity {
      */
     private IBleCallback receiveCallback = new IBleCallback() {
         @Override
-        public void onSuccess(final byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+        public void onSuccess(final byte[] data, BluetoothGattChannel bluetoothGattInfo) {
             if (data == null) {
                 return;
             }
@@ -271,6 +272,7 @@ public class DeviceControlActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        clearUI();
         invalidateOptionsMenu();
         super.onResume();
     }
@@ -320,6 +322,7 @@ public class DeviceControlActivity extends AppCompatActivity {
 
     /**
      * 根据GATT服务显示该服务下的所有特征值
+     *
      * @param gattServices GATT服务
      * @return
      */
@@ -417,28 +420,40 @@ public class DeviceControlActivity extends AppCompatActivity {
                         }
                     });
                     if (mDeviceMirror != null) {
-                        mDeviceMirror.withUUID(new IBleCallback() {
+                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
+                                .setPropertyType(PropertyType.PROPERTY_WRITE)
+                                .setServiceUUID(service.getUuid())
+                                .setCharacteristicUUID(characteristic.getUuid())
+                                .builder();
+                        mDeviceMirror.bindChannel(new IBleCallback() {
                             @Override
-                            public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
-
+                            public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattInfo) {
+                                ViseLog.i("write data success:" + HexUtil.encodeHexStr(data));
                             }
 
                             @Override
                             public void onFailure(BleException exception) {
-
+                                ViseLog.e("write data fail:" + exception);
                             }
-                        }, PropertyType.PROPERTY_WRITE, service.getUuid(), characteristic.getUuid(), null);
+                        }, bluetoothGattChannel);
                     }
                 } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
                     if (mDeviceMirror != null) {
-                        mDeviceMirror.withUUID(new IBleCallback() {
+                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
+                                .setPropertyType(PropertyType.PROPERTY_READ)
+                                .setServiceUUID(service.getUuid())
+                                .setCharacteristicUUID(characteristic.getUuid())
+                                .builder();
+                        mDeviceMirror.bindChannel(new IBleCallback() {
                             @Override
-                            public void onSuccess(final byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                            public void onSuccess(final byte[] data, final BluetoothGattChannel bluetoothGattInfo) {
                                 ViseLog.i("read data success:" + HexUtil.encodeHexStr(data));
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        showInfo(characteristic.getUuid().toString(), data);
+                                        showInfo(bluetoothGattInfo.getCharacteristic().getUuid().toString(), data);
                                     }
                                 });
                             }
@@ -447,7 +462,7 @@ public class DeviceControlActivity extends AppCompatActivity {
                             public void onFailure(BleException exception) {
                                 ViseLog.e("read data fail:" + exception);
                             }
-                        }, PropertyType.PROPERTY_READ, service.getUuid(), characteristic.getUuid(), null);
+                        }, bluetoothGattChannel);
                         mDeviceMirror.readData();
                     }
                 }
@@ -459,19 +474,24 @@ public class DeviceControlActivity extends AppCompatActivity {
                         }
                     });
                     if (mDeviceMirror != null) {
-                        mDeviceMirror.withUUID(new IBleCallback() {
+                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
+                                .setPropertyType(PropertyType.PROPERTY_NOTIFY)
+                                .setServiceUUID(service.getUuid())
+                                .setCharacteristicUUID(characteristic.getUuid())
+                                .builder();
+                        mDeviceMirror.bindChannel(new IBleCallback() {
                             @Override
-                            public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                            public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattInfo) {
                                 ViseLog.i("enable notify success:" + HexUtil.encodeHexStr(data));
-                                mDeviceMirror.setNotifyListener(service.getUuid().toString()
-                                        + characteristic.getUuid().toString(), receiveCallback);
+                                mDeviceMirror.setNotifyListener(bluetoothGattInfo.getGattInfoKey(), receiveCallback);
                             }
 
                             @Override
                             public void onFailure(BleException exception) {
                                 ViseLog.e("enable notify fail:" + exception);
                             }
-                        }, PropertyType.PROPERTY_NOTIFY, service.getUuid(), characteristic.getUuid(), null);
+                        }, bluetoothGattChannel);
                         mDeviceMirror.registerNotify(false);
                     }
                 } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
@@ -482,19 +502,24 @@ public class DeviceControlActivity extends AppCompatActivity {
                         }
                     });
                     if (mDeviceMirror != null) {
-                        mDeviceMirror.withUUID(new IBleCallback() {
+                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
+                                .setPropertyType(PropertyType.PROPERTY_INDICATE)
+                                .setServiceUUID(service.getUuid())
+                                .setCharacteristicUUID(characteristic.getUuid())
+                                .builder();
+                        mDeviceMirror.bindChannel(new IBleCallback() {
                             @Override
-                            public void onSuccess(byte[] data, BluetoothGattInfo bluetoothGattInfo) {
+                            public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattInfo) {
                                 ViseLog.i("enable indicate success:" + HexUtil.encodeHexStr(data));
-                                mDeviceMirror.setNotifyListener(service.getUuid().toString()
-                                        + characteristic.getUuid().toString(), receiveCallback);
+                                mDeviceMirror.setNotifyListener(bluetoothGattInfo.getGattInfoKey(), receiveCallback);
                             }
 
                             @Override
                             public void onFailure(BleException exception) {
                                 ViseLog.e("enable indicate fail:" + exception);
                             }
-                        }, PropertyType.PROPERTY_INDICATE, service.getUuid(), characteristic.getUuid(), null);
+                        }, bluetoothGattChannel);
                         mDeviceMirror.registerNotify(true);
                     }
                 }

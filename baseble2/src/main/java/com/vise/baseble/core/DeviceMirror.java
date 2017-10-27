@@ -61,11 +61,11 @@ public class DeviceMirror {
     private boolean enable;//是否设置使能
     private byte[] writeData;//写入数据
     private ConnectState connectState = ConnectState.CONNECT_DISCONNECT;//设备状态描述
-    private HashMap<String, BluetoothGattInfo> writeInfoMap = new HashMap<>();//写入数据GATT信息集合
-    private HashMap<String, BluetoothGattInfo> readInfoMap = new HashMap<>();//读取数据GATT信息集合
-    private HashMap<String, BluetoothGattInfo> enableInfoMap = new HashMap<>();//设置使能GATT信息集合
-    private HashMap<String, IBleCallback> bleCallbackMap = new HashMap<>();//数据操作回调集合
-    private HashMap<String, IBleCallback> receiveCallbackMap = new HashMap<>();//数据接收回调集合
+    private volatile HashMap<String, BluetoothGattChannel> writeInfoMap = new HashMap<>();//写入数据GATT信息集合
+    private volatile HashMap<String, BluetoothGattChannel> readInfoMap = new HashMap<>();//读取数据GATT信息集合
+    private volatile HashMap<String, BluetoothGattChannel> enableInfoMap = new HashMap<>();//设置使能GATT信息集合
+    private volatile HashMap<String, IBleCallback> bleCallbackMap = new HashMap<>();//数据操作回调集合
+    private volatile HashMap<String, IBleCallback> receiveCallbackMap = new HashMap<>();//数据接收回调集合
 
     private final Handler handler = new Handler(Looper.myLooper()) {
         @Override
@@ -112,7 +112,11 @@ public class DeviceMirror {
                 close();
                 if (connectCallback != null) {
                     ViseBle.getInstance().getDeviceMirrorPool().removeDeviceMirror(deviceMirror);
-                    connectCallback.onDisconnect(isActiveDisconnect);
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        connectCallback.onDisconnect(isActiveDisconnect);
+                    } else {
+                        connectCallback.onConnectFailure(new ConnectException(gatt, status));
+                    }
                 }
             } else if (newState == BluetoothGatt.STATE_CONNECTING) {
                 connectState = ConnectState.CONNECT_PROCESS;
@@ -131,14 +135,14 @@ public class DeviceMirror {
                 handler.removeMessages(MSG_CONNECT_TIMEOUT);
             }
             if (status == 0) {
+                ViseLog.i("onServicesDiscovered connectSuccess.");
                 bluetoothGatt = gatt;
                 connectState = ConnectState.CONNECT_SUCCESS;
                 if (connectCallback != null) {
                     isActiveDisconnect = false;
+                    ViseBle.getInstance().getDeviceMirrorPool().addDeviceMirror(deviceMirror);
                     connectCallback.onConnectSuccess(deviceMirror);
                 }
-                ViseBle.getInstance().getDeviceMirrorPool().addDeviceMirror(deviceMirror);
-                ViseLog.i("onServicesDiscovered connectSuccess.");
             } else {
                 connectFailure(new ConnectException(gatt, status));
             }
@@ -151,10 +155,8 @@ public class DeviceMirror {
          * @param status 当前状态
          */
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final
-        int status) {
-            ViseLog.i("onCharacteristicRead  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic
-                    .getValue()));
+        public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
+            ViseLog.i("onCharacteristicRead  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic.getValue()));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 handleSuccessData(readInfoMap, characteristic.getValue(), status, false, true);
             } else {
@@ -169,8 +171,7 @@ public class DeviceMirror {
          * @param status 当前状态
          */
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final
-        int status) {
+        public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             ViseLog.i("onCharacteristicWrite  status: " + status + ", data:" + HexUtil.encodeHexStr(characteristic
                     .getValue()));
             if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -275,50 +276,34 @@ public class DeviceMirror {
         connect();
     }
 
-    public void withUUID(IBleCallback bleCallback, PropertyType propertyType, String serviceUUID, String
-            characteristicUUID, String descriptorUUID) {
-        withUUID(bleCallback, propertyType, formUUID(serviceUUID), formUUID(characteristicUUID), formUUID
-                (descriptorUUID));
-    }
-
     /**
-     * 设置需要操作数据的相关信息，包含：数据操作回调，数据操作类型，数据通道建立所需的UUID。
+     * 绑定一个具备读写或可通知能力的通道，设置需要操作数据的相关信息，包含：数据操作回调，数据操作类型，数据通道建立所需的UUID。
      *
      * @param bleCallback
-     * @param propertyType
-     * @param serviceUUID
-     * @param characteristicUUID
-     * @param descriptorUUID
+     * @param bluetoothGattChannel
      */
-    public void withUUID(IBleCallback bleCallback, PropertyType propertyType, UUID serviceUUID, UUID
-            characteristicUUID, UUID descriptorUUID) {
-        if (propertyType != null && serviceUUID != null && characteristicUUID != null) {
-            BluetoothGattInfo bluetoothGattInfo = new BluetoothGattInfo(bluetoothGatt, serviceUUID,
-                    characteristicUUID, descriptorUUID);
-            String key;
-            if (descriptorUUID != null) {
-                key = serviceUUID.toString() + characteristicUUID.toString() + descriptorUUID.toString();
-            } else {
-                key = serviceUUID.toString() + characteristicUUID.toString();
-            }
+    public synchronized void bindChannel(IBleCallback bleCallback, BluetoothGattChannel bluetoothGattChannel) {
+        if (bleCallback != null && bluetoothGattChannel != null) {
+            String key = bluetoothGattChannel.getGattInfoKey();
+            PropertyType propertyType = bluetoothGattChannel.getPropertyType();
             if (!bleCallbackMap.containsKey(key)) {
                 bleCallbackMap.put(key, bleCallback);
             }
             if (propertyType == PropertyType.PROPERTY_READ) {
                 if (!readInfoMap.containsKey(key)) {
-                    readInfoMap.put(key, bluetoothGattInfo);
+                    readInfoMap.put(key, bluetoothGattChannel);
                 }
             } else if (propertyType == PropertyType.PROPERTY_WRITE) {
                 if (!writeInfoMap.containsKey(key)) {
-                    writeInfoMap.put(key, bluetoothGattInfo);
+                    writeInfoMap.put(key, bluetoothGattChannel);
                 }
             } else if (propertyType == PropertyType.PROPERTY_NOTIFY) {
                 if (!enableInfoMap.containsKey(key)) {
-                    enableInfoMap.put(key, bluetoothGattInfo);
+                    enableInfoMap.put(key, bluetoothGattChannel);
                 }
             } else if (propertyType == PropertyType.PROPERTY_INDICATE) {
                 if (!enableInfoMap.containsKey(key)) {
-                    enableInfoMap.put(key, bluetoothGattInfo);
+                    enableInfoMap.put(key, bluetoothGattChannel);
                 }
             }
         }
@@ -583,12 +568,12 @@ public class DeviceMirror {
     }
 
     /**
-     * 检查BluetoothGattInfo集合是否有值
+     * 检查BluetoothGattChannel集合是否有值
      *
      * @param bluetoothGattInfoHashMap
      * @return
      */
-    private boolean checkBluetoothGattInfo(HashMap<String, BluetoothGattInfo> bluetoothGattInfoHashMap) {
+    private boolean checkBluetoothGattInfo(HashMap<String, BluetoothGattChannel> bluetoothGattInfoHashMap) {
         if (bluetoothGattInfoHashMap == null || bluetoothGattInfoHashMap.size() == 0) {
             ViseLog.e("this bluetoothGattInfo map is not value.");
             return false;
@@ -601,6 +586,7 @@ public class DeviceMirror {
      */
     private synchronized void connect() {
         if (handler != null) {
+            handler.removeMessages(MSG_CONNECT_TIMEOUT);
             handler.sendEmptyMessageDelayed(MSG_CONNECT_TIMEOUT, BleConfig.getInstance().getConnectTimeout());
         }
         connectState = ConnectState.CONNECT_PROCESS;
@@ -622,20 +608,18 @@ public class DeviceMirror {
             handler.sendEmptyMessageDelayed(MSG_RECEIVE_DATA_TIMEOUT, BleConfig.getInstance().getOperateTimeout());
         }
         boolean success = false;
-        for (Map.Entry<String, BluetoothGattInfo> entry : enableInfoMap.entrySet()) {
+        for (Map.Entry<String, BluetoothGattChannel> entry : enableInfoMap.entrySet()) {
             String bluetoothGattInfoKey = entry.getKey();
-            BluetoothGattInfo bluetoothGattInfoValue = entry.getValue();
+            BluetoothGattChannel bluetoothGattInfoValue = entry.getValue();
             if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null) {
-                success = bluetoothGatt.setCharacteristicNotification(bluetoothGattInfoValue.getCharacteristic(),
-                        enable);
+                success = bluetoothGatt.setCharacteristicNotification(bluetoothGattInfoValue.getCharacteristic(), enable);
             }
             BluetoothGattDescriptor bluetoothGattDescriptor = null;
             if (bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() != null) {
                 bluetoothGattDescriptor = bluetoothGattInfoValue.getDescriptor();
-            } else if (bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor()
-                    == null) {
-                bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic().getDescriptor(UUID.fromString
-                        (BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
+            } else if (bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() == null) {
+                bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic()
+                        .getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
             }
             bluetoothGattInfoValue.setDescriptor(bluetoothGattDescriptor);
             bluetoothGattInfoKey = bluetoothGattInfoKey + bluetoothGattDescriptor.getUuid().toString();
@@ -670,14 +654,12 @@ public class DeviceMirror {
             handler.sendEmptyMessageDelayed(MSG_READ_DATA_TIMEOUT, BleConfig.getInstance().getOperateTimeout());
         }
         boolean success = false;
-        for (Map.Entry<String, BluetoothGattInfo> entry : readInfoMap.entrySet()) {
+        for (Map.Entry<String, BluetoothGattChannel> entry : readInfoMap.entrySet()) {
             String bluetoothGattInfoKey = entry.getKey();
-            BluetoothGattInfo bluetoothGattInfoValue = entry.getValue();
-            if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue
-                    .getDescriptor() != null) {
+            BluetoothGattChannel bluetoothGattInfoValue = entry.getValue();
+            if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() != null) {
                 success = bluetoothGatt.readDescriptor(bluetoothGattInfoValue.getDescriptor());
-            } else if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null &&
-                    bluetoothGattInfoValue.getDescriptor() == null) {
+            } else if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() == null) {
                 success = bluetoothGatt.readCharacteristic(bluetoothGattInfoValue.getCharacteristic());
             }
         }
@@ -696,15 +678,13 @@ public class DeviceMirror {
             handler.sendEmptyMessageDelayed(MSG_WRITE_DATA_TIMEOUT, BleConfig.getInstance().getOperateTimeout());
         }
         boolean success = false;
-        for (Map.Entry<String, BluetoothGattInfo> entry : writeInfoMap.entrySet()) {
+        for (Map.Entry<String, BluetoothGattChannel> entry : writeInfoMap.entrySet()) {
             String bluetoothGattInfoKey = entry.getKey();
-            BluetoothGattInfo bluetoothGattInfoValue = entry.getValue();
-            if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue
-                    .getDescriptor() != null) {
+            BluetoothGattChannel bluetoothGattInfoValue = entry.getValue();
+            if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() != null) {
                 bluetoothGattInfoValue.getDescriptor().setValue(data);
                 success = bluetoothGatt.writeDescriptor(bluetoothGattInfoValue.getDescriptor());
-            } else if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null &&
-                    bluetoothGattInfoValue.getDescriptor() == null) {
+            } else if (bluetoothGatt != null && bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() == null) {
                 bluetoothGattInfoValue.getCharacteristic().setValue(data);
                 success = bluetoothGatt.writeCharacteristic(bluetoothGattInfoValue.getCharacteristic());
             }
@@ -721,6 +701,7 @@ public class DeviceMirror {
         if (connectRetryCount < BleConfig.getInstance().getConnectRetryCount()) {
             connectRetryCount++;
             if (handler != null) {
+                handler.removeMessages(MSG_CONNECT_TIMEOUT);
                 handler.sendEmptyMessageDelayed(MSG_CONNECT_RETRY, BleConfig.getInstance().getConnectRetryInterval());
             }
             ViseLog.i("connectFailure connectRetryCount is " + connectRetryCount);
@@ -749,12 +730,13 @@ public class DeviceMirror {
         if (receiveDataRetryCount < BleConfig.getInstance().getOperateRetryCount()) {
             receiveDataRetryCount++;
             if (handler != null) {
-                handler.sendEmptyMessageDelayed(MSG_RECEIVE_DATA_RETRY, BleConfig.getInstance()
-                        .getOperateRetryInterval());
+                handler.removeMessages(MSG_RECEIVE_DATA_TIMEOUT);
+                handler.sendEmptyMessageDelayed(MSG_RECEIVE_DATA_RETRY, BleConfig.getInstance().getOperateRetryInterval());
             }
             ViseLog.i("enableFailure receiveDataRetryCount is " + receiveDataRetryCount);
         } else {
             handleFailureData(enableInfoMap, bleException, isDescriptor, isRemoveCall);
+            ViseLog.i("enableFailure " + bleException);
         }
     }
 
@@ -769,11 +751,13 @@ public class DeviceMirror {
         if (readDataRetryCount < BleConfig.getInstance().getOperateRetryCount()) {
             readDataRetryCount++;
             if (handler != null) {
+                handler.removeMessages(MSG_READ_DATA_TIMEOUT);
                 handler.sendEmptyMessageDelayed(MSG_READ_DATA_RETRY, BleConfig.getInstance().getOperateRetryInterval());
             }
             ViseLog.i("readFailure readDataRetryCount is " + readDataRetryCount);
         } else {
             handleFailureData(readInfoMap, bleException, isDescriptor, isRemoveCall);
+            ViseLog.i("readFailure " + bleException);
         }
     }
 
@@ -788,12 +772,13 @@ public class DeviceMirror {
         if (writeDataRetryCount < BleConfig.getInstance().getOperateRetryCount()) {
             writeDataRetryCount++;
             if (handler != null) {
-                handler.sendEmptyMessageDelayed(MSG_WRITE_DATA_RETRY, BleConfig.getInstance().getOperateRetryInterval
-                        ());
+                handler.removeMessages(MSG_WRITE_DATA_TIMEOUT);
+                handler.sendEmptyMessageDelayed(MSG_WRITE_DATA_RETRY, BleConfig.getInstance().getOperateRetryInterval());
             }
             ViseLog.i("writeFailure writeDataRetryCount is " + writeDataRetryCount);
         } else {
             handleFailureData(writeInfoMap, bleException, isDescriptor, isRemoveCall);
+            ViseLog.i("writeFailure " + bleException);
         }
     }
 
@@ -806,41 +791,39 @@ public class DeviceMirror {
      * @param isDescriptor             是否有描述值
      * @param isRemoveCall             是否需要移除回调
      */
-    private void handleSuccessData(HashMap<String, BluetoothGattInfo> bluetoothGattInfoHashMap, byte[] value, int
-            status,
+    private synchronized void handleSuccessData(HashMap<String, BluetoothGattChannel> bluetoothGattInfoHashMap, byte[] value, int status,
                                    boolean isDescriptor, boolean isRemoveCall) {
-        Iterator<Map.Entry<String, IBleCallback>> bleCallbackIterator = bleCallbackMap.entrySet().iterator();
-        Iterator<Map.Entry<String, BluetoothGattInfo>> bluetoothGattInfoIterator = bluetoothGattInfoHashMap.entrySet
-                ().iterator();
-        while (bleCallbackIterator.hasNext()) {
-            Map.Entry<String, IBleCallback> callbackEntry = bleCallbackIterator.next();
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        String removeBleCallbackKey = null;
+        String removeBluetoothGattInfoKey = null;
+        for (Map.Entry<String, IBleCallback> callbackEntry : bleCallbackMap.entrySet()) {
             String bleCallbackKey = callbackEntry.getKey();
             IBleCallback bleCallbackValue = callbackEntry.getValue();
-            while (bluetoothGattInfoIterator.hasNext()) {
-                Map.Entry<String, BluetoothGattInfo> gattInfoEntry = bluetoothGattInfoIterator.next();
+            for (Map.Entry<String, BluetoothGattChannel> gattInfoEntry : bluetoothGattInfoHashMap.entrySet()) {
                 String bluetoothGattInfoKey = gattInfoEntry.getKey();
-                BluetoothGattInfo bluetoothGattInfoValue = gattInfoEntry.getValue();
+                BluetoothGattChannel bluetoothGattInfoValue = gattInfoEntry.getValue();
                 if (isDescriptor) {
                     if (bleCallbackKey.equals(bluetoothGattInfoKey) && bluetoothGattInfoValue.getDescriptor() != null) {
                         bleCallbackValue.onSuccess(value, bluetoothGattInfoValue);
-                        if (isRemoveCall) {
-                            bleCallbackMap.remove(bleCallbackKey);
-                            bluetoothGattInfoHashMap.remove(bluetoothGattInfoKey);
-                        }
+                        removeBleCallbackKey = bleCallbackKey;
+                        removeBluetoothGattInfoKey = bluetoothGattInfoKey;
                     }
                 } else {
                     if (bleCallbackKey.equals(bluetoothGattInfoKey) && bluetoothGattInfoValue.getDescriptor() == null) {
                         bleCallbackValue.onSuccess(value, bluetoothGattInfoValue);
-                        if (isRemoveCall) {
-                            bleCallbackMap.remove(bleCallbackKey);
-                            bluetoothGattInfoHashMap.remove(bluetoothGattInfoKey);
-                        }
+                        removeBleCallbackKey = bleCallbackKey;
+                        removeBluetoothGattInfoKey = bluetoothGattInfoKey;
                     }
                 }
             }
         }
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+        synchronized (bleCallbackMap) {
+            if (isRemoveCall && removeBleCallbackKey != null && removeBluetoothGattInfoKey != null) {
+                bleCallbackMap.remove(removeBleCallbackKey);
+                bluetoothGattInfoHashMap.remove(removeBluetoothGattInfoKey);
+            }
         }
     }
 
@@ -852,41 +835,39 @@ public class DeviceMirror {
      * @param isDescriptor             是否有描述值
      * @param isRemoveCall             是否需要移除回调
      */
-    private void handleFailureData(HashMap<String, BluetoothGattInfo> bluetoothGattInfoHashMap, BleException
-            bleExceprion,
+    private synchronized void handleFailureData(HashMap<String, BluetoothGattChannel> bluetoothGattInfoHashMap, BleException bleExceprion,
                                    boolean isDescriptor, boolean isRemoveCall) {
-        Iterator<Map.Entry<String, IBleCallback>> bleCallbackIterator = bleCallbackMap.entrySet().iterator();
-        Iterator<Map.Entry<String, BluetoothGattInfo>> bluetoothGattInfoIterator = bluetoothGattInfoHashMap.entrySet
-                ().iterator();
-        while (bleCallbackIterator.hasNext()) {
-            Map.Entry<String, IBleCallback> callbackEntry = bleCallbackIterator.next();
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        String removeBleCallbackKey = null;
+        String removeBluetoothGattInfoKey = null;
+        for (Map.Entry<String, IBleCallback> callbackEntry : bleCallbackMap.entrySet()) {
             String bleCallbackKey = callbackEntry.getKey();
             IBleCallback bleCallbackValue = callbackEntry.getValue();
-            while (bluetoothGattInfoIterator.hasNext()) {
-                Map.Entry<String, BluetoothGattInfo> gattInfoEntry = bluetoothGattInfoIterator.next();
+            for (Map.Entry<String, BluetoothGattChannel> gattInfoEntry : bluetoothGattInfoHashMap.entrySet()) {
                 String bluetoothGattInfoKey = gattInfoEntry.getKey();
-                BluetoothGattInfo bluetoothGattInfoValue = gattInfoEntry.getValue();
+                BluetoothGattChannel bluetoothGattInfoValue = gattInfoEntry.getValue();
                 if (isDescriptor) {
                     if (bleCallbackKey.equals(bluetoothGattInfoKey) && bluetoothGattInfoValue.getDescriptor() != null) {
                         bleCallbackValue.onFailure(bleExceprion);
-                        if (isRemoveCall) {
-                            bleCallbackMap.remove(bleCallbackKey);
-                            bluetoothGattInfoHashMap.remove(bluetoothGattInfoKey);
-                        }
+                        removeBleCallbackKey = bleCallbackKey;
+                        removeBluetoothGattInfoKey = bluetoothGattInfoKey;
                     }
                 } else {
                     if (bleCallbackKey.equals(bluetoothGattInfoKey) && bluetoothGattInfoValue.getDescriptor() == null) {
                         bleCallbackValue.onFailure(bleExceprion);
-                        if (isRemoveCall) {
-                            bleCallbackMap.remove(bleCallbackKey);
-                            bluetoothGattInfoHashMap.remove(bluetoothGattInfoKey);
-                        }
+                        removeBleCallbackKey = bleCallbackKey;
+                        removeBluetoothGattInfoKey = bluetoothGattInfoKey;
                     }
                 }
             }
         }
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+        synchronized (bleCallbackMap) {
+            if (isRemoveCall && removeBleCallbackKey != null && removeBluetoothGattInfoKey != null) {
+                bleCallbackMap.remove(removeBleCallbackKey);
+                bluetoothGattInfoHashMap.remove(removeBluetoothGattInfoKey);
+            }
         }
     }
 }

@@ -6,9 +6,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
-import com.vise.baseble.callback.IRssiCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.callback.scan.SingleFilterScanCallback;
@@ -134,7 +132,7 @@ public class ViseBle {
             ViseLog.e("This bluetoothLeDevice or connectCallback is null.");
             return;
         }
-        if (!deviceMirrorPool.isContainDevice(bluetoothLeDevice)) {
+        if (deviceMirrorPool != null && !deviceMirrorPool.isContainDevice(bluetoothLeDevice)) {
             DeviceMirror deviceMirror = new DeviceMirror(bluetoothLeDevice);
             deviceMirror.connect(connectCallback);
         } else {
@@ -216,78 +214,6 @@ public class ViseBle {
                 connectCallback.onConnectFailure(new TimeoutException());
             }
         }).setDeviceName(name));
-    }
-
-    /**
-     * 写入数据
-     *
-     * @param deviceMirror 设备镜像
-     * @param data         待发送数据（不能超过20字节）
-     */
-    public void writeData(DeviceMirror deviceMirror, byte[] data) {
-        if (deviceMirror != null && deviceMirror.isConnected() && data != null) {
-            deviceMirror.writeData(data);
-        }
-    }
-
-    /**
-     * 读取数据
-     *
-     * @param deviceMirror 设备镜像
-     */
-    public void readData(DeviceMirror deviceMirror) {
-        if (deviceMirror != null && deviceMirror.isConnected()) {
-            deviceMirror.readData();
-        }
-    }
-
-    /**
-     * 读取设备信号值
-     *
-     * @param deviceMirror 设备镜像
-     * @param rssiCallback 信号回调
-     */
-    public void readRemoteRssi(DeviceMirror deviceMirror, IRssiCallback rssiCallback) {
-        if (deviceMirror != null && deviceMirror.isConnected() && rssiCallback != null) {
-            deviceMirror.readRemoteRssi(rssiCallback);
-        }
-    }
-
-    /**
-     * 注册获取数据通知
-     *
-     * @param deviceMirror 设备镜像
-     * @param isIndication 是否是指示器方式
-     */
-    public void registerNotify(DeviceMirror deviceMirror, boolean isIndication) {
-        if (deviceMirror != null && deviceMirror.isConnected()) {
-            deviceMirror.registerNotify(isIndication);
-        }
-    }
-
-    /**
-     * 取消获取数据通知
-     *
-     * @param deviceMirror 设备镜像
-     * @param isIndication 是否是指示器方式
-     */
-    public void unregisterNotify(DeviceMirror deviceMirror, boolean isIndication) {
-        if (deviceMirror != null && deviceMirror.isConnected()) {
-            deviceMirror.unregisterNotify(isIndication);
-        }
-    }
-
-    /**
-     * 设置接收数据监听
-     *
-     * @param deviceMirror    设备镜像
-     * @param key             接收数据回调key，由serviceUUID+characteristicUUID+descriptorUUID组成
-     * @param receiveCallback 接收数据回调
-     */
-    public void setNotifyListener(DeviceMirror deviceMirror, String key, IBleCallback receiveCallback) {
-        if (deviceMirror != null && deviceMirror.isConnected()) {
-            deviceMirror.setNotifyListener(key, receiveCallback);
-        }
     }
 
     /**
