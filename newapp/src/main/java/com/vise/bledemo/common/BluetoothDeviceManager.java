@@ -1,7 +1,6 @@
 package com.vise.bledemo.common;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import com.vise.baseble.ViseBle;
 import com.vise.baseble.callback.IBleCallback;
@@ -9,6 +8,7 @@ import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
 import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.common.BleConstant;
+import com.vise.baseble.common.PropertyType;
 import com.vise.baseble.core.BluetoothGattChannel;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
@@ -16,8 +16,9 @@ import com.vise.baseble.exception.BleException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.baseble.utils.HexUtil;
-import com.vise.bledemo.activity.DeviceControlActivity;
 import com.vise.log.ViseLog;
+
+import java.util.UUID;
 
 /**
  * @Description: 蓝牙设备管理
@@ -184,24 +185,93 @@ public class BluetoothDeviceManager {
         mDeviceMirrorPool = ViseBle.getInstance().getDeviceMirrorPool();
     }
 
-    public void scan() {
+    public void startScan() {
+        ViseBle.getInstance().startScan(periodScanCallback);
+    }
 
+    public void stopScan() {
+        ViseBle.getInstance().stopScan(periodScanCallback);
     }
 
     public void connect(BluetoothLeDevice bluetoothLeDevice) {
+        ViseBle.getInstance().connect(bluetoothLeDevice, connectCallback);
+    }
 
+    public void bindWriteChannel(BluetoothLeDevice bluetoothLeDevice, UUID serviceUUID,
+                                 UUID characteristicUUID, UUID descriptorUUID) {
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (deviceMirror != null) {
+            BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                    .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+                    .setPropertyType(PropertyType.PROPERTY_WRITE)
+                    .setServiceUUID(serviceUUID)
+                    .setCharacteristicUUID(characteristicUUID)
+                    .setDescriptorUUID(descriptorUUID)
+                    .builder();
+            deviceMirror.bindChannel(writeCallback, bluetoothGattChannel);
+        }
+    }
+
+    public void bindReadChannel(BluetoothLeDevice bluetoothLeDevice, UUID serviceUUID,
+                                 UUID characteristicUUID, UUID descriptorUUID) {
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (deviceMirror != null) {
+            BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                    .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+                    .setPropertyType(PropertyType.PROPERTY_READ)
+                    .setServiceUUID(serviceUUID)
+                    .setCharacteristicUUID(characteristicUUID)
+                    .setDescriptorUUID(descriptorUUID)
+                    .builder();
+            deviceMirror.bindChannel(readCallback, bluetoothGattChannel);
+        }
+    }
+
+    public void bindEnableChannel(BluetoothLeDevice bluetoothLeDevice, UUID serviceUUID,
+                                 UUID characteristicUUID, UUID descriptorUUID, boolean isIndicate) {
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (deviceMirror != null) {
+            if (isIndicate) {
+                BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                        .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+                        .setPropertyType(PropertyType.PROPERTY_INDICATE)
+                        .setServiceUUID(serviceUUID)
+                        .setCharacteristicUUID(characteristicUUID)
+                        .setDescriptorUUID(descriptorUUID)
+                        .builder();
+                deviceMirror.bindChannel(enableCallback, bluetoothGattChannel);
+            } else {
+                BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+                        .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+                        .setPropertyType(PropertyType.PROPERTY_NOTIFY)
+                        .setServiceUUID(serviceUUID)
+                        .setCharacteristicUUID(characteristicUUID)
+                        .setDescriptorUUID(descriptorUUID)
+                        .builder();
+                deviceMirror.bindChannel(enableCallback, bluetoothGattChannel);
+            }
+        }
     }
 
     public void write(BluetoothLeDevice bluetoothLeDevice, byte[] data) {
-
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (deviceMirror != null) {
+            deviceMirror.writeData(data);
+        }
     }
 
     public void read(BluetoothLeDevice bluetoothLeDevice) {
-
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (deviceMirror != null) {
+            deviceMirror.readData();
+        }
     }
 
-    public void notify(BluetoothLeDevice bluetoothLeDevice) {
-
+    public void registerNotify(BluetoothLeDevice bluetoothLeDevice, boolean isIndicate) {
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (deviceMirror != null) {
+            deviceMirror.registerNotify(isIndicate);
+        }
     }
 
 }
