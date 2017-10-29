@@ -30,7 +30,10 @@ import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.resolver.GattAttributeResolver;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.bledemo.R;
+import com.vise.bledemo.event.CallbackDataEvent;
+import com.vise.bledemo.event.NotifyDataEvent;
 import com.vise.log.ViseLog;
+import com.vise.xsnow.event.Subscribe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -268,6 +271,20 @@ public class DeviceControlActivity extends AppCompatActivity {
                 send(HexUtil.decodeHex(mInput.getText().toString().toCharArray()));
             }
         });
+    }
+
+    @Subscribe
+    public void showDeviceCallbackData(CallbackDataEvent event) {
+        if (event != null) {
+
+        }
+    }
+
+    @Subscribe
+    public void showDeviceNotifyData(NotifyDataEvent event) {
+        if (event != null) {
+
+        }
     }
 
     @Override

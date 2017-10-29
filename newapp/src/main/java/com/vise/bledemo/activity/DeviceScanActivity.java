@@ -28,7 +28,10 @@ import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.baseble.utils.BleUtil;
 import com.vise.bledemo.R;
 import com.vise.bledemo.adapter.DeviceAdapter;
+import com.vise.bledemo.event.ScanEvent;
 import com.vise.log.ViseLog;
+import com.vise.xsnow.event.IEvent;
+import com.vise.xsnow.event.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +112,13 @@ public class DeviceScanActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Subscribe
+    public void showScanDevice(ScanEvent event) {
+        if (event != null) {
+
+        }
     }
 
     @Override

@@ -22,8 +22,12 @@ import com.vise.baseble.utils.BleUtil;
 import com.vise.bledemo.R;
 import com.vise.bledemo.adapter.DeviceAdapter;
 import com.vise.bledemo.common.BluetoothDeviceManager;
+import com.vise.bledemo.event.ConnectEvent;
 import com.vise.log.ViseLog;
 import com.vise.log.inner.LogcatTree;
+import com.vise.xsnow.event.BusManager;
+import com.vise.xsnow.event.IEvent;
+import com.vise.xsnow.event.Subscribe;
 
 /**
  * @Description: 主页，展示已连接设备列表
@@ -46,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         ViseLog.getLogConfig().configAllowLog(true);//配置日志信息
         ViseLog.plant(new LogcatTree());//添加Logcat打印信息
         BluetoothDeviceManager.getInstance().init(this);
+        BusManager.getBus().register(this);
         init();
     }
 
@@ -79,6 +84,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Subscribe
+    public void showConnectedDevice(ConnectEvent event) {
+        if (event != null) {
+
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -104,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         ViseBle.getInstance().clear();
+        BusManager.getBus().unregister(this);
         super.onDestroy();
     }
 
