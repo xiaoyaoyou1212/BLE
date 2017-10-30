@@ -2,137 +2,108 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/880ed281aff445f890766ccccbe81d7d)](https://www.codacy.com/app/xiaoyaoyou1212/BLE?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=xiaoyaoyou1212/BLE&amp;utm_campaign=Badge_Grade) [![License](https://img.shields.io/badge/License-Apache--2.0-green.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/LICENSE) [![API](https://img.shields.io/badge/API-18%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=18)
 
-Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。
+**Android BLE基础操作框架，基于回调，操作简单。包含扫描、多连接、广播包解析、服务读写及通知等功能。**
 
-- 项目地址：[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
+- **项目地址：**[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- 项目依赖：`compile 'com.vise.xiaoyaoyou:baseble:1.0.10'`
+- **项目依赖：**`compile 'com.vise.xiaoyaoyou:baseble:2.0.0'`
 
-### 版本说明
-[![LatestVersion](https://img.shields.io/badge/LatestVersion-1.0.10-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
+## 功能
+- **支持多设备连接管理；**
 
-### 代码托管
-[![JCenter](https://img.shields.io/badge/JCenter-1.0.10-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/1.0.10/)
+- **支持广播包解析；**
 
-### 常见问题
+- **支持自定义扫描过滤条件；**
+
+- **支持根据设备名称正则表达式过滤扫描设备；**
+
+- **支持根据设备信号最小值过滤扫描设备；**
+
+- **支持根据设备名称或 MAC 地址列表过滤扫描设备；**
+
+- **支持根据设备 UUID 过滤扫描设备；**
+
+- **支持根据指定设备名称或 MAC 地址搜索指定设备；**
+
+- **支持连接设备失败重试；**
+
+- **支持操作设备数据失败重试；**
+
+- **支持绑定数据收发通道，同一种能力可绑定多个通道；**
+
+- **支持注册和取消通知监听；**
+
+- **支持配置最大连接数，超过最大连接数时会依据 Lru 算法自动断开最近最久未使用设备；**
+
+- **支持配置扫描、连接和操作数据超时时间；**
+
+- **支持配置连接和操作数据重试次数以及重试间隔时间。**
+
+## 简介
+打造该库的目的是为了简化蓝牙设备接入的流程。该库是 BLE 操作的基础框架，只处理 BLE 设备通信逻辑，不包含具体的数据处理，如数据的分包与组包等。该库提供了多设备连接管理，可配置最大连接数量，并在超过最大连接数时会依据 Lru 算法自动断开最近最久未使用设备。该库还定制了常用的扫描设备过滤规则，也支持自定义过滤规则。该库所有操作都采用回调机制告知上层调用的结果，操作简单，接入方便。
+
+## 版本说明
+[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.0.0-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
+
+## 代码托管
+[![JCenter](https://img.shields.io/badge/JCenter-2.0.0-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/2.0.0/)
+
+## 常见问题
 [![FAQ](https://img.shields.io/badge/FAQ-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-red.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/FAQ.md)
 
-### 效果展示
+## 效果展示
 ![设备扫描](http://img.blog.csdn.net/20160828100329779)
 ![设备连接](http://img.blog.csdn.net/20160828100240247)
 ![设备详情](http://img.blog.csdn.net/20160828100259718)
 ![设备详情](http://img.blog.csdn.net/20160828100315766)
 ![设备服务](http://img.blog.csdn.net/20160828100343826)
 
-## 设备扫描
-### 使用简介
-扫描包含三种方式，第一种方式是直接扫描所有设备，可以设置循环扫描，也可以设置超时时间，扫描到的设备可以添加到`BluetoothLeDeviceStore`中统一进行处理，使用方式如下：
+## 使用介绍
+
+### 权限配置
+6.0 以下系统不需要配置权限，库中已经配置了如下权限：
 ```
-ViseBluetooth.getInstance().setScanTimeout(-1).startScan(new PeriodScanCallback() {
-    @Override
-    public void scanTimeout() {
-
-    }
-
-    @Override
-    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
-		bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
-    }
-});
+<uses-permission android:name="android.permission.BLUETOOTH"/>
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 ```
-第二种方式是扫描指定Mac地址的设备，一般需设置超时时间，扫描到指定设备后就停止扫描，使用方式如下：
+而如果手机系统在 6.0 以上则需要配置如下权限：
 ```
-ViseBluetooth.getInstance().setScanTimeout(5000).startScan(new PeriodMacScanCallback() {
-    @Override
-    public void scanTimeout() {
-
-    }
-
-    @Override
-    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
-
-    }
-});
+<uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 ```
-第三种方式是扫描指定广播名的设备，同第二种方式类似，也需设置超时时间，扫描到指定设备后也会停止扫描，使用方式如下：
+因为蓝牙在 6.0 以上手机使用了模糊定位功能，所以需要添加模糊定位权限。
+
+### 引入 SDK
+在工程 module 的 build.gradle 文件中的 dependencies 中添加如下依赖：
 ```
-ViseBluetooth.getInstance().setScanTimeout(5000).startScan(new PeriodNameScanCallback() {
-    @Override
-    public void scanTimeout() {
-
-    }
-
-    @Override
-    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
-
-    }
-});
+compile 'com.vise.xiaoyaoyou:baseble:2.0.0'
 ```
-其中扫描到的设备信息都统一放到`BluetoothLeDevice`中，其中包含了设备的所有信息，以下会详细讲解具体包含哪些信息。
+构建完后就可以直接使用该库的功能了。
 
-## 设备连接
-### 使用简介
-连接与扫描一样也有三种方式，第一种方式是在扫描获取设备信息`BluetoothLeDevice`后才可使用，可设置连接超时时间，默认超时时间为10秒，使用方式如下：
+### 蓝牙初始化
+在使用该库的功能前还需要进行初始化，可以是在 Application 中也可以是在 MainActivity 中：
 ```
-ViseBluetooth.getInstance().connect(bluetoothLeDevice, false, new IConnectCallback() {
-    @Override
-    public void onConnectSuccess(BluetoothGatt gatt, int status) {
-
-    }
-
-    @Override
-    public void onConnectFailure(BleException exception) {
-
-    }
-    
-    @Override
-    public void onDisconnect() {
-    
-    }
-});
+//蓝牙相关配置修改
+ViseBle.config()
+        .setScanTimeout(-1)//扫描超时时间，这里设置为永久扫描
+        .setConnectTimeout(10 * 1000)//连接超时时间
+        .setOperateTimeout(5 * 1000)//设置数据操作超时时间
+        .setConnectRetryCount(3)//设置连接失败重试次数
+        .setConnectRetryInterval(1000)//设置连接失败重试间隔时间
+        .setOperateRetryCount(3)//设置数据操作失败重试次数
+        .setOperateRetryInterval(1000)//设置数据操作失败重试间隔时间
+        .setMaxConnectCount(3);//设置最大连接设备数量
+//蓝牙信息初始化，全局唯一，必须在应用初始化时调用
+ViseBle.getInstance().init(this);
 ```
-第二种方式是连接指定Mac地址的设备，该方式使用前不需要进行扫描，该方式直接将扫描和连接放到一起，在扫描到指定设备后自动进行连接，使用方式如下：
-```
-ViseBluetooth.getInstance().connectByMac(mac, false, new IConnectCallback() {
-    @Override
-    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+需要注意的是，蓝牙配置必须在蓝牙初始化前进行修改，如果默认配置满足要求也可以不进行配置。
 
-    }
+### 设备扫描
 
-    @Override
-    public void onConnectFailure(BleException exception) {
+其中扫描到的设备列表由 `BluetoothLeDeviceStore` 管理，而单个设备信息都统一放到`BluetoothLeDevice`中，其中包含了设备的所有信息，以下会详细讲解具体包含哪些信息。
 
-    }
-    
-    @Override
-    public void onDisconnect() {
-    
-    }
-});
-```
-第三种方式是连接指定名称的设备，该方式与第二种方式类似，使用方式如下：
-```
-ViseBluetooth.getInstance().connectByName(name, false, new IConnectCallback() {
-    @Override
-    public void onConnectSuccess(BluetoothGatt gatt, int status) {
+### 设备连接
 
-    }
-
-    @Override
-    public void onConnectFailure(BleException exception) {
-
-    }
-    
-    @Override
-    public void onDisconnect() {
-    
-    }
-});
-```
-连接成功后就可以进行相关处理，回调已在底层做了线程切换处理，可以直接操作视图。如果知道该设备服务的UUID，可直接调用`ViseBluetooth.getInstance().withUUIDString(serviceUUID, characteristicUUID, descriptorUUID);`，那么在下面操作设备时就不需要传特征(`BluetoothGattCharacteristic`)和描述(`BluetoothGattDescriptor`)相关参数，如果在连接成功后一直没设置UUID，那么在操作时则需要传该参数，该内容在下文的设备操作中会详细讲解，此处就不一一讲解了。
-
-## 设备详情
-### 使用简介
+### 设备详情
 #### DEVICE INFO(设备信息)
 - 获取设备名称(Device Name):`bluetoothLeDevice.getName()`；
 - 获取设备地址(Device Address):`bluetoothLeDevice.getAddress()`；
@@ -151,8 +122,12 @@ ViseBluetooth.getInstance().connectByName(name, false, new IConnectCallback() {
 #### SCAN RECORD INFO(广播信息)
 根据扫描到的广播包`AdRecordStore`获取某个广播数据单元`AdRecord`的类型编号`record.getType()`，再根据编号获取广播数据单元的类型描述`record.getHumanReadableType()`以及该广播数据单元的长度及数据内容，最后通过`AdRecordUtil.getRecordDataAsString(record)`将数据内容转换成具体字符串。
 
-## 设备操作
-### 使用简介
+### 发送数据
+
+### 接收数据
+
+### 读取数据
+
 在操作设备前首先要保证设备已连接成功，那么在设备连接成功获取到`BluetoothGatt`后直接对服务的特征值UUID进行相关处理，其中特征值UUID有可读、可写、可通知、指示器四种，获取过程如下所示：
 ```
 final String unknownServiceString = getResources().getString(R.string.unknown_service);
@@ -187,107 +162,22 @@ for (final BluetoothGattService gattService : gattServices) {
     gattCharacteristicData.add(gattCharacteristicGroupData);
 }
 ```
-在获取到`BluetoothGattCharacteristic`后可进行如下操作：
-- 设置通知服务
-```
-ViseBluetooth.getInstance().enableCharacteristicNotification(characteristic, new ICharacteristicCallback() {
-    @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
 
-    }
-
-    @Override
-    public void onFailure(BleException exception) {
-
-    }
-}, false);
-```
-其中最后一个参数是设置该通知是否是指示器方式，指示器方式为有应答的通知方式，在传输时更为靠谱。如果在连接成功时已经知道该设备可通知的UUID并且已经设置成功，那么此处还可以如下设置：
-```
-ViseBluetooth.getInstance().enableCharacteristicNotification(new ICharacteristicCallback() {
-    @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-
-    }
-
-    @Override
-    public void onFailure(BleException exception) {
-
-    }
-}, false);
-```
-- 读取信息
-```
-ViseBluetooth.getInstance().readCharacteristic(characteristic, new ICharacteristicCallback() {
-    @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-
-    }
-
-    @Override
-    public void onFailure(BleException exception) {
-
-    }
-});
-```
-同上，如果已设置过可读的UUID，那么此处也可以通过如下方式读取信息：
-```
-ViseBluetooth.getInstance().readCharacteristic(new ICharacteristicCallback() {
-    @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-
-    }
-
-    @Override
-    public void onFailure(BleException exception) {
-
-    }
-});
-```
-- 写入数据
-```
-ViseBluetooth.getInstance().writeCharacteristic(characteristic, new byte[]{0x00,0x01,0x02}, new ICharacteristicCallback() {
-    @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-
-    }
-
-    @Override
-    public void onFailure(BleException exception) {
-
-    }
-});
-```
-同样，如果在连接成功时设置过可写UUID，那么此处也可以通过如下方式写入数据：
-```
-ViseBluetooth.getInstance().writeCharacteristic(new byte[]{0x00,0x01,0x02}, new ICharacteristicCallback() {
-    @Override
-    public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic) {
-
-    }
-
-    @Override
-    public void onFailure(BleException exception) {
-
-    }
-});
-```
 此处的数据`new byte[]{0x00,0x01,0x02}`为模拟数据，在使用时替换为真实数据即可，切记每次发送的数据必须在20个字节内，如果大于20字节可采用分包机制进行处理。
 
 ## 总结
-从以上的描述中可以知道，设备相关的所有操作都统一交给`ViseBluetooth`进行处理，并且该类是单例模式，全局只有一个，管理很方便。使用前必须要在Application中调用`ViseBluetooth.getInstance().init(this);`进行初始化，在连接设备成功时会自动获得一个`BluetoothGatt`，在断开连接时会将该`BluetoothGatt`关闭，上层不用关心连接数最大为6的限制问题，只需要在需要释放资源时调用`ViseBluetooth.getInstance().clear();`就行，简单易用，这也正是该项目的宗旨。
+
 
 ## 感谢
 在此要感谢两位作者提供的开源库[https://github.com/litesuits/android-lite-bluetoothLE](https://github.com/litesuits/android-lite-bluetoothLE)和[https://github.com/alt236/Bluetooth-LE-Library---Android](https://github.com/alt236/Bluetooth-LE-Library---Android)，这两个开源库对于本项目的完成提供了很大的帮助。
 
-### 关于我
+## 关于我
 [![Website](https://img.shields.io/badge/Website-huwei-blue.svg)](http://www.huwei.tech/)
 [![GitHub](https://img.shields.io/badge/GitHub-xiaoyaoyou1212-blue.svg)](https://github.com/xiaoyaoyou1212)
 [![CSDN](https://img.shields.io/badge/CSDN-xiaoyaoyou1212-blue.svg)](http://blog.csdn.net/xiaoyaoyou1212)
 
-### 最后
+## 最后
 如果觉得该项目有帮助，请点下Star，您的支持是我开源的动力。如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
 
 ![QQ群](http://img.blog.csdn.net/20170327191310083)
 
-*欢迎进群交流！*
