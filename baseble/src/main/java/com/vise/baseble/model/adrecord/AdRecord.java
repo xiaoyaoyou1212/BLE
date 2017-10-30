@@ -46,7 +46,7 @@ public class AdRecord implements Parcelable {
     public static final int BLE_GAP_AD_TYPE_3D_INFORMATION_DATA = 0x3D;//< 3D Information Data.
     public static final int BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA = 0xFF;//< Manufacturer Specific Data.
 
-    public static final Parcelable.Creator<AdRecord> CREATOR = new Parcelable.Creator<AdRecord>() {
+    public static final Creator<AdRecord> CREATOR = new Creator<AdRecord>() {
         public AdRecord createFromParcel(final Parcel in) {
             return new AdRecord(in);
         }

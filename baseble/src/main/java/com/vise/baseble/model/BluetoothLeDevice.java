@@ -29,7 +29,7 @@ public class BluetoothLeDevice implements Parcelable {
     /**
      * The Constant CREATOR.
      */
-    public static final Parcelable.Creator<BluetoothLeDevice> CREATOR = new Parcelable.Creator<BluetoothLeDevice>() {
+    public static final Creator<BluetoothLeDevice> CREATOR = new Creator<BluetoothLeDevice>() {
         public BluetoothLeDevice createFromParcel(final Parcel in) {
             return new BluetoothLeDevice(in);
         }
@@ -158,8 +158,10 @@ public class BluetoothLeDevice implements Parcelable {
         if (mRssiLog == null) {
             if (other.mRssiLog != null) return false;
         } else if (!mRssiLog.equals(other.mRssiLog)) return false;
-        if (!Arrays.equals(mScanRecord, other.mScanRecord)) return false;
-        return true;
+        if (Arrays.equals(mScanRecord, other.mScanRecord)) {
+            return true;
+        }
+        return false;
     }
 
     /**

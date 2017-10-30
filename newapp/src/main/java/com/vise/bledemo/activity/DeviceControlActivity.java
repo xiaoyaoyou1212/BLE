@@ -189,6 +189,7 @@ public class DeviceControlActivity extends AppCompatActivity {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
             mConnectionState.setText("false");
+            clearUI();
         }
         if (ViseBle.getInstance().getConnectState(mDevice) == ConnectState.CONNECT_PROCESS) {
             menu.findItem(R.id.menu_refresh).setActionView(R.layout.actionbar_progress_indeterminate);

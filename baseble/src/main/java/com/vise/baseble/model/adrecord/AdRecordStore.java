@@ -18,7 +18,7 @@ import java.util.Collections;
  */
 public class AdRecordStore implements Parcelable {
 
-    public static final Parcelable.Creator<AdRecordStore> CREATOR = new Parcelable.Creator<AdRecordStore>() {
+    public static final Creator<AdRecordStore> CREATOR = new Creator<AdRecordStore>() {
         public AdRecordStore createFromParcel(final Parcel in) {
             return new AdRecordStore(in);
         }
