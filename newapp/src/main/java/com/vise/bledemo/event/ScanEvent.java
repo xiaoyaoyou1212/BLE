@@ -3,11 +3,6 @@ package com.vise.bledemo.event;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.xsnow.event.IEvent;
 
-/**
- * @Description:
- * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
- * @date: 17/10/29 22:59.
- */
 public class ScanEvent implements IEvent {
     private boolean isScanTimeout;
     private boolean isScanFinish;

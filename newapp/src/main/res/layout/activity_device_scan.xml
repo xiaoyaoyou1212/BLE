@@ -6,54 +6,6 @@
     android:orientation="vertical"
     android:padding="15dp">
 
-    <GridLayout
-        android:id="@+id/scan_grid"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:paddingBottom="15dp">
-
-        <TextView
-            android:layout_column="0"
-            android:layout_gravity="center_horizontal"
-            android:layout_row="0"
-            android:text="@string/label_bluetooth_le_status"
-            android:textSize="12sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/scan_ble_support"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_column="1"
-            android:layout_marginLeft="28dp"
-            android:layout_row="0"
-            android:gravity="right"
-            android:text="@string/not_supported"
-            android:textSize="12sp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_column="0"
-            android:layout_gravity="left"
-            android:layout_row="1"
-            android:text="@string/label_bluetooth_status"
-            android:textSize="12sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/scan_ble_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_column="1"
-            android:layout_marginLeft="28dp"
-            android:layout_row="1"
-            android:gravity="right"
-            android:text="@string/off"
-            android:textSize="12sp"/>
-    </GridLayout>
-
     <View
         android:id="@+id/upperSepparator"
         android:layout_width="match_parent"
@@ -105,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical|center_horizontal"
-                android:text="@string/no_data"/>
+                android:text="@string/no_scan_device"/>
         </LinearLayout>
     </RelativeLayout>
 </LinearLayout>

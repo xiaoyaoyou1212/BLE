@@ -48,6 +48,11 @@
     <string name="label_running_average_rssi">Running Average RSSI:</string>
     <string name="label_state">State:</string>
     <string name="label_uuid">UUID:</string>
+    <string name="label_notify_data">Notify Data:\n</string>
+
+    <string name="no_connected_device">您还没有添加设备哟</string>
+    <string name="no_scan_device">周围没有扫描到设备哟</string>
+
     <string name="label_input">输入:</string>
     <string name="label_output">输出:</string>
     <string name="label_select_read_characteristic">选择可读服务</string>
@@ -56,10 +61,10 @@
     <string name="label_send">发送</string>
 
     <string name="about_dialog_text">\n
-        项目简介：Android BLE基础操作框架，基于回调，操作简单。其中包含扫描、连接、广播包解析、服务读写及通知等功能。\n
+        项目简介：Android BLE基础操作框架，基于回调，操作简单。包含扫描、多连接、广播包解析、服务读写及通知等功能。\n
         项目地址：https://github.com/xiaoyaoyou1212/BLE\n
         作者：胡伟\n
-        网站：http://www.xiaoyaoyou1212.com\n
+        网站：http://www.huwei.tech\n
         博客：http://blog.csdn.net/xiaoyaoyou1212
     </string>
 </resources>

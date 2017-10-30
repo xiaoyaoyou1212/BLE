@@ -1,6 +1,8 @@
 package com.vise.bledemo.common;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.vise.baseble.ViseBle;
 import com.vise.baseble.callback.IBleCallback;
@@ -23,6 +25,8 @@ import com.vise.bledemo.event.ScanEvent;
 import com.vise.log.ViseLog;
 import com.vise.xsnow.event.BusManager;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.UUID;
 
 /**
@@ -82,7 +86,7 @@ public class BluetoothDeviceManager {
         @Override
         public void onDisconnect(boolean isActive) {
             ViseLog.i("Disconnect!");
-            BusManager.getBus().post(connectEvent.setDisconnected(true));
+            BusManager.getBus().post(connectEvent.setSuccess(false).setDisconnected(true));
         }
     };
 
@@ -91,12 +95,14 @@ public class BluetoothDeviceManager {
      */
     private IBleCallback receiveCallback = new IBleCallback() {
         @Override
-        public void onSuccess(final byte[] data, BluetoothGattChannel bluetoothGattInfo) {
+        public void onSuccess(final byte[] data, BluetoothGattChannel bluetoothGattInfo, BluetoothLeDevice bluetoothLeDevice) {
             if (data == null) {
                 return;
             }
             ViseLog.i("notify success:" + HexUtil.encodeHexStr(data));
-            BusManager.getBus().post(notifyDataEvent.setData(data).setBluetoothGattChannel(bluetoothGattInfo));
+            BusManager.getBus().post(notifyDataEvent.setData(data)
+                    .setBluetoothLeDevice(bluetoothLeDevice)
+                    .setBluetoothGattChannel(bluetoothGattInfo));
         }
 
         @Override
@@ -113,13 +119,21 @@ public class BluetoothDeviceManager {
      */
     private IBleCallback bleCallback = new IBleCallback() {
         @Override
-        public void onSuccess(final byte[] data, BluetoothGattChannel bluetoothGattInfo) {
+        public void onSuccess(final byte[] data, BluetoothGattChannel bluetoothGattInfo, BluetoothLeDevice bluetoothLeDevice) {
             if (data == null) {
                 return;
             }
             ViseLog.i("callback success:" + HexUtil.encodeHexStr(data));
             BusManager.getBus().post(callbackDataEvent.setData(data).setSuccess(true)
+                    .setBluetoothLeDevice(bluetoothLeDevice)
                     .setBluetoothGattChannel(bluetoothGattInfo));
+            if (bluetoothGattInfo != null && (bluetoothGattInfo.getPropertyType() == PropertyType.PROPERTY_INDICATE
+                    || bluetoothGattInfo.getPropertyType() == PropertyType.PROPERTY_NOTIFY)) {
+                DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+                if (deviceMirror != null) {
+                    deviceMirror.setNotifyListener(bluetoothGattInfo.getGattInfoKey(), receiveCallback);
+                }
+            }
         }
 
         @Override
@@ -168,8 +182,20 @@ public class BluetoothDeviceManager {
         ViseBle.getInstance().stopScan(periodScanCallback);
     }
 
+    public boolean isScaning() {
+        return periodScanCallback.isScanning();
+    }
+
     public void connect(BluetoothLeDevice bluetoothLeDevice) {
         ViseBle.getInstance().connect(bluetoothLeDevice, connectCallback);
+    }
+
+    public void disconnect(BluetoothLeDevice bluetoothLeDevice) {
+        ViseBle.getInstance().disconnect(bluetoothLeDevice);
+    }
+
+    public boolean isConnected(BluetoothLeDevice bluetoothLeDevice) {
+        return ViseBle.getInstance().isConnect(bluetoothLeDevice);
     }
 
     public void bindChannel(BluetoothLeDevice bluetoothLeDevice, PropertyType propertyType, UUID serviceUUID,
@@ -187,10 +213,16 @@ public class BluetoothDeviceManager {
         }
     }
 
-    public void write(BluetoothLeDevice bluetoothLeDevice, byte[] data) {
-        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
-        if (deviceMirror != null) {
-            deviceMirror.writeData(data);
+    public void write(final BluetoothLeDevice bluetoothLeDevice, byte[] data) {
+        if (dataInfoQueue != null) {
+            dataInfoQueue.clear();
+            dataInfoQueue = splitPacketFor20Byte(data);
+            new Handler(Looper.myLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    send(bluetoothLeDevice);
+                }
+            });
         }
     }
 
@@ -206,6 +238,54 @@ public class BluetoothDeviceManager {
         if (deviceMirror != null) {
             deviceMirror.registerNotify(isIndicate);
         }
+    }
+
+    //发送队列，提供一种简单的处理方式，实际项目场景需要根据需求优化
+    private Queue<byte[]> dataInfoQueue = new LinkedList<>();
+    private void send(final BluetoothLeDevice bluetoothLeDevice) {
+        if (dataInfoQueue != null && !dataInfoQueue.isEmpty()) {
+            DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+            if (dataInfoQueue.peek() != null && deviceMirror != null) {
+                deviceMirror.writeData(dataInfoQueue.poll());
+            }
+            if (dataInfoQueue.peek() != null) {
+                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        send(bluetoothLeDevice);
+                    }
+                }, 100);
+            }
+        }
+    }
+
+    /**
+     * 数据分包
+     *
+     * @param data
+     * @return
+     */
+    private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
+        Queue<byte[]> dataInfoQueue = new LinkedList<>();
+        if (data != null) {
+            int index = 0;
+            do {
+                byte[] surplusData = new byte[data.length - index];
+                byte[] currentData;
+                System.arraycopy(data, index, surplusData, 0, data.length - index);
+                if (surplusData.length <= 20) {
+                    currentData = new byte[surplusData.length];
+                    System.arraycopy(surplusData, 0, currentData, 0, surplusData.length);
+                    index += surplusData.length;
+                } else {
+                    currentData = new byte[20];
+                    System.arraycopy(data, index, currentData, 0, 20);
+                    index += 20;
+                }
+                dataInfoQueue.offer(currentData);
+            } while (index < data.length);
+        }
+        return dataInfoQueue;
     }
 
 }

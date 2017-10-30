@@ -55,6 +55,7 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
             if (isScanning) {
                 return;
             }
+            bluetoothLeDeviceStore.clear();
             if (scanTimeout > 0) {
                 handler.postDelayed(new Runnable() {
                     @Override

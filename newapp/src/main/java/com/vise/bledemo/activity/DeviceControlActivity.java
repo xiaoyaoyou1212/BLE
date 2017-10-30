@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -16,31 +14,28 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.vise.baseble.ViseBle;
-import com.vise.baseble.callback.IBleCallback;
-import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.common.ConnectState;
 import com.vise.baseble.common.PropertyType;
-import com.vise.baseble.core.BluetoothGattChannel;
 import com.vise.baseble.core.DeviceMirror;
-import com.vise.baseble.exception.BleException;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.resolver.GattAttributeResolver;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.bledemo.R;
+import com.vise.bledemo.common.BluetoothDeviceManager;
+import com.vise.bledemo.common.ToastUtil;
 import com.vise.bledemo.event.CallbackDataEvent;
+import com.vise.bledemo.event.ConnectEvent;
 import com.vise.bledemo.event.NotifyDataEvent;
-import com.vise.log.ViseLog;
+import com.vise.xsnow.cache.SpCache;
+import com.vise.xsnow.event.BusManager;
 import com.vise.xsnow.event.Subscribe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 /**
  * 设备数据操作相关展示界面
@@ -49,6 +44,9 @@ public class DeviceControlActivity extends AppCompatActivity {
 
     private static final String LIST_NAME = "NAME";
     private static final String LIST_UUID = "UUID";
+    public static final String WRITE_CHARACTERISTI_UUID_KEY = "write_uuid_key";
+    public static final String NOTIFY_CHARACTERISTIC_UUID_KEY = "notify_uuid_key";
+    public static final String WRITE_DATA_KEY = "write_data_key";
 
     private SimpleExpandableListAdapter simpleExpandableListAdapter;
     private TextView mConnectionState;
@@ -59,165 +57,20 @@ public class DeviceControlActivity extends AppCompatActivity {
     private EditText mInput;
     private EditText mOutput;
 
-    //设备镜像
-    private DeviceMirror mDeviceMirror;
+    private SpCache mSpCache;
     //设备信息
     private BluetoothLeDevice mDevice;
-    //特征值
-    private BluetoothGattCharacteristic mCharacteristic;
     //输出数据展示
     private StringBuilder mOutputInfo = new StringBuilder();
     private List<BluetoothGattService> mGattServices = new ArrayList<>();
     //设备特征值集合
     private List<List<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<>();
 
-    //发送队列，提供一种简单的处理方式，实际项目场景需要根据需求优化
-    private Queue<byte[]> dataInfoQueue = new LinkedList<>();
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-        }
-    };
-
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            send();
-        }
-    };
-
-    private void send(byte[] data) {
-        if (dataInfoQueue != null) {
-            dataInfoQueue.clear();
-            dataInfoQueue = splitPacketFor20Byte(data);
-            handler.post(runnable);
-        }
-    }
-
-    private void send() {
-        if (dataInfoQueue != null && !dataInfoQueue.isEmpty()) {
-            if (dataInfoQueue.peek() != null && mDeviceMirror != null) {
-                mDeviceMirror.writeData(dataInfoQueue.poll());
-            }
-            if (dataInfoQueue.peek() != null) {
-                handler.postDelayed(runnable, 100);
-            }
-        }
-    }
-
-    /**
-     * 数据分包
-     *
-     * @param data
-     * @return
-     */
-    private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
-        Queue<byte[]> dataInfoQueue = new LinkedList<>();
-        if (data != null) {
-            int index = 0;
-            do {
-                byte[] surplusData = new byte[data.length - index];
-                byte[] currentData;
-                System.arraycopy(data, index, surplusData, 0, data.length - index);
-                if (surplusData.length <= 20) {
-                    currentData = new byte[surplusData.length];
-                    System.arraycopy(surplusData, 0, currentData, 0, surplusData.length);
-                    index += surplusData.length;
-                } else {
-                    currentData = new byte[20];
-                    System.arraycopy(data, index, currentData, 0, 20);
-                    index += 20;
-                }
-                dataInfoQueue.offer(currentData);
-            } while (index < data.length);
-        }
-        return dataInfoQueue;
-    }
-
-    /**
-     * 连接回调
-     */
-    private IConnectCallback connectCallback = new IConnectCallback() {
-
-        @Override
-        public void onConnectSuccess(final DeviceMirror deviceMirror) {
-            ViseLog.i("Connect Success!");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(DeviceControlActivity.this, "Connect Success!", Toast.LENGTH_SHORT).show();
-                    mConnectionState.setText("true");
-                    invalidateOptionsMenu();
-                    mDeviceMirror = deviceMirror;
-                    if (deviceMirror != null && deviceMirror.getBluetoothGatt() != null) {
-                        simpleExpandableListAdapter = displayGattServices(deviceMirror.getBluetoothGatt().getServices());
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onConnectFailure(BleException exception) {
-            ViseLog.i("Connect Failure!");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(DeviceControlActivity.this, "Connect Failure!", Toast.LENGTH_SHORT).show();
-                    mConnectionState.setText("false");
-                    invalidateOptionsMenu();
-                    clearUI();
-                }
-            });
-        }
-
-        @Override
-        public void onDisconnect(boolean isActive) {
-            ViseLog.i("Disconnect!");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(DeviceControlActivity.this, "Disconnect!", Toast.LENGTH_SHORT).show();
-                    mConnectionState.setText("false");
-                    invalidateOptionsMenu();
-                    clearUI();
-                }
-            });
-        }
-    };
-
-    /**
-     * 接收设备返回的数据回调
-     */
-    private IBleCallback receiveCallback = new IBleCallback() {
-        @Override
-        public void onSuccess(final byte[] data, BluetoothGattChannel bluetoothGattInfo) {
-            if (data == null) {
-                return;
-            }
-            ViseLog.i("notify success:" + HexUtil.encodeHexStr(data));
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mOutputInfo.append(HexUtil.encodeHexStr(data)).append("\n");
-                    mOutput.setText(mOutputInfo.toString());
-                }
-            });
-        }
-
-        @Override
-        public void onFailure(BleException exception) {
-            if (exception == null) {
-                return;
-            }
-            ViseLog.i("notify fail:" + exception.getDescription());
-        }
-    };
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_control);
+        BusManager.getBus().register(this);
         init();
     }
 
@@ -234,6 +87,8 @@ public class DeviceControlActivity extends AppCompatActivity {
         if (mDevice != null) {
             ((TextView) findViewById(R.id.device_address)).setText(mDevice.getAddress());
         }
+
+        mSpCache = new SpCache(this);
 
         findViewById(R.id.select_write_characteristic).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -256,40 +111,64 @@ public class DeviceControlActivity extends AppCompatActivity {
         findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mCharacteristic == null) {
-                    Toast.makeText(DeviceControlActivity.this, "Please select enable write characteristic!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
                 if (mInput.getText() == null || mInput.getText().toString() == null) {
-                    Toast.makeText(DeviceControlActivity.this, "Please input command!", Toast.LENGTH_SHORT).show();
+                    ToastUtil.showToast(DeviceControlActivity.this, "Please input command!");
                     return;
                 }
                 if (!isHexData(mInput.getText().toString())) {
-                    Toast.makeText(DeviceControlActivity.this, "Please input hex data command!", Toast.LENGTH_SHORT).show();
+                    ToastUtil.showToast(DeviceControlActivity.this, "Please input hex data command!");
                     return;
                 }
-                send(HexUtil.decodeHex(mInput.getText().toString().toCharArray()));
+                mSpCache.put(WRITE_DATA_KEY + mDevice.getAddress(), mInput.getText().toString());
+                BluetoothDeviceManager.getInstance().write(mDevice, HexUtil.decodeHex(mInput.getText().toString().toCharArray()));
             }
         });
     }
 
     @Subscribe
+    public void showConnectedDevice(ConnectEvent event) {
+        if (event != null) {
+            if (event.isSuccess()) {
+                ToastUtil.showToast(DeviceControlActivity.this, "Connect Success!");
+                mConnectionState.setText("true");
+                invalidateOptionsMenu();
+                if (event.getDeviceMirror() != null && event.getDeviceMirror().getBluetoothGatt() != null) {
+                    simpleExpandableListAdapter = displayGattServices(event.getDeviceMirror().getBluetoothGatt().getServices());
+                }
+            } else {
+                if (event.isDisconnected()) {
+                    ToastUtil.showToast(DeviceControlActivity.this, "Disconnect!");
+                } else {
+                    ToastUtil.showToast(DeviceControlActivity.this, "Connect Failure!");
+                }
+                mConnectionState.setText("false");
+                invalidateOptionsMenu();
+                clearUI();
+            }
+        }
+    }
+
+    @Subscribe
     public void showDeviceCallbackData(CallbackDataEvent event) {
         if (event != null) {
-
+            if (event.getBluetoothGattChannel() != null && event.getBluetoothGattChannel().getCharacteristic() != null
+                    && event.getBluetoothGattChannel().getPropertyType() == PropertyType.PROPERTY_READ) {
+                showReadInfo(event.getBluetoothGattChannel().getCharacteristic().getUuid().toString(), event.getData());
+            }
         }
     }
 
     @Subscribe
     public void showDeviceNotifyData(NotifyDataEvent event) {
-        if (event != null) {
-
+        if (event != null && event.getData() != null && event.getBluetoothLeDevice() != null
+                && event.getBluetoothLeDevice().getAddress().equals(mDevice.getAddress())) {
+            mOutputInfo.append(HexUtil.encodeHexStr(event.getData())).append("\n");
+            mOutput.setText(mOutputInfo.toString());
         }
     }
 
     @Override
     protected void onResume() {
-        clearUI();
         invalidateOptionsMenu();
         super.onResume();
     }
@@ -297,7 +176,7 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.connect, menu);
-        if (ViseBle.getInstance().isConnect(mDevice)) {
+        if (BluetoothDeviceManager.getInstance().isConnected(mDevice)) {
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_disconnect).setVisible(true);
             mConnectionState.setText("true");
@@ -305,6 +184,7 @@ public class DeviceControlActivity extends AppCompatActivity {
             if (deviceMirror != null) {
                 simpleExpandableListAdapter = displayGattServices(deviceMirror.getBluetoothGatt().getServices());
             }
+            showDefaultInfo();
         } else {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
@@ -322,19 +202,25 @@ public class DeviceControlActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect://连接设备
-                if (!ViseBle.getInstance().isConnect(mDevice)) {
-                    ViseBle.getInstance().connect(mDevice, connectCallback);
+                if (!BluetoothDeviceManager.getInstance().isConnected(mDevice)) {
+                    BluetoothDeviceManager.getInstance().connect(mDevice);
                     invalidateOptionsMenu();
                 }
                 break;
             case R.id.menu_disconnect://断开设备
-                if (ViseBle.getInstance().isConnect(mDevice)) {
-                    ViseBle.getInstance().disconnect(mDevice);
+                if (BluetoothDeviceManager.getInstance().isConnected(mDevice)) {
+                    BluetoothDeviceManager.getInstance().disconnect(mDevice);
                     invalidateOptionsMenu();
                 }
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        BusManager.getBus().unregister(this);
+        super.onDestroy();
     }
 
     /**
@@ -388,11 +274,23 @@ public class DeviceControlActivity extends AppCompatActivity {
         return gattServiceAdapter;
     }
 
-    private void showInfo(String uuid, byte[] dataArr) {
+    private void showReadInfo(String uuid, byte[] dataArr) {
         mGattUUID.setText(uuid != null ? uuid : getString(R.string.no_data));
         mGattUUIDDesc.setText(GattAttributeResolver.getAttributeName(uuid, getString(R.string.unknown)));
         mDataAsArray.setText(HexUtil.encodeHexStr(dataArr));
         mDataAsString.setText(new String(dataArr));
+    }
+
+    private void showDefaultInfo() {
+        mGattUUID.setText(R.string.no_data);
+        mGattUUIDDesc.setText(R.string.no_data);
+        mDataAsArray.setText(R.string.no_data);
+        mDataAsString.setText(R.string.no_data);
+        mInput.setText(mSpCache.get(WRITE_DATA_KEY + mDevice.getAddress(), ""));
+        mOutput.setText("");
+        ((EditText) findViewById(R.id.show_write_characteristic)).setText(mSpCache.get(WRITE_CHARACTERISTI_UUID_KEY + mDevice.getAddress(), ""));
+        ((EditText) findViewById(R.id.show_notify_characteristic)).setText(mSpCache.get(NOTIFY_CHARACTERISTIC_UUID_KEY + mDevice.getAddress(), ""));
+        mOutputInfo = new StringBuilder();
     }
 
     private void clearUI() {
@@ -406,6 +304,9 @@ public class DeviceControlActivity extends AppCompatActivity {
         ((EditText) findViewById(R.id.show_notify_characteristic)).setText("");
         mOutputInfo = new StringBuilder();
         simpleExpandableListAdapter = null;
+        mSpCache.remove(WRITE_CHARACTERISTI_UUID_KEY + mDevice.getAddress());
+        mSpCache.remove(NOTIFY_CHARACTERISTIC_UUID_KEY + mDevice.getAddress());
+        mSpCache.remove(WRITE_DATA_KEY + mDevice.getAddress());
     }
 
     /**
@@ -429,116 +330,23 @@ public class DeviceControlActivity extends AppCompatActivity {
                 final BluetoothGattCharacteristic characteristic = mGattCharacteristics.get(groupPosition).get(childPosition);
                 final int charaProp = characteristic.getProperties();
                 if ((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
-                    mCharacteristic = characteristic;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ((EditText) findViewById(R.id.show_write_characteristic)).setText(characteristic.getUuid().toString());
-                        }
-                    });
-                    if (mDeviceMirror != null) {
-                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
-                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
-                                .setPropertyType(PropertyType.PROPERTY_WRITE)
-                                .setServiceUUID(service.getUuid())
-                                .setCharacteristicUUID(characteristic.getUuid())
-                                .builder();
-                        mDeviceMirror.bindChannel(new IBleCallback() {
-                            @Override
-                            public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattInfo) {
-                                ViseLog.i("write data success:" + HexUtil.encodeHexStr(data));
-                            }
-
-                            @Override
-                            public void onFailure(BleException exception) {
-                                ViseLog.e("write data fail:" + exception);
-                            }
-                        }, bluetoothGattChannel);
-                    }
+                    mSpCache.put(WRITE_CHARACTERISTI_UUID_KEY + mDevice.getAddress(), characteristic.getUuid().toString());
+                    ((EditText) findViewById(R.id.show_write_characteristic)).setText(characteristic.getUuid().toString());
+                    BluetoothDeviceManager.getInstance().bindChannel(mDevice, PropertyType.PROPERTY_WRITE, service.getUuid(), characteristic.getUuid(), null);
                 } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                    if (mDeviceMirror != null) {
-                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
-                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
-                                .setPropertyType(PropertyType.PROPERTY_READ)
-                                .setServiceUUID(service.getUuid())
-                                .setCharacteristicUUID(characteristic.getUuid())
-                                .builder();
-                        mDeviceMirror.bindChannel(new IBleCallback() {
-                            @Override
-                            public void onSuccess(final byte[] data, final BluetoothGattChannel bluetoothGattInfo) {
-                                ViseLog.i("read data success:" + HexUtil.encodeHexStr(data));
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showInfo(bluetoothGattInfo.getCharacteristic().getUuid().toString(), data);
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public void onFailure(BleException exception) {
-                                ViseLog.e("read data fail:" + exception);
-                            }
-                        }, bluetoothGattChannel);
-                        mDeviceMirror.readData();
-                    }
+                    BluetoothDeviceManager.getInstance().bindChannel(mDevice, PropertyType.PROPERTY_READ, service.getUuid(), characteristic.getUuid(), null);
+                    BluetoothDeviceManager.getInstance().read(mDevice);
                 }
                 if ((charaProp & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
-                        }
-                    });
-                    if (mDeviceMirror != null) {
-                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
-                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
-                                .setPropertyType(PropertyType.PROPERTY_NOTIFY)
-                                .setServiceUUID(service.getUuid())
-                                .setCharacteristicUUID(characteristic.getUuid())
-                                .builder();
-                        mDeviceMirror.bindChannel(new IBleCallback() {
-                            @Override
-                            public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattInfo) {
-                                ViseLog.i("enable notify success:" + HexUtil.encodeHexStr(data));
-                                mDeviceMirror.setNotifyListener(bluetoothGattInfo.getGattInfoKey(), receiveCallback);
-                            }
-
-                            @Override
-                            public void onFailure(BleException exception) {
-                                ViseLog.e("enable notify fail:" + exception);
-                            }
-                        }, bluetoothGattChannel);
-                        mDeviceMirror.registerNotify(false);
-                    }
+                    mSpCache.put(NOTIFY_CHARACTERISTIC_UUID_KEY + mDevice.getAddress(), characteristic.getUuid().toString());
+                    ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
+                    BluetoothDeviceManager.getInstance().bindChannel(mDevice, PropertyType.PROPERTY_NOTIFY, service.getUuid(), characteristic.getUuid(), null);
+                    BluetoothDeviceManager.getInstance().registerNotify(mDevice, false);
                 } else if ((charaProp & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
-                        }
-                    });
-                    if (mDeviceMirror != null) {
-                        BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
-                                .setBluetoothGatt(mDeviceMirror.getBluetoothGatt())
-                                .setPropertyType(PropertyType.PROPERTY_INDICATE)
-                                .setServiceUUID(service.getUuid())
-                                .setCharacteristicUUID(characteristic.getUuid())
-                                .builder();
-                        mDeviceMirror.bindChannel(new IBleCallback() {
-                            @Override
-                            public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattInfo) {
-                                ViseLog.i("enable indicate success:" + HexUtil.encodeHexStr(data));
-                                mDeviceMirror.setNotifyListener(bluetoothGattInfo.getGattInfoKey(), receiveCallback);
-                            }
-
-                            @Override
-                            public void onFailure(BleException exception) {
-                                ViseLog.e("enable indicate fail:" + exception);
-                            }
-                        }, bluetoothGattChannel);
-                        mDeviceMirror.registerNotify(true);
-                    }
+                    mSpCache.put(NOTIFY_CHARACTERISTIC_UUID_KEY + mDevice.getAddress(), characteristic.getUuid().toString());
+                    ((EditText) findViewById(R.id.show_notify_characteristic)).setText(characteristic.getUuid().toString());
+                    BluetoothDeviceManager.getInstance().bindChannel(mDevice, PropertyType.PROPERTY_INDICATE, service.getUuid(), characteristic.getUuid(), null);
+                    BluetoothDeviceManager.getInstance().registerNotify(mDevice, true);
                 }
                 return true;
             }

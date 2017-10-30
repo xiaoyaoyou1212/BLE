@@ -195,7 +195,7 @@ public class DeviceMirror {
                 String bleCallbackKey = entry.getKey();
                 IBleCallback bleCallbackValue = entry.getValue();
                 if (bleCallbackValue != null) {
-                    bleCallbackValue.onSuccess(characteristic.getValue(), enableInfoMap.get(bleCallbackKey));
+                    bleCallbackValue.onSuccess(characteristic.getValue(), enableInfoMap.get(bleCallbackKey), bluetoothLeDevice);
                 }
             }
         }
@@ -811,13 +811,13 @@ public class DeviceMirror {
                 BluetoothGattChannel bluetoothGattInfoValue = gattInfoEntry.getValue();
                 if (isDescriptor) {
                     if (bleCallbackKey.equals(bluetoothGattInfoKey) && bluetoothGattInfoValue.getDescriptor() != null) {
-                        bleCallbackValue.onSuccess(value, bluetoothGattInfoValue);
+                        bleCallbackValue.onSuccess(value, bluetoothGattInfoValue, bluetoothLeDevice);
                         removeBleCallbackKey = bleCallbackKey;
                         removeBluetoothGattInfoKey = bluetoothGattInfoKey;
                     }
                 } else {
                     if (bleCallbackKey.equals(bluetoothGattInfoKey) && bluetoothGattInfoValue.getDescriptor() == null) {
-                        bleCallbackValue.onSuccess(value, bluetoothGattInfoValue);
+                        bleCallbackValue.onSuccess(value, bluetoothGattInfoValue, bluetoothLeDevice);
                         removeBleCallbackKey = bleCallbackKey;
                         removeBluetoothGattInfoKey = bluetoothGattInfoKey;
                     }
