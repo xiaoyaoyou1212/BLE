@@ -7,16 +7,12 @@ import android.os.Looper;
 import com.vise.baseble.ViseBle;
 import com.vise.baseble.callback.IBleCallback;
 import com.vise.baseble.callback.IConnectCallback;
-import com.vise.baseble.callback.scan.IScanCallback;
-import com.vise.baseble.callback.scan.ScanCallback;
-import com.vise.baseble.common.BleConstant;
 import com.vise.baseble.common.PropertyType;
 import com.vise.baseble.core.BluetoothGattChannel;
 import com.vise.baseble.core.DeviceMirror;
 import com.vise.baseble.core.DeviceMirrorPool;
 import com.vise.baseble.exception.BleException;
 import com.vise.baseble.model.BluetoothLeDevice;
-import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.bledemo.event.CallbackDataEvent;
 import com.vise.bledemo.event.ConnectEvent;
@@ -42,29 +38,6 @@ public class BluetoothDeviceManager {
     private ConnectEvent connectEvent = new ConnectEvent();
     private CallbackDataEvent callbackDataEvent = new CallbackDataEvent();
     private NotifyDataEvent notifyDataEvent = new NotifyDataEvent();
-
-    /**
-     * 扫描回调
-     */
-    private ScanCallback periodScanCallback = new ScanCallback(new IScanCallback() {
-        @Override
-        public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
-            ViseLog.i("Founded Scan Device:" + bluetoothLeDeviceStore);
-            BusManager.getBus().post(scanEvent.setBluetoothLeDeviceStore(bluetoothLeDeviceStore));
-        }
-
-        @Override
-        public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
-            ViseLog.i("scan finish " + bluetoothLeDeviceStore);
-            BusManager.getBus().post(scanEvent.setBluetoothLeDeviceStore(bluetoothLeDeviceStore).setScanFinish(true));
-        }
-
-        @Override
-        public void onScanTimeout() {
-            ViseLog.i("scan timeout");
-            BusManager.getBus().post(scanEvent.setScanTimeout(true));
-        }
-    });
 
     /**
      * 连接回调
@@ -178,18 +151,6 @@ public class BluetoothDeviceManager {
         //蓝牙信息初始化，全局唯一，必须在应用初始化时调用
         ViseBle.getInstance().init(context.getApplicationContext());
         mDeviceMirrorPool = ViseBle.getInstance().getDeviceMirrorPool();
-    }
-
-    public void startScan() {
-        ViseBle.getInstance().startScan(periodScanCallback);
-    }
-
-    public void stopScan() {
-        ViseBle.getInstance().stopScan(periodScanCallback);
-    }
-
-    public boolean isScaning() {
-        return periodScanCallback.isScanning();
     }
 
     public void connect(BluetoothLeDevice bluetoothLeDevice) {

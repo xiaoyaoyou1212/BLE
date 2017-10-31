@@ -10,15 +10,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.vise.baseble.ViseBle;
+import com.vise.baseble.callback.scan.IScanCallback;
+import com.vise.baseble.callback.scan.ScanCallback;
 import com.vise.baseble.model.BluetoothLeDevice;
+import com.vise.baseble.model.BluetoothLeDeviceStore;
 import com.vise.bledemo.R;
 import com.vise.bledemo.adapter.DeviceAdapter;
-import com.vise.bledemo.common.BluetoothDeviceManager;
-import com.vise.bledemo.event.ScanEvent;
-import com.vise.xsnow.event.BusManager;
-import com.vise.xsnow.event.Subscribe;
+import com.vise.log.ViseLog;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * 设备扫描展示界面
@@ -30,16 +31,42 @@ public class DeviceScanActivity extends AppCompatActivity {
     private ListView deviceLv;
     private TextView scanCountTv;
 
-    //设备扫描结果集合
-    private volatile List<BluetoothLeDevice> bluetoothLeDeviceList;
     //设备扫描结果展示适配器
     private DeviceAdapter adapter;
+
+    /**
+     * 扫描回调
+     */
+    private ScanCallback periodScanCallback = new ScanCallback(new IScanCallback() {
+        @Override
+        public void onDeviceFound(final BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            ViseLog.i("Founded Scan Device:" + bluetoothLeDeviceStore);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (adapter != null && bluetoothLeDeviceStore != null) {
+                        adapter.setDeviceList(bluetoothLeDeviceStore.getDeviceList());
+                        updateItemCount(adapter.getCount());
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            ViseLog.i("scan finish " + bluetoothLeDeviceStore);
+        }
+
+        @Override
+        public void onScanTimeout() {
+            ViseLog.i("scan timeout");
+        }
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_scan);
-        BusManager.getBus().register(this);
         init();
     }
 
@@ -63,17 +90,6 @@ public class DeviceScanActivity extends AppCompatActivity {
         });
     }
 
-    @Subscribe
-    public void showScanDevice(ScanEvent event) {
-        if (event != null) {
-            if (event.getBluetoothLeDeviceStore() != null) {
-                bluetoothLeDeviceList = event.getBluetoothLeDeviceStore().getDeviceList();
-                adapter.setDeviceList(bluetoothLeDeviceList);
-                updateItemCount(adapter.getCount());
-            }
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -90,7 +106,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        BusManager.getBus().unregister(this);
         super.onDestroy();
     }
 
@@ -103,7 +118,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.scan, menu);
-        if (!BluetoothDeviceManager.getInstance().isScaning()) {
+        if (periodScanCallback != null && !periodScanCallback.isScanning()) {
             menu.findItem(R.id.menu_stop).setVisible(false);
             menu.findItem(R.id.menu_scan).setVisible(true);
             menu.findItem(R.id.menu_refresh).setActionView(null);
@@ -139,11 +154,10 @@ public class DeviceScanActivity extends AppCompatActivity {
      */
     private void startScan() {
         updateItemCount(0);
-        if (adapter != null && bluetoothLeDeviceList != null) {
-            bluetoothLeDeviceList.clear();
-            adapter.setDeviceList(bluetoothLeDeviceList);
+        if (adapter != null) {
+            adapter.setDeviceList(new ArrayList<BluetoothLeDevice>());
         }
-        BluetoothDeviceManager.getInstance().startScan();
+        ViseBle.getInstance().startScan(periodScanCallback);
         invalidateOptionsMenu();
     }
 
@@ -151,7 +165,7 @@ public class DeviceScanActivity extends AppCompatActivity {
      * 停止扫描
      */
     private void stopScan() {
-        BluetoothDeviceManager.getInstance().stopScan();
+        ViseBle.getInstance().stopScan(periodScanCallback);
         invalidateOptionsMenu();
     }
 
