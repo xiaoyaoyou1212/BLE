@@ -52,11 +52,7 @@
 [![FAQ](https://img.shields.io/badge/FAQ-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-red.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/FAQ.md)
 
 ## 效果展示
-![设备扫描](http://img.blog.csdn.net/20160828100329779)
-![设备连接](http://img.blog.csdn.net/20160828100240247)
-![设备详情](http://img.blog.csdn.net/20160828100259718)
-![设备详情](http://img.blog.csdn.net/20160828100315766)
-![设备服务](http://img.blog.csdn.net/20160828100343826)
+![BLE效果](https://github.com/xiaoyaoyou1212/BLE/blob/master/screenshot/screenshot.gif)
 
 ## 使用介绍
 
