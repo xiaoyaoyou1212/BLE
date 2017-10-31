@@ -75,8 +75,8 @@ compile 'com.vise.xiaoyaoyou:baseble:2.0.0'
 ```
 构建完后就可以直接使用该库的功能了。
 
-### 蓝牙初始化
-在使用该库的功能前还需要进行初始化，可以是在 Application 中也可以是在 MainActivity 中：
+### 初始化
+在使用该库前需要进行初始化，初始化代码如下所示：
 ```
 //蓝牙相关配置修改
 ViseBle.config()
@@ -91,13 +91,197 @@ ViseBle.config()
 //蓝牙信息初始化，全局唯一，必须在应用初始化时调用
 ViseBle.getInstance().init(this);
 ```
-需要注意的是，蓝牙配置必须在蓝牙初始化前进行修改，如果默认配置满足要求也可以不进行配置。
+初始化可以是在 Application 中也可以是在 MainActivity 中，只需要是在使用蓝牙功能前就行。还有需要注意的是，蓝牙配置必须在蓝牙初始化前进行修改，如果默认配置满足要求也可以不修改配置。
 
 ### 设备扫描
+库中针对设备扫描定义了几种常用过滤规则，如果不满足要求也可以自己定义过滤规则，下面针对库中提供的过滤规则使用方式一一介绍：
 
-其中扫描到的设备列表由 `BluetoothLeDeviceStore` 管理，而单个设备信息都统一放到`BluetoothLeDevice`中，其中包含了设备的所有信息，以下会详细讲解具体包含哪些信息。
+- 扫描所有设备
+```
+ViseBle.getInstance().startScan(new ScanCallback(new IScanCallback() {
+    @Override
+    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanTimeout() {
+
+    }
+}));
+```
+
+- 扫描指定设备 MAC 的设备
+```
+//该方式是扫到指定设备就停止扫描
+ViseBle.getInstance().startScan(new SingleFilterScanCallback(new IScanCallback() {
+    @Override
+    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanTimeout() {
+
+    }
+}).setDeviceMac(deviceMac));
+```
+
+- 扫描指定设备名称的设备
+```
+//该方式是扫到指定设备就停止扫描
+ViseBle.getInstance().startScan(new SingleFilterScanCallback(new IScanCallback() {
+    @Override
+    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanTimeout() {
+
+    }
+}).setDeviceName(deviceName));
+```
+
+- 扫描指定 UUID 的设备
+```
+ViseBle.getInstance().startScan(new UuidFilterScanCallback(new IScanCallback() {
+    @Override
+    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanTimeout() {
+
+    }
+}).setUuid(uuid));
+```
+
+- 扫描指定设备 MAC 或名称集合的设备
+```
+ViseBle.getInstance().startScan(new ListFilterScanCallback(new IScanCallback() {
+    @Override
+    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanTimeout() {
+
+    }
+}).setDeviceMacList(deviceMacList).setDeviceNameList(deviceNameList));
+```
+
+- 扫描指定信号范围或设备正则名称的设备
+```
+ViseBle.getInstance().startScan(new RegularFilterScanCallback(new IScanCallback() {
+    @Override
+    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+
+    }
+
+    @Override
+    public void onScanTimeout() {
+
+    }
+}).setDeviceRssi(rssi).setRegularDeviceName(regularDeviceName));
+```
+
+其中扫描到的设备列表由 `BluetoothLeDeviceStore` 管理，而单个设备信息都统一放到`BluetoothLeDevice`中，其中包含了设备的所有信息，如设备名称、设备地址、广播包解析信息等，设备的相关信息会在设备详情中进行介绍。
 
 ### 设备连接
+设备连接有三种方式，一种是根据设备信息直接进行连接，另外两种是在没扫描的情况下直接通过设备名称或设备 MAC 进行扫描连接。三种连接方式使用如下：
+
+- 根据设备信息连接设备
+```
+ViseBle.getInstance().connect(bluetoothLeDevice, new IConnectCallback() {
+    @Override
+    public void onConnectSuccess(DeviceMirror deviceMirror) {
+
+    }
+
+    @Override
+    public void onConnectFailure(BleException exception) {
+
+    }
+
+    @Override
+    public void onDisconnect(boolean isActive) {
+
+    }
+});
+```
+
+- 根据设备 MAC 直接扫描并连接
+```
+ViseBle.getInstance().connectByMac(deviceMac, new IConnectCallback() {
+    @Override
+    public void onConnectSuccess(DeviceMirror deviceMirror) {
+
+    }
+
+    @Override
+    public void onConnectFailure(BleException exception) {
+
+    }
+
+    @Override
+    public void onDisconnect(boolean isActive) {
+
+    }
+});
+```
+
+- 根据设备名称直接扫描并连接
+```
+ViseBle.getInstance().connectByName(deviceName, new IConnectCallback() {
+    @Override
+    public void onConnectSuccess(DeviceMirror deviceMirror) {
+
+    }
+
+    @Override
+    public void onConnectFailure(BleException exception) {
+
+    }
+
+    @Override
+    public void onDisconnect(boolean isActive) {
+
+    }
+});
+```
 
 ### 设备详情
 #### DEVICE INFO(设备信息)
@@ -116,56 +300,130 @@ ViseBle.getInstance().init(this);
 - 获取平均信号强度(Running Average RSSI):`bluetoothLeDevice.getRunningAverageRssi()`；
 
 #### SCAN RECORD INFO(广播信息)
-根据扫描到的广播包`AdRecordStore`获取某个广播数据单元`AdRecord`的类型编号`record.getType()`，再根据编号获取广播数据单元的类型描述`record.getHumanReadableType()`以及该广播数据单元的长度及数据内容，最后通过`AdRecordUtil.getRecordDataAsString(record)`将数据内容转换成具体字符串。
+根据扫描到的广播包`AdRecordStore`获取某个广播数据单元`AdRecord`的类型编号`record.getType()`，再根据编号获取广播数据单元的类型描述`record.getHumanReadableType()`以及该广播数据单元的长度及数据内容，最后通过`AdRecordUtil.getRecordDataAsString(record)`将数据内容转换成具体字符串。更多关于广播包解析可以参考[Android BLE学习笔记](http://blog.csdn.net/xiaoyaoyou1212/article/details/51854454)中数据解析部分。
 
 ### 发送数据
-
-### 接收数据
-
-### 读取数据
-
-在操作设备前首先要保证设备已连接成功，那么在设备连接成功获取到`BluetoothGatt`后直接对服务的特征值UUID进行相关处理，其中特征值UUID有可读、可写、可通知、指示器四种，获取过程如下所示：
+在发送数据前需要先绑定写入数据通道，绑定通道的同时需要设置写入数据的回调监听，具体代码示例如下：
 ```
-final String unknownServiceString = getResources().getString(R.string.unknown_service);
-final String unknownCharaString = getResources().getString(R.string.unknown_characteristic);
-final List<Map<String, String>> gattServiceData = new ArrayList<>();
-final List<List<Map<String, String>>> gattCharacteristicData = new ArrayList<>();
-mGattCharacteristics = new ArrayList<>();
+BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+        .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+        .setPropertyType(PropertyType.PROPERTY_WRITE)
+        .setServiceUUID(serviceUUID)
+        .setCharacteristicUUID(characteristicUUID)
+        .setDescriptorUUID(descriptorUUID)
+        .builder();
+deviceMirror.bindChannel(new IBleCallback() {
+    @Override
+    public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattChannel, BluetoothLeDevice bluetoothLeDevice) {
 
-// Loops through available GATT Services.
-for (final BluetoothGattService gattService : gattServices) {
-    final Map<String, String> currentServiceData = new HashMap<>();
-    uuid = gattService.getUuid().toString();
-    currentServiceData.put(LIST_NAME, GattAttributeResolver.getAttributeName(uuid, unknownServiceString));
-    currentServiceData.put(LIST_UUID, uuid);
-    gattServiceData.add(currentServiceData);
-
-    final List<Map<String, String>> gattCharacteristicGroupData = new ArrayList<>();
-    final List<BluetoothGattCharacteristic> gattCharacteristics = gattService.getCharacteristics();
-    final List<BluetoothGattCharacteristic> charas = new ArrayList<>();
-
-    // Loops through available Characteristics.
-    for (final BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-        charas.add(gattCharacteristic);
-        final Map<String, String> currentCharaData = new HashMap<>();
-        uuid = gattCharacteristic.getUuid().toString();
-        currentCharaData.put(LIST_NAME, GattAttributeResolver.getAttributeName(uuid, unknownCharaString));
-        currentCharaData.put(LIST_UUID, uuid);
-        gattCharacteristicGroupData.add(currentCharaData);
     }
 
-    mGattCharacteristics.add(charas);
-    gattCharacteristicData.add(gattCharacteristicGroupData);
-}
+    @Override
+    public void onFailure(BleException exception) {
+
+    }
+}, bluetoothGattChannel);
+deviceMirror.writeData(data);
+```
+这里的 deviceMirror 在设备连接成功后就可以获取到，需要注意的是，服务一样的情况下写入数据的通道只需要注册一次，如果写入数据的通道有多个则可以绑定多个。写入数据必须要在绑定写入数据通道后进行，可以在不同的地方多次写入。
+
+### 接收数据
+与发送数据一样，接收设备发送的数据也需要绑定接收数据通道，这里有两种方式，一种是可通知方式、一种是指示器方式，使用方式如下：
+
+- 可通知方式
+```
+BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+        .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+        .setPropertyType(PropertyType.PROPERTY_NOTIFY)
+        .setServiceUUID(serviceUUID)
+        .setCharacteristicUUID(characteristicUUID)
+        .setDescriptorUUID(descriptorUUID)
+        .builder();
+deviceMirror.bindChannel(new IBleCallback() {
+    @Override
+    public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattChannel, BluetoothLeDevice bluetoothLeDevice) {
+
+    }
+
+    @Override
+    public void onFailure(BleException exception) {
+
+    }
+}, bluetoothGattChannel);
+deviceMirror.registerNotify(false);
 ```
 
-此处的数据`new byte[]{0x00,0x01,0x02}`为模拟数据，在使用时替换为真实数据即可，切记每次发送的数据必须在20个字节内，如果大于20字节可采用分包机制进行处理。
+- 指示器方式
+```
+BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+        .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+        .setPropertyType(PropertyType.PROPERTY_INDICATE)
+        .setServiceUUID(serviceUUID)
+        .setCharacteristicUUID(characteristicUUID)
+        .setDescriptorUUID(descriptorUUID)
+        .builder();
+deviceMirror.bindChannel(new IBleCallback() {
+    @Override
+    public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattChannel, BluetoothLeDevice bluetoothLeDevice) {
+
+    }
+
+    @Override
+    public void onFailure(BleException exception) {
+
+    }
+}, bluetoothGattChannel);
+deviceMirror.registerNotify(true);
+```
+在绑定通道后需要注册通知，并需要在收到注册成功的回调时调用如下代码设置监听：
+```
+deviceMirror.setNotifyListener(bluetoothGattInfo.getGattInfoKey(), new IBleCallback() {
+    @Override
+    public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattChannel, BluetoothLeDevice bluetoothLeDevice) {
+
+    }
+
+    @Override
+    public void onFailure(BleException exception) {
+
+    }
+});
+```
+所有设备发送过来的数据都会通过上面的监听得到，如果不想监听也可以取消注册，使用方式如下：
+```
+deviceMirror.unregisterNotify(isIndicate);
+```
+isIndicate 表示是否是指示器方式。
+
+### 读取数据
+由于读取设备信息基本每次的通道都不一样，所以这里与上面收发数据有点不一样，每次读取数据都需要绑定一次通道，使用示例如下：
+```
+BluetoothGattChannel bluetoothGattChannel = new BluetoothGattChannel.Builder()
+        .setBluetoothGatt(deviceMirror.getBluetoothGatt())
+        .setPropertyType(PropertyType.PROPERTY_READ)
+        .setServiceUUID(serviceUUID)
+        .setCharacteristicUUID(characteristicUUID)
+        .setDescriptorUUID(descriptorUUID)
+        .builder();
+deviceMirror.bindChannel(new IBleCallback() {
+    @Override
+    public void onSuccess(byte[] data, BluetoothGattChannel bluetoothGattChannel, BluetoothLeDevice bluetoothLeDevice) {
+
+    }
+
+    @Override
+    public void onFailure(BleException exception) {
+
+    }
+}, bluetoothGattChannel);
+deviceMirror.readData();
+```
 
 ## 总结
-
+从以上的描述中可以知道，设备相关的所有操作都统一交给 `ViseBle` 进行处理，并且该类是单例模式，全局只有一个，管理很方便。使用该库提供的功能前必须要调用 `ViseBle.getInstance().init(context);` 进行初始化。每连接成功一款设备都会在设备镜像池中添加一款设备镜像，该设备镜像是维护设备连接成功后所有操作的核心类，在断开连接时会将该设备镜像从镜像池中移除，如果连接设备数量超过配置的最大连接数，那么设备镜像池会依据 Lru 算法自动移除最近最久未使用设备并断开连接。`ViseBle`  中封装了几个常用的 API，如：开始扫描与停止扫描、连接与断开连接、清除资源等，该库提供的功能尽量简单易用，这也正是该项目的宗旨。
 
 ## 感谢
-在此要感谢两位作者提供的开源库[https://github.com/litesuits/android-lite-bluetoothLE](https://github.com/litesuits/android-lite-bluetoothLE)和[https://github.com/alt236/Bluetooth-LE-Library---Android](https://github.com/alt236/Bluetooth-LE-Library---Android)，这两个开源库对于本项目的完成提供了很大的帮助。
+在此要感谢两位作者提供的开源库[android-lite-bluetoothLE](https://github.com/litesuits/android-lite-bluetoothLE)和[Bluetooth-LE-Library---Android](https://github.com/alt236/Bluetooth-LE-Library---Android)，这两个开源库对于本项目的完成提供了很大的帮助。
 
 ## 关于我
 [![Website](https://img.shields.io/badge/Website-huwei-blue.svg)](http://www.huwei.tech/)
@@ -173,7 +431,11 @@ for (final BluetoothGattService gattService : gattServices) {
 [![CSDN](https://img.shields.io/badge/CSDN-xiaoyaoyou1212-blue.svg)](http://blog.csdn.net/xiaoyaoyou1212)
 
 ## 最后
-如果觉得该项目有帮助，请点下Star，您的支持是我开源的动力。如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
+如果觉得该项目有帮助，请点下Star，如果想支持作者的开源行动，请随意赞赏，您的支持是我开源的动力。如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
 
 ![QQ群](http://img.blog.csdn.net/20170327191310083)
+
+支持开源
+
+![微信支付](https://github.com/xiaoyaoyou1212/BLE/blob/master/screenshot/wxpay.png)
 
