@@ -184,7 +184,7 @@ public class BluetoothDeviceManager {
         if (dataInfoQueue != null) {
             dataInfoQueue.clear();
             dataInfoQueue = splitPacketFor20Byte(data);
-            new Handler(Looper.myLooper()).post(new Runnable() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
                     send(bluetoothLeDevice);
@@ -216,7 +216,7 @@ public class BluetoothDeviceManager {
                 deviceMirror.writeData(dataInfoQueue.poll());
             }
             if (dataInfoQueue.peek() != null) {
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         send(bluetoothLeDevice);

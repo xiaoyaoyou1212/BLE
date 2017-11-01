@@ -26,7 +26,6 @@ import com.vise.log.ViseLog;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -627,7 +626,6 @@ public class DeviceMirror {
                         .getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
             }
             bluetoothGattInfoValue.setDescriptor(bluetoothGattDescriptor);
-            bluetoothGattInfoKey = bluetoothGattInfoKey + bluetoothGattDescriptor.getUuid().toString();
             if (isIndication) {
                 if (enable) {
                     bluetoothGattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);

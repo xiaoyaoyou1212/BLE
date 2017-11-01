@@ -1,7 +1,6 @@
 package com.vise.baseble.core;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * @Description: Lru算法实现的HashMap
