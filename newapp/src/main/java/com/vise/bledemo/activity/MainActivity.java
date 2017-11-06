@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 deviceLv.setVisibility(View.GONE);
             }
-            adapter.setDeviceList(bluetoothLeDeviceList);
+            adapter.setListAll(bluetoothLeDeviceList);
             updateItemCount(adapter.getCount());
         } else {
             deviceLv.setVisibility(View.GONE);

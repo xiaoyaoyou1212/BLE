@@ -1,81 +1,37 @@
 package com.vise.bledemo.adapter;
 
 import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.bledemo.R;
+import com.vise.xsnow.ui.adapter.helper.HelperAdapter;
+import com.vise.xsnow.ui.adapter.helper.HelperViewHolder;
 
-import java.util.List;
-
-public class DeviceAdapter extends BaseAdapter {
-
-    private Context context;
-    private List<BluetoothLeDevice> deviceList;
+public class DeviceAdapter extends HelperAdapter<BluetoothLeDevice> {
 
     public DeviceAdapter(Context context) {
-        this.context = context;
-    }
-
-    public DeviceAdapter setDeviceList(List<BluetoothLeDevice> deviceList) {
-        this.deviceList = deviceList;
-        notifyDataSetChanged();
-        return this;
+        super(context, R.layout.item_scan_layout);
     }
 
     @Override
-    public int getCount() {
-        return deviceList != null ? deviceList.size() : 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return deviceList != null ? deviceList.get(position) : null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder;
-        if (convertView == null) {
-            viewHolder = new ViewHolder();
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_scan_layout, null);
-            viewHolder.deviceName = (TextView) convertView.findViewById(R.id.device_name);
-            viewHolder.deviceMac = (TextView) convertView.findViewById(R.id.device_mac);
-            viewHolder.deviceRssi = (TextView) convertView.findViewById(R.id.device_rssi);
-            viewHolder.deviceScanRecord = (TextView) convertView.findViewById(R.id.device_scanRecord);
-            convertView.setTag(viewHolder);
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-        if (deviceList != null && deviceList.get(position) != null && deviceList.get(position).getDevice() != null) {
-            String deviceName = deviceList.get(position).getDevice().getName();
+    public void HelpConvert(HelperViewHolder viewHolder, int position, BluetoothLeDevice bluetoothLeDevice) {
+        TextView deviceNameTv = viewHolder.getView(R.id.device_name);
+        TextView deviceMacTv = viewHolder.getView(R.id.device_mac);
+        TextView deviceRssiTv = viewHolder.getView(R.id.device_rssi);
+        TextView deviceScanRecordTv = viewHolder.getView(R.id.device_scanRecord);
+        if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
+            String deviceName = bluetoothLeDevice.getDevice().getName();
             if (deviceName != null && !deviceName.isEmpty()) {
-                viewHolder.deviceName.setText(deviceName);
+                deviceNameTv.setText(deviceName);
             } else {
-                viewHolder.deviceName.setText(context.getString(R.string.unknown_device));
+                deviceNameTv.setText(mContext.getString(R.string.unknown_device));
             }
-            viewHolder.deviceMac.setText(deviceList.get(position).getDevice().getAddress());
-            viewHolder.deviceRssi.setText(context.getString(R.string.label_rssi) + deviceList.get(position).getRssi() + "dB");
-            viewHolder.deviceScanRecord.setText(context.getString(R.string.header_scan_record) + ":" + HexUtil.encodeHexStr(deviceList
-                    .get(position).getScanRecord()));
+            deviceMacTv.setText(bluetoothLeDevice.getDevice().getAddress());
+            deviceRssiTv.setText(mContext.getString(R.string.label_rssi) + bluetoothLeDevice.getRssi() + "dB");
+            deviceScanRecordTv.setText(mContext.getString(R.string.header_scan_record) + ":"
+                    + HexUtil.encodeHexStr(bluetoothLeDevice.getScanRecord()));
         }
-        return convertView;
-    }
-
-    class ViewHolder {
-        TextView deviceName;
-        TextView deviceMac;
-        TextView deviceRssi;
-        TextView deviceScanRecord;
     }
 }

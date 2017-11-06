@@ -45,7 +45,7 @@ public class DeviceScanActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     if (adapter != null && bluetoothLeDeviceStore != null) {
-                        adapter.setDeviceList(bluetoothLeDeviceStore.getDeviceList());
+                        adapter.setListAll(bluetoothLeDeviceStore.getDeviceList());
                         updateItemCount(adapter.getCount());
                     }
                 }
@@ -155,7 +155,7 @@ public class DeviceScanActivity extends AppCompatActivity {
     private void startScan() {
         updateItemCount(0);
         if (adapter != null) {
-            adapter.setDeviceList(new ArrayList<BluetoothLeDevice>());
+            adapter.setListAll(new ArrayList<BluetoothLeDevice>());
         }
         ViseBle.getInstance().startScan(periodScanCallback);
         invalidateOptionsMenu();

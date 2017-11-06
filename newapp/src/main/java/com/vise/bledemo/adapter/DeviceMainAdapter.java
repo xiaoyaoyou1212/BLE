@@ -1,89 +1,47 @@
 package com.vise.bledemo.adapter;
 
 import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.utils.HexUtil;
 import com.vise.bledemo.R;
+import com.vise.xsnow.ui.adapter.helper.HelperAdapter;
+import com.vise.xsnow.ui.adapter.helper.HelperViewHolder;
 
-import java.util.List;
+public class DeviceMainAdapter extends HelperAdapter<BluetoothLeDevice> {
 
-public class DeviceMainAdapter extends BaseAdapter {
-
-    private Context context;
-    private List<BluetoothLeDevice> deviceList;
-    private BluetoothLeDevice bluetoothLeDevice;
-    private byte[] notifyData;
+    private BluetoothLeDevice mBluetoothLeDevice;
+    private byte[] mNotifyData;
 
     public DeviceMainAdapter(Context context) {
-        this.context = context;
-    }
-
-    public DeviceMainAdapter setDeviceList(List<BluetoothLeDevice> deviceList) {
-        this.deviceList = deviceList;
-        notifyDataSetChanged();
-        return this;
+        super(context, R.layout.item_main_layout);
     }
 
     public DeviceMainAdapter setNotifyData(BluetoothLeDevice bluetoothLeDevice, byte[] notifyData) {
-        this.bluetoothLeDevice = bluetoothLeDevice;
-        this.notifyData = notifyData;
+        this.mBluetoothLeDevice = bluetoothLeDevice;
+        this.mNotifyData = notifyData;
         notifyDataSetChanged();
         return this;
     }
 
     @Override
-    public int getCount() {
-        return deviceList != null ? deviceList.size() : 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return deviceList != null ? deviceList.get(position) : null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder;
-        if (convertView == null) {
-            viewHolder = new ViewHolder();
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_main_layout, null);
-            viewHolder.deviceName = (TextView) convertView.findViewById(R.id.device_name);
-            viewHolder.deviceMac = (TextView) convertView.findViewById(R.id.device_mac);
-            viewHolder.deviceNotifyData = (TextView) convertView.findViewById(R.id.device_notify_data);
-            convertView.setTag(viewHolder);
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-        if (deviceList != null && deviceList.get(position) != null && deviceList.get(position).getDevice() != null) {
-            String deviceName = deviceList.get(position).getDevice().getName();
+    public void HelpConvert(HelperViewHolder viewHolder, int position, BluetoothLeDevice bluetoothLeDevice) {
+        TextView deviceNameTv = viewHolder.getView(R.id.device_name);
+        TextView deviceMacTv = viewHolder.getView(R.id.device_mac);
+        TextView deviceNotifyDataTv = viewHolder.getView(R.id.device_notify_data);
+        if (bluetoothLeDevice != null && bluetoothLeDevice.getDevice() != null) {
+            String deviceName = bluetoothLeDevice.getDevice().getName();
             if (deviceName != null && !deviceName.isEmpty()) {
-                viewHolder.deviceName.setText(deviceName);
+                deviceNameTv.setText(deviceName);
             } else {
-                viewHolder.deviceName.setText(context.getString(R.string.unknown_device));
+                deviceNameTv.setText(mContext.getString(R.string.unknown_device));
             }
-            viewHolder.deviceMac.setText(deviceList.get(position).getDevice().getAddress());
-            if (bluetoothLeDevice != null && notifyData != null && notifyData.length > 0 && deviceList.get(position) != null
-                    && bluetoothLeDevice.getAddress() != null && bluetoothLeDevice.getAddress().equals(deviceList.get(position).getAddress())) {
-                viewHolder.deviceNotifyData.setText(context.getString(R.string.label_notify_data) + HexUtil.encodeHexStr(notifyData));
+            deviceMacTv.setText(bluetoothLeDevice.getDevice().getAddress());
+            if (mBluetoothLeDevice != null && mNotifyData != null && mNotifyData.length > 0 && bluetoothLeDevice != null
+                    && mBluetoothLeDevice.getAddress() != null && mBluetoothLeDevice.getAddress().equals(bluetoothLeDevice.getAddress())) {
+                deviceNotifyDataTv.setText(mContext.getString(R.string.label_notify_data) + HexUtil.encodeHexStr(mNotifyData));
             }
         }
-        return convertView;
-    }
-
-    class ViewHolder {
-        TextView deviceName;
-        TextView deviceMac;
-        TextView deviceNotifyData;
     }
 }
