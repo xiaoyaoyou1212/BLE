@@ -6,6 +6,7 @@ package com.vise.baseble.common;
  * @date: 16/8/20 17:06.
  */
 public enum ConnectState {
+    CONNECT_INIT(-1),           //连接初始化
     CONNECT_PROCESS(0x00),      //连接中
     CONNECT_SUCCESS(0x01),      //连接成功
     CONNECT_FAILURE(0x02),      //连接失败

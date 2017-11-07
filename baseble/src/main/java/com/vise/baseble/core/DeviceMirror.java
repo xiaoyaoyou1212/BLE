@@ -59,7 +59,7 @@ public class DeviceMirror {
     private boolean isIndication;//是否是指示器方式
     private boolean enable;//是否设置使能
     private byte[] writeData;//写入数据
-    private ConnectState connectState = ConnectState.CONNECT_DISCONNECT;//设备状态描述
+    private ConnectState connectState = ConnectState.CONNECT_INIT;//设备状态描述
     private volatile HashMap<String, BluetoothGattChannel> writeInfoMap = new HashMap<>();//写入数据GATT信息集合
     private volatile HashMap<String, BluetoothGattChannel> readInfoMap = new HashMap<>();//读取数据GATT信息集合
     private volatile HashMap<String, BluetoothGattChannel> enableInfoMap = new HashMap<>();//设置使能GATT信息集合
@@ -107,13 +107,17 @@ public class DeviceMirror {
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 gatt.discoverServices();
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                connectState = ConnectState.CONNECT_DISCONNECT;
                 close();
                 if (connectCallback != null) {
+                    if (handler != null) {
+                        handler.removeCallbacksAndMessages(null);
+                    }
                     ViseBle.getInstance().getDeviceMirrorPool().removeDeviceMirror(deviceMirror);
                     if (status == BluetoothGatt.GATT_SUCCESS) {
+                        connectState = ConnectState.CONNECT_DISCONNECT;
                         connectCallback.onDisconnect(isActiveDisconnect);
                     } else {
+                        connectState = ConnectState.CONNECT_FAILURE;
                         connectCallback.onConnectFailure(new ConnectException(gatt, status));
                     }
                 }
@@ -271,7 +275,12 @@ public class DeviceMirror {
      *
      * @param connectCallback
      */
-    public void connect(IConnectCallback connectCallback) {
+    public synchronized void connect(IConnectCallback connectCallback) {
+        if (connectState == ConnectState.CONNECT_SUCCESS || connectState == ConnectState.CONNECT_PROCESS
+                || (connectState == ConnectState.CONNECT_INIT && connectRetryCount != 0)) {
+            ViseLog.e("this connect state is connecting, connectSuccess or current retry count less than config connect retry count.");
+            return;
+        }
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }

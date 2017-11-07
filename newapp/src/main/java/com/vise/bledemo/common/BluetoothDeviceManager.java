@@ -53,7 +53,7 @@ public class BluetoothDeviceManager {
         @Override
         public void onConnectFailure(BleException exception) {
             ViseLog.i("Connect Failure!");
-            BusManager.getBus().post(connectEvent.setSuccess(false));
+            BusManager.getBus().post(connectEvent.setSuccess(false).setDisconnected(false));
         }
 
         @Override

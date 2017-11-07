@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.vise.baseble.callback.IConnectCallback;
 import com.vise.baseble.callback.scan.IScanCallback;
@@ -29,6 +30,7 @@ public class ViseBle {
     private BluetoothManager bluetoothManager;//蓝牙管理
     private BluetoothAdapter bluetoothAdapter;//蓝牙适配器
     private DeviceMirrorPool deviceMirrorPool;//设备连接池
+    private DeviceMirror lastDeviceMirror;//上次操作设备镜像
 
     private static ViseBle instance;//入口操作管理
     private static BleConfig bleConfig = BleConfig.getInstance();
@@ -134,7 +136,12 @@ public class ViseBle {
         }
         if (deviceMirrorPool != null && !deviceMirrorPool.isContainDevice(bluetoothLeDevice)) {
             DeviceMirror deviceMirror = new DeviceMirror(bluetoothLeDevice);
+            if (lastDeviceMirror != null && !TextUtils.isEmpty(lastDeviceMirror.getUniqueSymbol())
+                    && lastDeviceMirror.getUniqueSymbol().equals(deviceMirror.getUniqueSymbol())) {
+                deviceMirror = lastDeviceMirror;//防止重复创建设备镜像
+            }
             deviceMirror.connect(connectCallback);
+            lastDeviceMirror = deviceMirror;
         } else {
             ViseLog.i("This device is connected.");
         }
