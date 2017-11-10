@@ -326,4 +326,52 @@ public class ViseBle {
     public DeviceMirrorPool getDeviceMirrorPool() {
         return deviceMirrorPool;
     }
+
+    /**
+     * 获取当前连接失败重试次数
+     *
+     * @return
+     */
+    public int getConnectRetryCount() {
+        if (lastDeviceMirror == null) {
+            return 0;
+        }
+        return lastDeviceMirror.getConnectRetryCount();
+    }
+
+    /**
+     * 获取当前读取数据失败重试次数
+     *
+     * @return
+     */
+    public int getReadDataRetryCount() {
+        if (lastDeviceMirror == null) {
+            return 0;
+        }
+        return lastDeviceMirror.getReadDataRetryCount();
+    }
+
+    /**
+     * 获取当前使能数据失败重试次数
+     *
+     * @return
+     */
+    public int getReceiveDataRetryCount() {
+        if (lastDeviceMirror == null) {
+            return 0;
+        }
+        return lastDeviceMirror.getReceiveDataRetryCount();
+    }
+
+    /**
+     * 获取当前写入数据失败重试次数
+     *
+     * @return
+     */
+    public int getWriteDataRetryCount() {
+        if (lastDeviceMirror == null) {
+            return 0;
+        }
+        return lastDeviceMirror.getWriteDataRetryCount();
+    }
 }
