@@ -151,9 +151,14 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Subscribe
     public void showDeviceCallbackData(CallbackDataEvent event) {
         if (event != null) {
-            if (event.getBluetoothGattChannel() != null && event.getBluetoothGattChannel().getCharacteristic() != null
-                    && event.getBluetoothGattChannel().getPropertyType() == PropertyType.PROPERTY_READ) {
-                showReadInfo(event.getBluetoothGattChannel().getCharacteristic().getUuid().toString(), event.getData());
+            if (event.isSuccess()) {
+                if (event.getBluetoothGattChannel() != null && event.getBluetoothGattChannel().getCharacteristic() != null
+                        && event.getBluetoothGattChannel().getPropertyType() == PropertyType.PROPERTY_READ) {
+                    showReadInfo(event.getBluetoothGattChannel().getCharacteristic().getUuid().toString(), event.getData());
+                }
+            } else {
+                ((EditText) findViewById(R.id.show_write_characteristic)).setText("");
+                ((EditText) findViewById(R.id.show_notify_characteristic)).setText("");
             }
         }
     }
