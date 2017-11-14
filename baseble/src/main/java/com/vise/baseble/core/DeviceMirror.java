@@ -323,6 +323,27 @@ public class DeviceMirror {
     }
 
     /**
+     * 解绑通道
+     *
+     * @param bluetoothGattChannel
+     */
+    public synchronized void unbindChannel(BluetoothGattChannel bluetoothGattChannel) {
+        if (bluetoothGattChannel != null) {
+            String key = bluetoothGattChannel.getGattInfoKey();
+            if (bleCallbackMap.containsKey(key)) {
+                bleCallbackMap.remove(key);
+            }
+            if (readInfoMap.containsKey(key)) {
+                readInfoMap.remove(key);
+            } else if (writeInfoMap.containsKey(key)) {
+                writeInfoMap.remove(key);
+            } else if (enableInfoMap.containsKey(key)) {
+                enableInfoMap.remove(key);
+            }
+        }
+    }
+
+    /**
      * 写入数据
      *
      * @param data
