@@ -4,9 +4,9 @@
 
 **Android BLE基础操作框架，基于回调，操作简单。包含扫描、多连接、广播包解析、服务读写及通知等功能。**
 
-- **项目地址：**[https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
+- **项目地址：** [https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- **项目依赖：**`compile 'com.vise.xiaoyaoyou:baseble:2.0.3'`
+- **项目依赖：** `compile 'com.vise.xiaoyaoyou:baseble:2.0.4'`
 
 ## 功能
 - **支持多设备连接管理；**
@@ -43,10 +43,15 @@
 打造该库的目的是为了简化蓝牙设备接入的流程。该库是 BLE 操作的基础框架，只处理 BLE 设备通信逻辑，不包含具体的数据处理，如数据的分包与组包等。该库提供了多设备连接管理，可配置最大连接数量，并在超过最大连接数时会依据 Lru 算法自动断开最近最久未使用设备。该库还定制了常用的扫描设备过滤规则，也支持自定义过滤规则。该库所有操作都采用回调机制告知上层调用的结果，操作简单，接入方便。
 
 ## 版本说明
-[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.0.3-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
+[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.0.4-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
+
+最新版本更新记录
+- V2.0.4（2017-11-21）
+    - 修复扫描卡顿问题；
+    - 优化断开连接处理。
 
 ## 代码托管
-[![JCenter](https://img.shields.io/badge/JCenter-2.0.3-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/2.0.3/)
+[![JCenter](https://img.shields.io/badge/JCenter-2.0.4-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/2.0.4/)
 
 ## 常见问题
 [![FAQ](https://img.shields.io/badge/FAQ-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-red.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/FAQ.md)
@@ -57,21 +62,21 @@
 ## 使用介绍
 
 ### 权限配置
-6.0 以下系统不需要配置权限，库中已经配置了如下权限：
+蓝牙操作针对 6.0 以下系统需要配置如下权限：
 ```
 <uses-permission android:name="android.permission.BLUETOOTH"/>
 <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 ```
-而如果手机系统在 6.0 以上则需要配置如下权限：
+而 6.0 以上系统还需要增加模糊定位权限：
 ```
 <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 ```
-因为蓝牙在 6.0 以上手机使用了模糊定位功能，所以需要添加模糊定位权限。
+为了简便操作，库中对蓝牙操作需要的权限都做了相关设置不需要重复设置，但 6.0 以上系统需要动态申请模糊定位权限。
 
 ### 引入 SDK
 在工程 module 的 build.gradle 文件中的 dependencies 中添加如下依赖：
 ```
-compile 'com.vise.xiaoyaoyou:baseble:2.0.3'
+compile 'com.vise.xiaoyaoyou:baseble:2.0.4'
 ```
 构建完后就可以直接使用该库的功能了。
 
@@ -100,7 +105,7 @@ ViseBle.getInstance().init(this);
 ```
 ViseBle.getInstance().startScan(new ScanCallback(new IScanCallback() {
     @Override
-    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
     }
 
@@ -121,7 +126,7 @@ ViseBle.getInstance().startScan(new ScanCallback(new IScanCallback() {
 //该方式是扫到指定设备就停止扫描
 ViseBle.getInstance().startScan(new SingleFilterScanCallback(new IScanCallback() {
     @Override
-    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
     }
 
@@ -142,7 +147,7 @@ ViseBle.getInstance().startScan(new SingleFilterScanCallback(new IScanCallback()
 //该方式是扫到指定设备就停止扫描
 ViseBle.getInstance().startScan(new SingleFilterScanCallback(new IScanCallback() {
     @Override
-    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
     }
 
@@ -162,7 +167,7 @@ ViseBle.getInstance().startScan(new SingleFilterScanCallback(new IScanCallback()
 ```
 ViseBle.getInstance().startScan(new UuidFilterScanCallback(new IScanCallback() {
     @Override
-    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
     }
 
@@ -182,7 +187,7 @@ ViseBle.getInstance().startScan(new UuidFilterScanCallback(new IScanCallback() {
 ```
 ViseBle.getInstance().startScan(new ListFilterScanCallback(new IScanCallback() {
     @Override
-    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
     }
 
@@ -202,7 +207,7 @@ ViseBle.getInstance().startScan(new ListFilterScanCallback(new IScanCallback() {
 ```
 ViseBle.getInstance().startScan(new RegularFilterScanCallback(new IScanCallback() {
     @Override
-    public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+    public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
     }
 
@@ -427,15 +432,21 @@ deviceMirror.readData();
 
 ## 关于我
 [![Website](https://img.shields.io/badge/Website-huwei-blue.svg)](http://www.huwei.tech/)
+
 [![GitHub](https://img.shields.io/badge/GitHub-xiaoyaoyou1212-blue.svg)](https://github.com/xiaoyaoyou1212)
+
 [![CSDN](https://img.shields.io/badge/CSDN-xiaoyaoyou1212-blue.svg)](http://blog.csdn.net/xiaoyaoyou1212)
 
 ## 最后
-如果觉得该项目有帮助，请点下Star，如果想支持作者的开源行动，请随意赞赏，您的支持是我开源的动力。如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
+如果觉得该项目有帮助，请点下Star，如果想支持作者的开源行动，请随意赞赏，赞赏通道如下：
+
+![微信支付](https://github.com/xiaoyaoyou1212/BLE/blob/master/screenshot/wxpay.png)
+
+您的支持是我开源的动力。
+
+如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
 
 ![QQ群](http://img.blog.csdn.net/20170327191310083)
 
-支持开源
 
-![微信支付](https://github.com/xiaoyaoyou1212/BLE/blob/master/screenshot/wxpay.png)
 
