@@ -1,7 +1,6 @@
 package com.vise.baseble.callback.scan;
 
 import com.vise.baseble.model.BluetoothLeDevice;
-import com.vise.baseble.model.BluetoothLeDeviceStore;
 
 /**
  * @Description: 扫描过滤接口，根据需要实现过滤规则
@@ -9,5 +8,5 @@ import com.vise.baseble.model.BluetoothLeDeviceStore;
  * @date: 17/9/10 18:19.
  */
 public interface IScanFilter {
-    BluetoothLeDeviceStore onFilter(BluetoothLeDevice bluetoothLeDevice);
+    BluetoothLeDevice onFilter(BluetoothLeDevice bluetoothLeDevice);
 }

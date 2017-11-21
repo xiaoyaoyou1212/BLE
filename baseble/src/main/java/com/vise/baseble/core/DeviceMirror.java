@@ -573,6 +573,8 @@ public class DeviceMirror {
      * 主动断开设备连接
      */
     public synchronized void disconnect() {
+        connectState = ConnectState.CONNECT_INIT;
+        connectRetryCount = 0;
         if (bluetoothGatt != null) {
             isActiveDisconnect = true;
             bluetoothGatt.disconnect();

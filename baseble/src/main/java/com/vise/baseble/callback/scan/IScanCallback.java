@@ -1,5 +1,6 @@
 package com.vise.baseble.callback.scan;
 
+import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
 
 /**
@@ -9,7 +10,7 @@ import com.vise.baseble.model.BluetoothLeDeviceStore;
  */
 public interface IScanCallback {
     //发现设备
-    void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore);
+    void onDeviceFound(BluetoothLeDevice bluetoothLeDevice);
 
     //扫描完成
     void onScanFinish(BluetoothLeDeviceStore bluetoothLeDeviceStore);

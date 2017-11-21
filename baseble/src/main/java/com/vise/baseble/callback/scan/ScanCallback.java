@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.vise.baseble.ViseBle;
-import com.vise.baseble.common.BleConstant;
+import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
 
@@ -16,8 +16,7 @@ import com.vise.baseble.model.BluetoothLeDeviceStore;
  * @date: 17/8/1 22:58.
  */
 public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilter {
-    protected Handler handler = new Handler(Looper.getMainLooper());
-    protected int scanTimeout = BleConstant.TIME_FOREVER; //表示一直扫描
+    protected Handler handler = new Handler(Looper.myLooper());
     protected boolean isScan = true;//是否开始扫描
     protected boolean isScanning = false;//是否正在扫描
     protected BluetoothLeDeviceStore bluetoothLeDeviceStore;//用来存储扫描到的设备
@@ -29,12 +28,6 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
             throw new NullPointerException("this scanCallback is null!");
         }
         bluetoothLeDeviceStore = new BluetoothLeDeviceStore();
-
-    }
-
-    public ScanCallback setScanTimeout(int scanTimeout) {
-        this.scanTimeout = scanTimeout;
-        return this;
     }
 
     public ScanCallback setScan(boolean scan) {
@@ -46,22 +39,21 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
         return isScanning;
     }
 
-    public int getScanTimeout() {
-        return scanTimeout;
-    }
-
     public void scan() {
         if (isScan) {
             if (isScanning) {
                 return;
             }
             bluetoothLeDeviceStore.clear();
-            if (scanTimeout > 0) {
+            if (BleConfig.getInstance().getScanTimeout() > 0) {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         isScanning = false;
-                        ViseBle.getInstance().stopLeScan(ScanCallback.this);
+
+                        if (ViseBle.getInstance().getBluetoothAdapter() != null) {
+                            ViseBle.getInstance().getBluetoothAdapter().stopLeScan(ScanCallback.this);
+                        }
 
                         if (bluetoothLeDeviceStore.getDeviceMap() != null
                                 && bluetoothLeDeviceStore.getDeviceMap().size() > 0) {
@@ -70,29 +62,38 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
                             scanCallback.onScanTimeout();
                         }
                     }
-                }, scanTimeout);
+                }, BleConfig.getInstance().getScanTimeout());
             }
             isScanning = true;
-            ViseBle.getInstance().startLeScan(ScanCallback.this);
+            if (ViseBle.getInstance().getBluetoothAdapter() != null) {
+                ViseBle.getInstance().getBluetoothAdapter().startLeScan(ScanCallback.this);
+            }
         } else {
             isScanning = false;
-            ViseBle.getInstance().stopLeScan(ScanCallback.this);
+            if (ViseBle.getInstance().getBluetoothAdapter() != null) {
+                ViseBle.getInstance().getBluetoothAdapter().stopLeScan(ScanCallback.this);
+            }
         }
     }
 
     public ScanCallback removeHandlerMsg() {
         handler.removeCallbacksAndMessages(null);
+        bluetoothLeDeviceStore.clear();
         return this;
     }
 
     @Override
     public void onLeScan(BluetoothDevice bluetoothDevice, int rssi, byte[] scanRecord) {
-        scanCallback.onDeviceFound(onFilter(new BluetoothLeDevice(bluetoothDevice, rssi, scanRecord, System.currentTimeMillis())));
+        BluetoothLeDevice bluetoothLeDevice = new BluetoothLeDevice(bluetoothDevice, rssi, scanRecord, System.currentTimeMillis());
+        BluetoothLeDevice filterDevice = onFilter(bluetoothLeDevice);
+        if (filterDevice != null) {
+            bluetoothLeDeviceStore.addDevice(filterDevice);
+            scanCallback.onDeviceFound(filterDevice);
+        }
     }
 
     @Override
-    public BluetoothLeDeviceStore onFilter(BluetoothLeDevice bluetoothLeDevice) {
-        bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
-        return bluetoothLeDeviceStore;
+    public BluetoothLeDevice onFilter(BluetoothLeDevice bluetoothLeDevice) {
+        return bluetoothLeDevice;
     }
 }

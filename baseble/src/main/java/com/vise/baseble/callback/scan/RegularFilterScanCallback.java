@@ -3,7 +3,6 @@ package com.vise.baseble.callback.scan;
 import android.text.TextUtils;
 
 import com.vise.baseble.model.BluetoothLeDevice;
-import com.vise.baseble.model.BluetoothLeDeviceStore;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,32 +28,29 @@ public class RegularFilterScanCallback extends ScanCallback {
         if (!TextUtils.isEmpty(this.regularDeviceName)) {
             pattern = Pattern.compile(this.regularDeviceName);
         }
-        bluetoothLeDeviceStore.clear();
         return this;
     }
 
     public RegularFilterScanCallback setDeviceRssi(int deviceRssi) {
         this.deviceRssi = deviceRssi;
-        bluetoothLeDeviceStore.clear();
         return this;
     }
 
     @Override
-    public BluetoothLeDeviceStore onFilter(BluetoothLeDevice bluetoothLeDevice) {
+    public BluetoothLeDevice onFilter(BluetoothLeDevice bluetoothLeDevice) {
+        BluetoothLeDevice tempDevice = null;
         String tempName = bluetoothLeDevice.getName();
         int tempRssi = bluetoothLeDevice.getRssi();
         matcher = pattern.matcher(tempName);
         if (this.deviceRssi < 0) {
             if (matcher.matches() && tempRssi >= this.deviceRssi) {
-                bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
-            } else if (matcher.matches() && tempRssi < this.deviceRssi) {
-                bluetoothLeDeviceStore.removeDevice(bluetoothLeDevice);
+                tempDevice = bluetoothLeDevice;
             }
         } else {
             if (matcher.matches()) {
-                bluetoothLeDeviceStore.addDevice(bluetoothLeDevice);
+                tempDevice = bluetoothLeDevice;
             }
         }
-        return bluetoothLeDeviceStore;
+        return tempDevice;
     }
 }

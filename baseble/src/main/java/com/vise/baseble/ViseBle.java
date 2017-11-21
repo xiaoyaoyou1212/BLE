@@ -80,35 +80,13 @@ public class ViseBle {
     /**
      * 开始扫描
      *
-     * @param leScanCallback 回调
-     */
-    public void startLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
-        if (bluetoothAdapter != null) {
-            bluetoothAdapter.startLeScan(leScanCallback);
-        }
-    }
-
-    /**
-     * 停止扫描
-     *
-     * @param leScanCallback 回调
-     */
-    public void stopLeScan(BluetoothAdapter.LeScanCallback leScanCallback) {
-        if (bluetoothAdapter != null) {
-            bluetoothAdapter.stopLeScan(leScanCallback);
-        }
-    }
-
-    /**
-     * 开始扫描
-     *
      * @param scanCallback 自定义回调
      */
     public void startScan(ScanCallback scanCallback) {
         if (scanCallback == null) {
             throw new IllegalArgumentException("this ScanCallback is Null!");
         }
-        scanCallback.setScan(true).setScanTimeout(BleConfig.getInstance().getScanTimeout()).scan();
+        scanCallback.setScan(true).scan();
     }
 
     /**
@@ -160,7 +138,7 @@ public class ViseBle {
         }
         startScan(new SingleFilterScanCallback(new IScanCallback() {
             @Override
-            public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
             }
 
@@ -198,7 +176,7 @@ public class ViseBle {
         }
         startScan(new SingleFilterScanCallback(new IScanCallback() {
             @Override
-            public void onDeviceFound(BluetoothLeDeviceStore bluetoothLeDeviceStore) {
+            public void onDeviceFound(BluetoothLeDevice bluetoothLeDevice) {
 
             }
 
