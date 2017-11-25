@@ -1,5 +1,7 @@
 package com.vise.baseble.utils;
 
+import com.vise.log.ViseLog;
+
 /**
  * @Description: 十六进制转换类
  * @author: <a href="http://www.xiaoyaoyou1212.com">DAWI</a>
@@ -84,7 +86,25 @@ public class HexUtil {
      * @return 十六进制String
      */
     protected static String encodeHexStr(byte[] data, char[] toDigits) {
+        if (data == null) {
+            ViseLog.e("this data is null.");
+            return "";
+        }
         return new String(encodeHex(data, toDigits));
+    }
+
+    /**
+     * 将十六进制字符串转换为字节数组
+     *
+     * @param data
+     * @return
+     */
+    public static byte[] decodeHex(String data) {
+        if (data == null) {
+            ViseLog.e("this data is null.");
+            return new byte[0];
+        }
+        return decodeHex(data.toCharArray());
     }
 
     /**
