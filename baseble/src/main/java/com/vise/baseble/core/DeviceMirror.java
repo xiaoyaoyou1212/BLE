@@ -194,11 +194,15 @@ public class DeviceMirror {
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
             ViseLog.i("onCharacteristicChanged data:" + HexUtil.encodeHexStr(characteristic.getValue()) +
                     "  ,thread: " + Thread.currentThread());
-            for (Map.Entry<String, IBleCallback> entry : receiveCallbackMap.entrySet()) {
-                String bleCallbackKey = entry.getKey();
-                IBleCallback bleCallbackValue = entry.getValue();
-                if (bleCallbackValue != null) {
-                    bleCallbackValue.onSuccess(characteristic.getValue(), enableInfoMap.get(bleCallbackKey), bluetoothLeDevice);
+            for (Map.Entry<String, IBleCallback> receiveEntry : receiveCallbackMap.entrySet()) {
+                String receiveKey = receiveEntry.getKey();
+                IBleCallback receiveValue = receiveEntry.getValue();
+                for (Map.Entry<String, BluetoothGattChannel> gattInfoEntry : enableInfoMap.entrySet()) {
+                    String bluetoothGattInfoKey = gattInfoEntry.getKey();
+                    BluetoothGattChannel bluetoothGattInfoValue = gattInfoEntry.getValue();
+                    if (receiveKey.equals(bluetoothGattInfoKey)) {
+                        receiveValue.onSuccess(characteristic.getValue(), bluetoothGattInfoValue, bluetoothLeDevice);
+                    }
                 }
             }
         }
