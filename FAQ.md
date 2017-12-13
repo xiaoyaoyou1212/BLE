@@ -30,58 +30,45 @@
 
 分包处理如下：
 ```
-//存储待发送的数据队列
-private Queue<byte[]> dataInfoQueue = new LinkedList<>();
-
-private Handler handler = new Handler(){
-    @Override
-    public void handleMessage(Message msg) {
-        super.handleMessage(msg);
-    }
-};
-
-private Runnable runnable = new Runnable() {
-    @Override
-    public void run() {
-        send();
-    }
-};
-
 //外部调用发送数据方法
-public void send(byte[] data) {
+public void write(final BluetoothLeDevice bluetoothLeDevice, byte[] data) {
     if (dataInfoQueue != null) {
         dataInfoQueue.clear();
         dataInfoQueue = splitPacketFor20Byte(data);
-        handler.post(runnable);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                send(bluetoothLeDevice);
+            }
+        });
     }
 }
 
-//实际发送数据过程
-private void send() {
+//发送队列，提供一种简单的处理方式，实际项目场景需要根据需求优化
+private Queue<byte[]> dataInfoQueue = new LinkedList<>();
+private void send(final BluetoothLeDevice bluetoothLeDevice) {
     if (dataInfoQueue != null && !dataInfoQueue.isEmpty()) {
-        //检测到发送数据，直接发送
-        if (dataInfoQueue.peek() != null) {
-            ViseBluetooth.getInstance().writeCharacteristic(dataInfoQueue.poll(), new IBleCallback<BluetoothGattCharacteristic>() {
-
-                @Override
-                public void onSuccess(BluetoothGattCharacteristic bluetoothGattCharacteristic, int type) {
-
-                }
-
-                @Override
-                public void onFailure(BleException exception) {
-
-                }
-            });
+        DeviceMirror deviceMirror = mDeviceMirrorPool.getDeviceMirror(bluetoothLeDevice);
+        if (dataInfoQueue.peek() != null && deviceMirror != null) {
+            deviceMirror.writeData(dataInfoQueue.poll());
         }
-        //检测还有数据，延时后继续发送，一般延时100毫秒左右
         if (dataInfoQueue.peek() != null) {
-            handler.postDelayed(runnable, 100);
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    send(bluetoothLeDevice);
+                }
+            }, 100);
         }
     }
 }
 
-//数据分包处理
+/**
+ * 数据分包
+ *
+ * @param data
+ * @return
+ */
 private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
     Queue<byte[]> dataInfoQueue = new LinkedList<>();
     if (data != null) {
@@ -99,7 +86,7 @@ private Queue<byte[]> splitPacketFor20Byte(byte[] data) {
                 System.arraycopy(data, index, currentData, 0, 20);
                 index += 20;
             }
-            dataInfoQueue.offer(currentData);
+            dataInfoQueue.offer(currentData);
         } while (index < data.length);
     }
     return dataInfoQueue;
