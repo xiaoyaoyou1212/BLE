@@ -41,14 +41,16 @@ public class RegularFilterScanCallback extends ScanCallback {
         BluetoothLeDevice tempDevice = null;
         String tempName = bluetoothLeDevice.getName();
         int tempRssi = bluetoothLeDevice.getRssi();
-        matcher = pattern.matcher(tempName);
-        if (this.deviceRssi < 0) {
-            if (matcher.matches() && tempRssi >= this.deviceRssi) {
-                tempDevice = bluetoothLeDevice;
-            }
-        } else {
-            if (matcher.matches()) {
-                tempDevice = bluetoothLeDevice;
+        if (!TextUtils.isEmpty(tempName)) {
+            matcher = pattern.matcher(tempName);
+            if (this.deviceRssi < 0) {
+                if (matcher.matches() && tempRssi >= this.deviceRssi) {
+                    tempDevice = bluetoothLeDevice;
+                }
+            } else {
+                if (matcher.matches()) {
+                    tempDevice = bluetoothLeDevice;
+                }
             }
         }
         return tempDevice;
