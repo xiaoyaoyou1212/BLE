@@ -694,8 +694,13 @@ public class DeviceMirror {
             if (bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() != null) {
                 bluetoothGattDescriptor = bluetoothGattInfoValue.getDescriptor();
             } else if (bluetoothGattInfoValue.getCharacteristic() != null && bluetoothGattInfoValue.getDescriptor() == null) {
-                bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic()
-                        .getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
+                if (bluetoothGattInfoValue.getCharacteristic().getDescriptors() != null
+                        && bluetoothGattInfoValue.getCharacteristic().getDescriptors().size() == 1) {
+                    bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic().getDescriptors().get(0);
+                } else {
+                    bluetoothGattDescriptor = bluetoothGattInfoValue.getCharacteristic()
+                            .getDescriptor(UUID.fromString(BleConstant.CLIENT_CHARACTERISTIC_CONFIG));
+                }
             }
             if (bluetoothGattDescriptor != null) {
                 bluetoothGattInfoValue.setDescriptor(bluetoothGattDescriptor);
