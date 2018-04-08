@@ -152,4 +152,124 @@ public class HexUtil {
         return digit;
     }
 
+    /**
+     * 截取字节数组
+     *
+     * @param src   byte []  数组源  这里填16进制的 数组
+     * @param begin 起始位置 源数组的起始位置。0位置有效
+     * @param count 截取长度
+     * @return
+     */
+    public static byte[] subBytes(byte[] src, int begin, int count) {
+        byte[] bs = new byte[count];
+        System.arraycopy(src, begin, bs, 0, count);  // bs 目的数组  0 截取后存放的数值起始位置。0位置有效
+        return bs;
+    }
+
+    /**
+     * int转byte数组
+     *
+     * @param bb
+     * @param x
+     * @param index
+     */
+    public static void intToByte(byte[] bb, int x, int index) {
+        bb[index + 3] = (byte) (x >> 24);
+        bb[index + 2] = (byte) (x >> 16);
+        bb[index + 1] = (byte) (x >> 8);
+        bb[index + 0] = (byte) (x >> 0);
+    }
+
+    /**
+     * byte数组转int
+     *
+     * @param bb
+     * @param index 第几位开始
+     * @return
+     */
+    public static int byteToInt(byte[] bb, int index) {
+        return (int) ((((bb[index + 3] & 0xff) << 24)
+                | ((bb[index + 2] & 0xff) << 16)
+                | ((bb[index + 1] & 0xff) << 8) | ((bb[index + 0] & 0xff) << 0)));
+    }
+
+
+    /**
+     * 字节数组逆序
+     *
+     * @param data
+     * @return
+     */
+    public static byte[] reverse(byte[] data) {
+        byte[] reverseData = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            reverseData[i] = data[data.length - 1 - i];
+        }
+        return reverseData;
+    }
+
+    /**
+     * 蓝牙传输 16进制 高低位 读数的 转换
+     *
+     * @param data 截取数据源，字节数组
+     * @param index 截取数据开始位置
+     * @param count 截取数据长度，只能为2、4、8个字节
+     * @param flag 标识高低位顺序，高位在前为true，低位在前为false
+     * @return
+     */
+    public static long byteToLong(byte[] data, int index, int count, boolean flag) {
+        long lg = 0;
+        if (flag) {
+            switch (count) {
+                case 2:
+                    lg = ((((long) data[index + 0] & 0xff) << 8)
+                            | (((long) data[index + 1] & 0xff) << 0));
+                    break;
+
+                case 4:
+                    lg = ((((long) data[index + 0] & 0xff) << 24)
+                            | (((long) data[index + 1] & 0xff) << 16)
+                            | (((long) data[index + 2] & 0xff) << 8)
+                            | (((long) data[index + 3] & 0xff) << 0));
+                    break;
+
+                case 8:
+                    lg = ((((long) data[index + 0] & 0xff) << 56)
+                            | (((long) data[index + 1] & 0xff) << 48)
+                            | (((long) data[index + 2] & 0xff) << 40)
+                            | (((long) data[index + 3] & 0xff) << 32)
+                            | (((long) data[index + 4] & 0xff) << 24)
+                            | (((long) data[index + 5] & 0xff) << 16)
+                            | (((long) data[index + 6] & 0xff) << 8)
+                            | (((long) data[index + 7] & 0xff) << 0));
+                    break;
+            }
+            return lg;
+        } else {
+            switch (count) {
+                case 2:
+                    lg = ((((long) data[index + 1] & 0xff) << 8)
+                            | (((long) data[index + 0] & 0xff) << 0));
+                    break;
+                case 4:
+                    lg = ((((long) data[index + 3] & 0xff) << 24)
+                            | (((long) data[index + 2] & 0xff) << 16)
+                            | (((long) data[index + 1] & 0xff) << 8)
+                            | (((long) data[index + 0] & 0xff) << 0));
+                    break;
+                case 8:
+                    lg = ((((long) data[index + 7] & 0xff) << 56)
+                            | (((long) data[index + 6] & 0xff) << 48)
+                            | (((long) data[index + 5] & 0xff) << 40)
+                            | (((long) data[index + 4] & 0xff) << 32)
+                            | (((long) data[index + 3] & 0xff) << 24)
+                            | (((long) data[index + 2] & 0xff) << 16)
+                            | (((long) data[index + 1] & 0xff) << 8)
+                            | (((long) data[index + 0] & 0xff) << 0));
+                    break;
+            }
+            return lg;
+        }
+    }
+
 }
