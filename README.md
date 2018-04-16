@@ -448,7 +448,11 @@ deviceMirror.readData();
 
 如果有好的想法和建议，也欢迎Fork项目参与进来。使用中如果有任何问题和建议都可以进群交流，QQ群二维码如下：
 
-![QQ群](http://img.blog.csdn.net/20170327191310083)
+![QQ群](https://github.com/xiaoyaoyou1212/XSnow/blob/master/screenshot/qq_chat_first.png)
+(此群已满)
+
+![QQ群](https://github.com/xiaoyaoyou1212/XSnow/blob/master/screenshot/qq_chat_second.png)
+
 
 
 
