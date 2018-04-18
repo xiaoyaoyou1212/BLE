@@ -4,15 +4,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.TimeUtils;
-
 import com.vise.baseble.ViseBle;
 import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
-import com.vise.log.ViseLog;
-
-import java.text.SimpleDateFormat;
 
 /**
  * @Description: 扫描设备回调
