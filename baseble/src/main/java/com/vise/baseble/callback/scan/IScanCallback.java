@@ -17,4 +17,5 @@ public interface IScanCallback {
 
     //扫描超时
     void onScanTimeout();
+
 }

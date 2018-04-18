@@ -5,6 +5,7 @@ import static com.vise.baseble.common.BleConstant.DEFAULT_MAX_CONNECT_COUNT;
 import static com.vise.baseble.common.BleConstant.DEFAULT_OPERATE_TIME;
 import static com.vise.baseble.common.BleConstant.DEFAULT_RETRY_COUNT;
 import static com.vise.baseble.common.BleConstant.DEFAULT_RETRY_INTERVAL;
+import static com.vise.baseble.common.BleConstant.DEFAULT_SCAN_REPEAT_INTERVAL;
 import static com.vise.baseble.common.BleConstant.DEFAULT_SCAN_TIME;
 
 /**
@@ -23,6 +24,9 @@ public class BleConfig {
     private int operateRetryCount = DEFAULT_RETRY_COUNT;//数据操作重试次数
     private int operateRetryInterval = DEFAULT_RETRY_INTERVAL;//数据操作重试间隔时间（毫秒）
     private int maxConnectCount = DEFAULT_MAX_CONNECT_COUNT;//最大连接数量
+
+    //yankee
+    private int scanRepeatInterval = DEFAULT_SCAN_REPEAT_INTERVAL;//每隔X时间重复扫描 (毫秒)
 
     private BleConfig() {
     }
@@ -195,6 +199,25 @@ public class BleConfig {
      */
     public BleConfig setOperateRetryInterval(int operateRetryInterval) {
         this.operateRetryInterval = operateRetryInterval;
+        return this;
+    }
+
+    /**
+     * 获取扫描间隔时间
+     * @return
+     */
+    public int getScanRepeatInterval() {
+        return scanRepeatInterval;
+    }
+
+    /**
+     * 设置每隔多少时间重复扫描一次
+     * 设置扫描间隔时间 （毫秒）
+     * @param scanRepeatInterval
+     * @return
+     */
+    public BleConfig setScanRepeatInterval(int scanRepeatInterval) {
+        this.scanRepeatInterval = scanRepeatInterval;
         return this;
     }
 }

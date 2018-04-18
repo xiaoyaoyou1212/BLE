@@ -4,11 +4,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.TimeUtils;
 
 import com.vise.baseble.ViseBle;
 import com.vise.baseble.common.BleConfig;
 import com.vise.baseble.model.BluetoothLeDevice;
 import com.vise.baseble.model.BluetoothLeDeviceStore;
+import com.vise.log.ViseLog;
+
+import java.text.SimpleDateFormat;
 
 /**
  * @Description: 扫描设备回调
@@ -63,6 +67,30 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
                         }
                     }
                 }, BleConfig.getInstance().getScanTimeout());
+            }else if (BleConfig.getInstance().getScanRepeatInterval() > 0){
+                //如果超时时间设置为一直扫描（即 <= 0）,则判断是否设置重复扫描间隔
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isScanning = false;
+
+                        if (ViseBle.getInstance().getBluetoothAdapter() != null) {
+                            ViseBle.getInstance().getBluetoothAdapter().stopLeScan(ScanCallback.this);
+                        }
+
+                        if (bluetoothLeDeviceStore.getDeviceMap() != null
+                                && bluetoothLeDeviceStore.getDeviceMap().size() > 0) {
+                            scanCallback.onScanFinish(bluetoothLeDeviceStore);
+                        } else {
+                            scanCallback.onScanTimeout();
+                        }
+                        isScanning = true;
+                        if (ViseBle.getInstance().getBluetoothAdapter() != null) {
+                            ViseBle.getInstance().getBluetoothAdapter().startLeScan(ScanCallback.this);
+                        }
+                        handler.postDelayed(this,BleConfig.getInstance().getScanRepeatInterval());
+                    }
+                }, BleConfig.getInstance().getScanRepeatInterval());
             }
             isScanning = true;
             if (ViseBle.getInstance().getBluetoothAdapter() != null) {
@@ -96,4 +124,5 @@ public class ScanCallback implements BluetoothAdapter.LeScanCallback, IScanFilte
     public BluetoothLeDevice onFilter(BluetoothLeDevice bluetoothLeDevice) {
         return bluetoothLeDevice;
     }
+
 }

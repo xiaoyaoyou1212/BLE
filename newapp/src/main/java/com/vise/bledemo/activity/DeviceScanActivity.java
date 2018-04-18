@@ -64,6 +64,7 @@ public class DeviceScanActivity extends AppCompatActivity {
         public void onScanTimeout() {
             ViseLog.i("scan timeout");
         }
+
     });
 
     @Override
