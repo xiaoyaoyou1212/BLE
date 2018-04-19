@@ -310,6 +310,22 @@ public class BluetoothLeDevice implements Parcelable {
     }
 
     /**
+     * 获取major
+     * @return major
+     */
+    public long getMajor(){
+        return HexUtil.byteToLong(HexUtil.subBytes(mScanRecord,25,2),0,2,true);
+    }
+
+    /**
+     * 获取minor
+     * @return minor
+     */
+    public long minor(){
+        return HexUtil.byteToLong(HexUtil.subBytes(mScanRecord,27,2),0,2,true);
+    }
+
+    /**
      * Gets the scan record.
      *
      * @return the scan record

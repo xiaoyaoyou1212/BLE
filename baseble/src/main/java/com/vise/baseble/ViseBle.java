@@ -160,6 +160,7 @@ public class ViseBle {
             public void onScanTimeout() {
                 connectCallback.onConnectFailure(new TimeoutException());
             }
+
         }).setDeviceMac(mac));
     }
 
@@ -198,6 +199,7 @@ public class ViseBle {
             public void onScanTimeout() {
                 connectCallback.onConnectFailure(new TimeoutException());
             }
+
         }).setDeviceName(name));
     }
 
