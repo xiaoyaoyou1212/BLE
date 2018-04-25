@@ -6,7 +6,7 @@
 
 - **项目地址：** [https://github.com/xiaoyaoyou1212/BLE](https://github.com/xiaoyaoyou1212/BLE)
 
-- **项目依赖：** `compile 'com.vise.xiaoyaoyou:baseble:2.0.5'`
+- **项目依赖：** `compile 'com.vise.xiaoyaoyou:baseble:2.0.6'`
 
 ## 功能
 - **支持多设备连接管理；**
@@ -43,17 +43,19 @@
 打造该库的目的是为了简化蓝牙设备接入的流程。该库是 BLE 操作的基础框架，只处理 BLE 设备通信逻辑，不包含具体的数据处理，如数据的分包与组包等。该库提供了多设备连接管理，可配置最大连接数量，并在超过最大连接数时会依据 Lru 算法自动断开最近最久未使用设备。该库还定制了常用的扫描设备过滤规则，也支持自定义过滤规则。该库所有操作都采用回调机制告知上层调用的结果，操作简单，接入方便。
 
 ## 版本说明
-[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.0.5-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
+[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.0.6-orange.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/VERSION.md)
 
 最新版本更新记录
-- V2.0.5（2017-12-21）
-    - 修复encodeHexStr参数为空出现的空指针异常；
-    - 修复注册多个可通知通道后数据返回重复回调问题；
-    - 修复RegularFilterScanCallback设备名称可能为空的问题；
-    - 优化设置通知的默认描述属性UUID。
+- V2.0.6（2018-04-25）
+    - 增加字节数组与整型数转换方法；
+    - 增加间隔扫描的配置；
+    - 增加获取服务、特征值、属性的方法。
+
+## 安装包下载
+[BLE_V2.0.6.apk](https://github.com/xiaoyaoyou1212/BLE/blob/master/screenshot/BLE_V2.0.6.apk)
 
 ## 代码托管
-[![JCenter](https://img.shields.io/badge/JCenter-2.0.5-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/2.0.5/)
+[![JCenter](https://img.shields.io/badge/JCenter-2.0.6-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/baseble/2.0.6/)
 
 ## 常见问题
 [![FAQ](https://img.shields.io/badge/FAQ-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98-red.svg)](https://github.com/xiaoyaoyou1212/BLE/blob/master/FAQ.md)
