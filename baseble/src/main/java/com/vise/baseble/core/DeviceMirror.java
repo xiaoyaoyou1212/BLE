@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -26,6 +27,7 @@ import com.vise.log.ViseLog;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -504,6 +506,87 @@ public class DeviceMirror {
      */
     public ConnectState getConnectState() {
         return connectState;
+    }
+
+    /**
+     * 获取服务列表
+     *
+     * @return
+     */
+    public List<BluetoothGattService> getGattServiceList() {
+        if (bluetoothGatt != null) {
+            return bluetoothGatt.getServices();
+        }
+        return null;
+    }
+
+    /**
+     * 根据服务UUID获取指定服务
+     *
+     * @param serviceUuid
+     * @return
+     */
+    public BluetoothGattService getGattService(UUID serviceUuid) {
+        if (bluetoothGatt != null && serviceUuid != null) {
+            return bluetoothGatt.getService(serviceUuid);
+        }
+        return null;
+    }
+
+    /**
+     * 获取某个服务的特征值列表
+     *
+     * @param serviceUuid
+     * @return
+     */
+    public List<BluetoothGattCharacteristic> getGattCharacteristicList(UUID serviceUuid) {
+        if (getGattService(serviceUuid) != null && serviceUuid != null) {
+            return getGattService(serviceUuid).getCharacteristics();
+        }
+        return null;
+    }
+
+    /**
+     * 根据特征值UUID获取某个服务的指定特征值
+     *
+     * @param serviceUuid
+     * @param characteristicUuid
+     * @return
+     */
+    public BluetoothGattCharacteristic getGattCharacteristic(UUID serviceUuid, UUID characteristicUuid) {
+        if (getGattService(serviceUuid) != null && serviceUuid != null && characteristicUuid != null) {
+            return getGattService(serviceUuid).getCharacteristic(characteristicUuid);
+        }
+        return null;
+    }
+
+    /**
+     * 获取某个特征值的描述属性列表
+     *
+     * @param serviceUuid
+     * @param characteristicUuid
+     * @return
+     */
+    public List<BluetoothGattDescriptor> getGattDescriptorList(UUID serviceUuid, UUID characteristicUuid) {
+        if (getGattCharacteristic(serviceUuid, characteristicUuid) != null && serviceUuid != null && characteristicUuid != null) {
+            return getGattCharacteristic(serviceUuid, characteristicUuid).getDescriptors();
+        }
+        return null;
+    }
+
+    /**
+     * 根据描述属性UUID获取某个特征值的指定属性值
+     *
+     * @param serviceUuid
+     * @param characteristicUuid
+     * @param descriptorUuid
+     * @return
+     */
+    public BluetoothGattDescriptor getGattDescriptor(UUID serviceUuid, UUID characteristicUuid, UUID descriptorUuid) {
+        if (getGattCharacteristic(serviceUuid, characteristicUuid) != null && serviceUuid != null && characteristicUuid != null && descriptorUuid != null) {
+            return getGattCharacteristic(serviceUuid, characteristicUuid).getDescriptor(descriptorUuid);
+        }
+        return null;
     }
 
     /**
