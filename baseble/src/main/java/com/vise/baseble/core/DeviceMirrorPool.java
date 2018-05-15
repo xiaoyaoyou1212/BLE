@@ -80,6 +80,7 @@ public class DeviceMirrorPool {
             return;
         }
         if (DEVICE_MIRROR_MAP.containsKey(deviceMirror.getUniqueSymbol())) {
+            deviceMirror.clear();
             DEVICE_MIRROR_MAP.remove(deviceMirror.getUniqueSymbol());
         }
     }
