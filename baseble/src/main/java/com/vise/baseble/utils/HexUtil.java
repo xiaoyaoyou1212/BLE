@@ -174,10 +174,10 @@ public class HexUtil {
      * @param index
      */
     public static void intToByte(byte[] bb, int x, int index) {
-        bb[index + 3] = (byte) (x >> 24);
-        bb[index + 2] = (byte) (x >> 16);
-        bb[index + 1] = (byte) (x >> 8);
-        bb[index + 0] = (byte) (x >> 0);
+        bb[index] = (byte) (x >> 24);
+        bb[index + 1] = (byte) (x >> 16);
+        bb[index + 2] = (byte) (x >> 8);
+        bb[index + 3] = (byte) (x);
     }
 
     /**
@@ -188,9 +188,10 @@ public class HexUtil {
      * @return
      */
     public static int byteToInt(byte[] bb, int index) {
-        return (int) ((((bb[index + 3] & 0xff) << 24)
-                | ((bb[index + 2] & 0xff) << 16)
-                | ((bb[index + 1] & 0xff) << 8) | ((bb[index + 0] & 0xff) << 0)));
+        return (int) ((((bb[index] & 0xff) << 24)
+                | ((bb[index + 1] & 0xff) << 16)
+                | ((bb[index + 2] & 0xff) << 8)
+                | ((bb[index + 3] & 0xff))));
     }
 
 
