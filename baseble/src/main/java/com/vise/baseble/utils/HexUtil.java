@@ -171,13 +171,21 @@ public class HexUtil {
      *
      * @param bb
      * @param x
-     * @param index
+     * @param index 第几位开始
+     * @param flag 标识高低位顺序，高位在前为true，低位在前为false
      */
-    public static void intToByte(byte[] bb, int x, int index) {
-        bb[index + 3] = (byte) (x >> 24);
-        bb[index + 2] = (byte) (x >> 16);
-        bb[index + 1] = (byte) (x >> 8);
-        bb[index + 0] = (byte) (x >> 0);
+    public static void intToByte(byte[] bb, int x, int index, boolean flag) {
+        if (flag) {
+            bb[index + 0] = (byte) (x >> 24);
+            bb[index + 1] = (byte) (x >> 16);
+            bb[index + 2] = (byte) (x >> 8);
+            bb[index + 3] = (byte) (x >> 0);
+        } else {
+            bb[index + 3] = (byte) (x >> 24);
+            bb[index + 2] = (byte) (x >> 16);
+            bb[index + 1] = (byte) (x >> 8);
+            bb[index + 0] = (byte) (x >> 0);
+        }
     }
 
     /**
@@ -185,12 +193,21 @@ public class HexUtil {
      *
      * @param bb
      * @param index 第几位开始
+     * @param flag 标识高低位顺序，高位在前为true，低位在前为false
      * @return
      */
-    public static int byteToInt(byte[] bb, int index) {
-        return (int) ((((bb[index + 3] & 0xff) << 24)
-                | ((bb[index + 2] & 0xff) << 16)
-                | ((bb[index + 1] & 0xff) << 8) | ((bb[index + 0] & 0xff) << 0)));
+    public static int byteToInt(byte[] bb, int index, boolean flag) {
+        if (flag) {
+            return (int) ((((bb[index + 0] & 0xff) << 24)
+                    | ((bb[index + 1] & 0xff) << 16)
+                    | ((bb[index + 2] & 0xff) << 8)
+                    | ((bb[index + 3] & 0xff) << 0)));
+        } else {
+            return (int) ((((bb[index + 3] & 0xff) << 24)
+                    | ((bb[index + 2] & 0xff) << 16)
+                    | ((bb[index + 1] & 0xff) << 8)
+                    | ((bb[index + 0] & 0xff) << 0)));
+        }
     }
 
 
